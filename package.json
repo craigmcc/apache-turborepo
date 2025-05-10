@@ -1,4 +1,5 @@
 {
+  "license": "Apache-2.0",
   "name": "apache-turborepo",
   "private": true,
   "scripts": {
