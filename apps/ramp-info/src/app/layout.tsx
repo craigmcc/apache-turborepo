@@ -11,6 +11,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 // Internal Modules ----------------------------------------------------------
 
 import { MenuBar } from "@/components/layout/MenuBar";
+import { Providers } from "@/components/layout/Providers";
 
 // Public Objects ------------------------------------------------------------
 
@@ -27,8 +28,10 @@ export default function RootLayout({
   return (
     <html lang="en">
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
-    <MenuBar/>
-    {children}
+    <Providers>
+      <MenuBar/>
+      {children}
+    </Providers>
     </body>
     </html>
   );
