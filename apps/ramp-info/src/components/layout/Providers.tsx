@@ -9,13 +9,16 @@
 // Internal Modules ----------------------------------------------------------
 
 import { AccessTokenContextProvider } from "@/contexts/AccessTokenContext";
+import { SelectedUserContextProvider } from "@/contexts/SelectedUserContext";
 
 // Public Objects ------------------------------------------------------------
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <AccessTokenContextProvider>
-      {children}
+      <SelectedUserContextProvider>
+        {children}
+      </SelectedUserContextProvider>
     </AccessTokenContextProvider>
   );
 }

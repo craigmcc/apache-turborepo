@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * React Context to provide the access token to the app, and save it in local storage.
+ * React Context to provide the access token to the application
+ * and save it in local storage.
  */
 
 // External Modules ----------------------------------------------------------
@@ -22,10 +23,10 @@ type AccessTokenContextType = {
 export const AccessTokenContext = createContext<AccessTokenContextType>({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   changeAccessToken: (accessToken) => {},
-  accessToken: "",
+  accessToken: null,
 });
 
-const LOCAL_STORAGE_NAME = "accessToken";
+const LOCAL_STORAGE_NAME = "RampAccessToken";
 
 export const AccessTokenContextProvider = ({children}: {
   children: React.ReactNode,
