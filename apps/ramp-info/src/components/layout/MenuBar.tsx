@@ -29,8 +29,8 @@ export function MenuBar() {
           <Nav className="me-auto">
             <NavDropdown title="Ramp Lookups" id="basic-nav-dropdown">
               <NavDropdown.Item href="/refreshToken">Refresh Access Token</NavDropdown.Item>
+              <NavDropdown.Item href="/selectUser">Select User</NavDropdown.Item>
               <NavDropdown.Divider/>
-              <NavDropdown.Item href="/first">First</NavDropdown.Item>
               <NavDropdown.Item href="/second">Second</NavDropdown.Item>
               <NavDropdown.Item href="/third">Third</NavDropdown.Item>
             </NavDropdown>
