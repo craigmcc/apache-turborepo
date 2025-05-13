@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Ramp API Models (Database Schema) -----------------------------------------
+
+/// Cards (https://ramp.com/developer/v1/cards) TODO - maybe migrate to Limits?
+model Card {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Card
+  id                  String     @id
+  /// Card holder's full name
+  cardholderName      String?    @map("cardholder_name")
+  /// Card Program ID
+  cardProgramId       String?    @map("card_program_id")
+  /// Date/time this card was created (ISO8601 format)
+  createdAt           DateTime?  @map("created_at")
+  /// Cosmetic display name of the Card
+  displayName         String     @map("display_name")
+  /// Expiration date of the Card (MMYY)
+  expiration          String
+  // TODO - Skipping fulfillment
+  /// Has the Card overridden the default settings for this Card Program?
+  hasProgramOverrides Boolean    @map("has_program_overrides")
+  /// Is this Card a physical card?
+  isPhysical          Boolean?   @map("is_physical")
+  /// Last four digits of the Card number
+  lastFour            String     @map("last_four")
+  // TODO - Skipping spending_restrictions
+  /// Current state of this Card
+  state               CardState? @map("state")
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Unique ID of the business Entity that the Card belongs to
+  entityId String? @map("entity_id")
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Unique ID of the Card holder (User?)
+  cardholderId String        @map("cardholder_id")
+  /// User? that this Card belongs to
+  cardholder   User          @relation(fields: [cardholderId], references: [id], onDelete: Cascade)
+  Transaction  Transaction[]
+
+  @@map("cards")
+}
+
+/// Current state of this Card
+enum CardState {
+  ACTIVE
+  CHIP_LOCKED
+  SUSPENDED
+  TERMINATED
+  UNACTIVATED
+}
+
+/// Departments (https://ramp.com/developer/v1/departments)
+model Department {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Department
+  id   String @id
+  /// Name of this Department
+  name String
+
+  // Relationships -----------------------------------------------------------
+
+  /// Users belonging to this Department
+  users User[]
+
+  @@map("departments")
+}
+
+// Transactions (https://ramp.com/developer/v1/transactions)
+model Transaction {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Transaction
+  id                          String                @id
+  /// Date for this transaction for accounting purposes
+  accountingDate              DateTime?             @map("accounting_date")
+  // TODO - skipping accounting_field_selections but likely need them
+  /// Settled amount of the Transaction (amount, currency_code)
+  amount                      Json?                 @map("amount")
+  // TODO - skipping attendees
+  // TODO - skipping card_holder but likely need it
+  /// Was the transaction processed using a card present terminal?
+  cardPresent                 Boolean?              @map("card_present")
+  /// Currency that the transaction settled in
+  currencyCode                String?               @map("currency_code")
+  // TODO - skipping decline_details
+  // TODO - skipping disputes
+  // TODO - skipping line_items
+  /// Optional memo for this Transaction
+  memo                        String?
+  /// Merchant category code (ISP 18245) classifying types of goods and services
+  merchantCategoryCode        String?               @map("merchant_category_code")
+  /// Description of the merchant category code
+  merchantCategoryDescription String?               @map("merchant_category_description")
+  // TODO - skipping merchant_data
+  // TODO - skipping merchant_descriptor
+  // TODO - skipping merchant_location
+  /// Name of the Merchant that the Transaction belongs to
+  merchantName                String?               @map("merchant_name")
+  /// Original Amount of the Transaction (amount, currency_code)
+  originalTransactionAmount   Json?                 @map("original_transaction_amount")
+  // TODO - skipping policy_violations
+  // TODO - skipping receipts
+  // Date/time this transaction was settled (ISO8601 format)
+  settlementDate              DateTime?             @map("settlement_date")
+  /// Ramp-internal category ID
+  skCategoryId                String?               @map("sk_category_id")
+  /// Ramp-internal category name
+  skCategoryName              String?               @map("sk_category_name")
+  /// Synchronization status of this Transaction
+  syncStatus                  TransactionSyncStatus @map("sync_status")
+  /// Date/time this transaction was synced (ISO8601 format)
+  syncedAt                    DateTime?             @map("synced_at")
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Unique ID of the Entity that the Transaction belongs to
+  entityId            String?   @map("entity_id")
+  /// Unique ID of the spend limit associated with the Transaction
+  limitId             String?   @map("limit_id")
+  /// Unique ID of the Merchant that the Transaction belongs to
+  merchantId          String?   @map("merchant_id")
+  /// Unique ID of the spend program from which this limit was issued
+  spendProgramId      String?   @map("spend_program_id")
+  /// Unique ID of the trip assocated with this Transaction
+  tripId              String?   @map("trip_id")
+  /// Trip name associated with this Transaction
+  tripName            String?   @map("trip_name")
+  /// User transaction time
+  userTransactionTime DateTime? @map("user_transaction_time")
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Card that this Transaction belongs to
+  cardId String @map("card_id")
+  /// Card that this Transaction belongs to
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+/// Transaction state
+enum TransactionState {
+  ALL
+  CLEARED
+  COMPLETION
+  DECLINED
+  ERROR
+  PENDING
+  PENDING_INITIATION
+}
+
+/// Transaction sync status
+enum TransactionSyncStatus {
+  NOT_SYNC_READY
+  SYNCED
+  SYNC_READY
+}
+
+// Users (https://ramp.com/developer/v1/users)
+model User {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this User
+  id         String   @id
+  // TODO - Skipping custom_fields
+  /// The User's email address
+  email      String
+  /// Alternative ID for an employee, from an external system
+  employeeId String?  @map("employee_id")
+  /// First name of the User
+  firstName  String?  @map("first_name")
+  /// Is this User a Manager?
+  isManager  Boolean? @map("is_manager")
+  /// Last name of the User
+  lastName   String?  @map("last_name")
+  /// The User's phone number
+  phone      String?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Unique ID of the Company that the User belongs to
+  companyId  String     @map("company_id")
+  /// Unique ID of the business Entity that the User belongs to
+  entityId   String?    @map("entity_id")
+  /// Unique ID of the User's physical location
+  locationId String?    @map("location_id")
+  /// Unique ID of the User's manager
+  managerId  String?    @map("manager_id") /// TODO - maybe self referential?
+  /// The User's role
+  role       UserRole?  @map("role")
+  /// The User's status
+  status     UserStatus @map("status")
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Cards this User has
+  cards Card[]
+
+  /// Unique ID of the Department that the User belongs to
+  departmentId String?     @map("department_id")
+  /// Department that the User belongs to
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+/// Role of a User
+enum UserRole {
+  ADVISOR_CONSOLE_ADMIN
+  ADVISOR_CONSOLE_USER
+  AUDITOR
+  BUSINESS_ADMIN
+  BUSINESS_BOOKKEEPER
+  BUSINESS_OWNER
+  BUSINESS_USER
+  DEVELOPER_ADMIN
+  GUEST_USER
+  IT_ADMIN
+  PRESALES_DEMO_USER
+  UNBUNDLED_ADMIN
+  UNBUNDLED_BOOKKEEPER
+  UNBUNDLED_OWNER
+  UNBUNDLED_USER
+  VENDOR_NETWORK_ADMIN
+}
+
+/// Status of a User
+enum UserStatus {
+  INVITE_EXPIRED
+  INVITE_PENDING
+  USER_ACTIVE
+  USER_INACTIVE
+  USER_ONBOARDING
+  USER_SUSPENDED
+}

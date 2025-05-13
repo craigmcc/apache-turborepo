@@ -3,29 +3,57 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**","dist/**", "!.turbo/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "!.turbo/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": [
+        "^check-types"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "start": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
     "test": {
       "cache": false,
       "persistent": true
     },
     "test:ci": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "db-ramp:deploy": {
+      "cache": false
+    },
+    "db-ramp:generate": {
+      "cache": false
+    },
+    "db-ramp:migrate": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

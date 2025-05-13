@@ -1,0 +1,7 @@
+node_modules
+# Keep environment variables out of version control
+.env*
+# Ignore local database files
+db-ramp.db
+# Ignore Prisma generated files
+generated/prisma/

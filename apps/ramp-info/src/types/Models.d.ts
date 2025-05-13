@@ -5,6 +5,28 @@
 // Public Types --------------------------------------------------------------
 
 /**
+ * The Ramp API response for a fetch departments request.
+ */
+export type DepartmentsResponse = {
+  // The list of departments
+  data: RampDepartment[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
+}
+
+/**
+ * A Ramp API Department object.
+ */
+export type RampDepartment = {
+  // Unique identifier of the department
+  id: string;
+  // The name of the department
+  name: string;
+}
+
+/**
  * The "error_v2" portion of the Ramp response with an error, plus a spot for
  * the HTTP status code.
  */
