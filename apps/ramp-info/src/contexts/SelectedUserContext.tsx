@@ -11,15 +11,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
-import { User } from "@/types/Models";
+import { RampUser } from "@/types/Models";
 
 // Public Objects ------------------------------------------------------------
 
 type SelectedUserContextType = {
   // Function to change the currently selected access token (if any)
-  changeSelectedUser: (selectedUser: User | null) => void;
+  changeSelectedUser: (selectedUser: RampUser | null) => void;
   // Currently selected access token
-  selectedUser: User | null;
+  selectedUser: RampUser | null;
 }
 
 export const SelectedUserContext = createContext<SelectedUserContextType>({
@@ -41,7 +41,7 @@ const LOCAL_STORAGE_NAME = "RampSelectedUser";
 export const SelectedUserContextProvider = ({children}: {
   children: React.ReactNode,
 }) => {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<RampUser | null>(null);
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export const SelectedUserContextProvider = ({children}: {
     return <>Loading selected User ...</>;
   }
 
-  const changeSelectedUser = (selectedUser: User | null) => {
+  const changeSelectedUser = (selectedUser: RampUser | null) => {
     setSelectedUser(selectedUser);
     if (selectedUser) {
       localStorage.setItem(LOCAL_STORAGE_NAME, JSON.stringify(selectedUser));

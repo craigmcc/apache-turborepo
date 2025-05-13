@@ -42,23 +42,9 @@ export type RampResult<M, E = RampError> = {
 }
 
 /**
- * The OAuth2 response for a successful token request.
- */
-export type TokenResponse = {
-  // The access token
-  access_token: string;
-  // The type of token
-  token_type: string;
-  // The expiration time in seconds
-  expires_in: number;
-  // The scope of the token
-  scope: string;
-}
-
-/**
  * A Ramp API User object.
  */
-export type User = {
+export type RampUser = {
   // Unique identifier of the company that the user belongs to
   business_id: string | null;
   // A list of custom fields for this user
@@ -95,11 +81,25 @@ export type User = {
 }
 
 /**
+ * The OAuth2 response for a successful token request.
+ */
+export type TokenResponse = {
+  // The access token
+  access_token: string;
+  // The type of token
+  token_type: string;
+  // The expiration time in seconds
+  expires_in: number;
+  // The scope of the token
+  scope: string;
+}
+
+/**
  * The Ramp API response for a fetch users request.
  */
 export type UsersResponse = {
   // The list of users
-  data: User[];
+  data: RampUser[];
   // Optional forward link for pagination
   page?: {
     next?: string;

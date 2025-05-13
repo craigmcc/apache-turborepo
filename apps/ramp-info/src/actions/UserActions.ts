@@ -8,7 +8,7 @@
 
 // Internal Modules ----------------------------------------------------------
 
-import { RampResult, User, UsersResponse } from "@/types/Models";
+import { RampResult, RampUser, UsersResponse } from "@/types/Models";
 
 // Private Objects ------------------------------------------------------------
 
@@ -81,7 +81,7 @@ export async function fetchUser(
   const body = await response.json();
   return {
     headers: response.headers,
-    model: body as User,
+    model: body as RampUser,
   }
 }
 

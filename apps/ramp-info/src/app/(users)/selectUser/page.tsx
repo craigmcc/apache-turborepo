@@ -15,7 +15,7 @@ import { SelectUser } from "@/components/users/SelectUser";
 
 export default function SelectUserPage() {
   return (
-    <Container className="p-3">
+    <Container className="p-3" fluid>
       <Container className="p-2 mb-4 bg-light rounded-3">
         <h1 className="header">
           Select User

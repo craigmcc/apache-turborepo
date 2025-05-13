@@ -13,8 +13,8 @@ import Table from "react-bootstrap/Table";
 
 import { fetchUsers } from "@/actions/UserActions";
 import { useAccessTokenContext } from "@/contexts/AccessTokenContext";
-//import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
-import {RampResult, User, UsersResponse} from "@/types/Models";
+import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
+import {RampResult, RampUser, UsersResponse} from "@/types/Models";
 
 // Private Objects ------------------------------------------------------------
 
@@ -23,9 +23,9 @@ import {RampResult, User, UsersResponse} from "@/types/Models";
 export function SelectUser() {
 
   const {accessToken} = useAccessTokenContext();
-  const [allUsers, setAllUsers] = useState<User[] | null>(null);
+  const [allUsers, setAllUsers] = useState<RampUser[] | null>(null);
   const [result, setResult] = useState<RampResult<UsersResponse> | null>(null);
-//  const {selectedUser, changeSelectedUser} = useSelectedUserContext();
+  const {selectedUser, changeSelectedUser} = useSelectedUserContext();
 
   useEffect(() => {
 
@@ -34,8 +34,8 @@ export function SelectUser() {
         const result = await fetchUsers(accessToken);
         setResult(result);
         if (result.model) {
-          // TODO - sort users by last name, first name
-          setAllUsers(result.model.data);
+          const sortedUsers = sortUsers(result.model.data);
+          setAllUsers(sortedUsers);
         }
       } else {
         setResult({
@@ -66,13 +66,21 @@ export function SelectUser() {
             <tr>
               <th>First Name</th>
               <th>Last Name</th>
+              <th>Role</th>
+              <th>Status</th>
             </tr>
             </thead>
             <tbody>
             {allUsers?.map((user) => (
-              <tr key={user.id}>
+              <tr
+                className={selectedUser?.id === user.id ? "table-primary" : ""}
+                key={user.id}
+                onClick={() => changeSelectedUser(selectedUser?.id === user.id ? null : user)}
+              >
                 <td>{user.first_name}</td>
                 <td>{user.last_name}</td>
+                <td>{user.is_manager ? "Manager" : "User"}</td>
+                <td>{user.status}</td>
               </tr>
             ))}
             </tbody>
@@ -89,4 +97,32 @@ export function SelectUser() {
 
     </div>
   )
+}
+
+// Private Functions ---------------------------------------------------------
+
+function sortUsers(users: RampUser[]) {
+  return users.sort((a, b) => {
+
+    const aFirstName = a.first_name || "";
+    const aLastName = a.last_name || "";
+    const bFirstName = b.first_name || "";
+    const bLastName = b.last_name || "";
+
+    if (aLastName < bLastName) {
+      return -1;
+    }
+    if (aLastName > bLastName) {
+      return 1;
+    }
+    if (aFirstName < bFirstName) {
+      return -1;
+    }
+    if (aFirstName > bFirstName) {
+      return 1;
+    }
+    return 0;
+
+  });
+
 }
