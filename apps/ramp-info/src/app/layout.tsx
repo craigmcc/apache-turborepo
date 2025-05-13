@@ -16,8 +16,8 @@ import { Providers } from "@/components/layout/Providers";
 // Public Objects ------------------------------------------------------------
 
 export const metadata: Metadata = {
-  title: "Bootstrap Showcase",
-  description: "Show off react-bootstrap components",
+  title: "Ramp Information",
+  description: "Use APIs from Ramp to get information about your account",
 };
 
 export default function RootLayout({

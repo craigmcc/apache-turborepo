@@ -7,7 +7,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -25,6 +25,14 @@ export const AccessTokenContext = createContext<AccessTokenContextType>({
   changeAccessToken: (accessToken) => {},
   accessToken: null,
 });
+
+export function useAccessTokenContext() {
+  const context = useContext(AccessTokenContext);
+  if (!context) {
+    throw new Error("useAccessTokenContext must be used within an AccessTokenContextProvider");
+  }
+  return context;
+}
 
 const LOCAL_STORAGE_NAME = "RampAccessToken";
 

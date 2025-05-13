@@ -15,10 +15,10 @@ import { SelectedUserContextProvider } from "@/contexts/SelectedUserContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AccessTokenContextProvider>
-      <SelectedUserContextProvider>
+    <SelectedUserContextProvider>
+      <AccessTokenContextProvider>
         {children}
-      </SelectedUserContextProvider>
-    </AccessTokenContextProvider>
+      </AccessTokenContextProvider>
+    </SelectedUserContextProvider>
   );
 }

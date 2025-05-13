@@ -7,7 +7,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -28,6 +28,14 @@ export const SelectedUserContext = createContext<SelectedUserContextType>({
   selectedUser: null,
 });
 
+export function useSelectedUserContext() {
+  const context = useContext(SelectedUserContext);
+  if (!context) {
+    throw new Error("useSelectedUserContext must be used within a SelectedUserContextProvider");
+  }
+  return context;
+}
+
 const LOCAL_STORAGE_NAME = "RampSelectedUser";
 
 export const SelectedUserContextProvider = ({children}: {
@@ -43,7 +51,7 @@ export const SelectedUserContextProvider = ({children}: {
   }, []);
 
   if (!isMounted) {
-    return <>Loading access token ...</>;
+    return <>Loading selected User ...</>;
   }
 
   const changeSelectedUser = (selectedUser: User | null) => {
