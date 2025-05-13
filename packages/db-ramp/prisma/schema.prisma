@@ -24,7 +24,7 @@ model Card {
   /// Card Program ID
   cardProgramId       String?    @map("card_program_id")
   /// Date/time this card was created (ISO8601 format)
-  createdAt           DateTime?  @map("created_at")
+  createdAt           String?    @map("created_at")
   /// Cosmetic display name of the Card
   displayName         String     @map("display_name")
   /// Expiration date of the Card (MMYY)
@@ -89,7 +89,7 @@ model Transaction {
   /// Primary key for this Transaction
   id                          String                @id
   /// Date for this transaction for accounting purposes
-  accountingDate              DateTime?             @map("accounting_date")
+  accountingDate              String?               @map("accounting_date")
   // TODO - skipping accounting_field_selections but likely need them
   /// Settled amount of the Transaction (amount, currency_code)
   amount                      Json?                 @map("amount")
@@ -118,7 +118,7 @@ model Transaction {
   // TODO - skipping policy_violations
   // TODO - skipping receipts
   // Date/time this transaction was settled (ISO8601 format)
-  settlementDate              DateTime?             @map("settlement_date")
+  settlementDate              String?               @map("settlement_date")
   /// Ramp-internal category ID
   skCategoryId                String?               @map("sk_category_id")
   /// Ramp-internal category name
@@ -126,24 +126,24 @@ model Transaction {
   /// Synchronization status of this Transaction
   syncStatus                  TransactionSyncStatus @map("sync_status")
   /// Date/time this transaction was synced (ISO8601 format)
-  syncedAt                    DateTime?             @map("synced_at")
+  syncedAt                    String?               @map("synced_at")
 
   // Potential Relationships -------------------------------------------------
 
   /// Unique ID of the Entity that the Transaction belongs to
-  entityId            String?   @map("entity_id")
+  entityId            String? @map("entity_id")
   /// Unique ID of the spend limit associated with the Transaction
-  limitId             String?   @map("limit_id")
+  limitId             String? @map("limit_id")
   /// Unique ID of the Merchant that the Transaction belongs to
-  merchantId          String?   @map("merchant_id")
+  merchantId          String? @map("merchant_id")
   /// Unique ID of the spend program from which this limit was issued
-  spendProgramId      String?   @map("spend_program_id")
+  spendProgramId      String? @map("spend_program_id")
   /// Unique ID of the trip assocated with this Transaction
-  tripId              String?   @map("trip_id")
+  tripId              String? @map("trip_id")
   /// Trip name associated with this Transaction
-  tripName            String?   @map("trip_name")
+  tripName            String? @map("trip_name")
   /// User transaction time
-  userTransactionTime DateTime? @map("user_transaction_time")
+  userTransactionTime String? @map("user_transaction_time")
 
   // Actual Relationships ----------------------------------------------------
 
