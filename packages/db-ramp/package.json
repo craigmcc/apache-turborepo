@@ -1,4 +1,7 @@
 {
+  "exports": {
+    "./*": "./src/index.ts"
+  },
   "license": "Apache-2.0",
   "name": "@repo/db-ramp",
   "private": true,
