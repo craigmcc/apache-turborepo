@@ -1,4 +1,5 @@
 {
+  "description": "Prisma client and generated models for a database corresponding to Ramp API objects",
   "exports": {
     "./*": "./src/index.ts"
   },

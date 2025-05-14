@@ -7,6 +7,12 @@
         "^build",
         "^db-ramp:generate"
       ],
+      "env": [
+        "RAMP_PROD_API_BASE_URL",
+        "RAMP_PROD_API_CLIENT_ID",
+        "RAMP_PROD_API_CLIENT_SECRET",
+        "RAMP_PROD_API_SCOPE"
+      ],
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*"
@@ -32,6 +38,12 @@
       "cache": false,
       "dependsOn": [
         "^db-ramp:generate"
+      ],
+      "env": [
+        "RAMP_PROD_API_BASE_URL",
+        "RAMP_PROD_API_CLIENT_ID",
+        "RAMP_PROD_API_CLIENT_SECRET",
+        "RAMP_PROD_API_SCOPE"
       ],
       "persistent": true
     },
