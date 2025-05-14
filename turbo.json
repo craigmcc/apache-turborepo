@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "dependsOn": [
-        "^build"
+        "^build",
+        "^db-ramp:generate"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
@@ -29,6 +30,9 @@
     },
     "dev": {
       "cache": false,
+      "dependsOn": [
+        "^db-ramp:generate"
+      ],
       "persistent": true
     },
     "start": {
