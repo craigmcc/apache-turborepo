@@ -35,7 +35,7 @@ export function RefreshToken() {
 
     refreshAccessToken();
 
-  }, []);
+  }, [changeAccessToken]);
 
   return (
     <div>
