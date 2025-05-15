@@ -4,7 +4,7 @@
     "./*": "./src/index.ts"
   },
   "license": "Apache-2.0",
-  "name": "@repo/db-ramp",
+  "name": "@repo/ramp-db",
   "private": true,
   "scripts": {
     "db-ramp:deploy": "prisma migrate deploy",
