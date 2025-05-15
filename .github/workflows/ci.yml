@@ -35,8 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Generate Prisma client
-        run: turbo run db-ramp:generate
+      - name: Generate Prisma client for ramp-db
+        run: cd packages/ramp-db; pnpm run db-ramp:generate; cd ../..
 
       - name: Build
         run: pnpm build
