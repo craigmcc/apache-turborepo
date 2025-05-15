@@ -8,6 +8,7 @@
         "^db-ramp:generate"
       ],
       "env": [
+        "DATABASE_URL",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
         "RAMP_PROD_API_CLIENT_SECRET",
@@ -45,6 +46,7 @@
         "^db-ramp:generate"
       ],
       "env": [
+        "DATABASE_URL",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
         "RAMP_PROD_API_CLIENT_SECRET",
@@ -60,6 +62,13 @@
     "start": {
       "dependsOn": [
         "^build"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "RAMP_PROD_API_BASE_URL",
+        "RAMP_PROD_API_CLIENT_ID",
+        "RAMP_PROD_API_CLIENT_SECRET",
+        "RAMP_PROD_API_SCOPE"
       ]
     },
     "test": {
