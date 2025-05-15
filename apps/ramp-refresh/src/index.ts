@@ -13,7 +13,7 @@ import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 //import { fetchUsers } from "@repo/ramp-api/UserActions";
 //import { dbRamp } from "@repo/ramp-db/src/client";
 
-// Public Objects ------------------------------------------------------------
+// Private Objects ------------------------------------------------------------
 
 async function main() {
   console.log("Hello from Ramp Refresh!");
@@ -27,6 +27,7 @@ async function main() {
     console.log("Access token fetched successfully.", accessToken);
   }
 //  const departmentsResponse = await fetchDepartments(accessToken);
+//  const departments = await dbRamp.department.findMany();
 }
 
 // Main Program ----------------------------------------------------------------

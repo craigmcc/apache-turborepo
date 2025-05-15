@@ -24,15 +24,20 @@
         "!.turbo/**"
       ]
     },
-    "lint": {
-      "dependsOn": [
-        "^lint"
-      ]
-    },
     "check-types": {
       "dependsOn": [
         "^check-types"
       ]
+    },
+    "db-ramp:deploy": {
+      "cache": false
+    },
+    "db-ramp:generate": {
+      "cache": false
+    },
+    "db-ramp:migrate": {
+      "cache": false,
+      "persistent": true
     },
     "dev": {
       "cache": false,
@@ -47,6 +52,11 @@
       ],
       "persistent": true
     },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ]
+    },
     "start": {
       "dependsOn": [
         "^build"
@@ -60,16 +70,6 @@
       "dependsOn": [
         "^build"
       ]
-    },
-    "db-ramp:deploy": {
-      "cache": false
-    },
-    "db-ramp:generate": {
-      "cache": false
-    },
-    "db-ramp:migrate": {
-      "cache": false,
-      "persistent": true
     }
   }
 }
