@@ -8,16 +8,25 @@
 
 // Internal Modules -----------------------------------------------------------
 
-/*
-import { AuthActions } from "@repo/ramp-api/AuthActions";
-import { DepartmentActions } from "@repo/ramp-api/DepartmentActions";
-import { UserActions } from "@repo/ramp-api/UserActions";
-*/
+import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
+//import { fetchDepartments} from "@repo/ramp-api/DepartmentActions";
+//import { fetchUsers } from "@repo/ramp-api/UserActions";
+//import { dbRamp } from "@repo/ramp-db/src/client";
 
 // Public Objects ------------------------------------------------------------
 
 async function main() {
   console.log("Hello from Ramp Refresh!");
+  console.log("Fetching access token...");
+  let accessToken = "";
+  const accessTokenResponse = await fetchAccessToken();
+  if (accessTokenResponse.error) {
+    throw accessTokenResponse.error;
+  } else if (accessTokenResponse.model) {
+    console.log("Access token fetched successfully.", accessTokenResponse.model);
+    accessToken = accessTokenResponse.model.access_token;
+  }
+//  const departmentsResponse = await fetchDepartments(accessToken);
 }
 
 // Main Program ----------------------------------------------------------------

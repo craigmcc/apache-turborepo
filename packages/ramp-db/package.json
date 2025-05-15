@@ -1,18 +1,20 @@
 {
   "description": "Prisma client and generated models for a database corresponding to Ramp API objects",
   "exports": {
-    "./*": "./src/index.ts"
+    "./*": "./dist/index.js"
   },
   "license": "Apache-2.0",
   "name": "@repo/ramp-db",
   "private": true,
   "scripts": {
+    "build": "tsc",
     "db-ramp:deploy": "prisma migrate deploy",
     "db-ramp:generate" : "prisma generate",
     "db-ramp:migrate": "prisma migrate dev --skip-generate"
   },
   "version": "0.0.0",
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "prisma": "^6.7.0"
   },
   "dependencies": {

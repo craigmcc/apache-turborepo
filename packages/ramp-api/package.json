@@ -1,21 +1,7 @@
 {
   "description": "Server-side actions that interact with the Ramp API directly",
   "exports": {
-    "./AuthActions": {
-      "default": "./dist/AuthActions.js",
-      "types": "./src/AuthActions.ts"
-    },
-    "./DepartmentActions": {
-      "default": "./dist/DepartmentActions.js",
-      "types": "./src/DepartmentActions.ts"
-    },
-    "./Models": {
-        "types": "./src/Models.ts"
-    },
-    "./UserActions": {
-      "default": "./dist/UserActions.js",
-      "types": "./src/UserActions.ts"
-    }
+    "./*": "./dist/index.js"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
