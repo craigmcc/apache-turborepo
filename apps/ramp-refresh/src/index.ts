@@ -23,8 +23,8 @@ async function main() {
   if (accessTokenResponse.error) {
     throw accessTokenResponse.error;
   } else if (accessTokenResponse.model) {
-    console.log("Access token fetched successfully.", accessTokenResponse.model);
     accessToken = accessTokenResponse.model.access_token;
+    console.log("Access token fetched successfully.", accessToken);
   }
 //  const departmentsResponse = await fetchDepartments(accessToken);
 }
