@@ -12,7 +12,7 @@
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 //import { fetchDepartments} from "@repo/ramp-api/DepartmentActions";
 //import { fetchUsers } from "@repo/ramp-api/UserActions";
-//import { dbRamp } from "@repo/ramp-db/src/client";
+//import { dbRamp, Department } from "@repo/ramp-db/client";
 
 // Private Objects ------------------------------------------------------------
 

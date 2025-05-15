@@ -8,10 +8,10 @@ as accessible functions (in a Node.js application).
 
 ## Installation
 
-To use this package in your application, declare it as a dependency
+(1) To use this package in your application, declare it as a dependency
 in your application:
 
-##### File:  `package.json`
+##### File:  `apps/{your-app}/package.json`
 ```json
 {
   "dependencies": {
@@ -27,8 +27,8 @@ cd apps/{application}
 pnpm install
 ```
 
-In your application's `.env` or `.env.local` file, you will need to declare the following
-variables:
+(2) In your application's `apps/{your-app}/.env` file, you will need to declare the
+following environment variables:
 
 | Variable Name              | Description                                                                 |
 |-----------------------------|-----------------------------------------------------------------------------|
@@ -37,13 +37,13 @@ variables:
 | RAMP_PROD_API_CLIENT_SECRET | The client secret for the Ramp production API you received when you registered. |
 | RAMP_PROD_API_SCOPE         | The OAuth scopes you will need for this application, for example:  cards:read departments:read limits:read transactions:read users:read |
 
-## Example Usage
+(3) To use the Ramp API functions, you will need to import them into your TypeScript
+or JavaScript access that needs access to them.  For example, to use the `fetchAccessToken`
+function to retrieve an access token, you would code it like this:
 
-In your application code, import the action class you need and then call it:
-
-##### File:  `src/app/page.tsx`
+##### File:  `apps/{your-app}src/app/page.tsx`
 ```tsx
-import { fetchAccessToken } from '@repo/ramp-api/AuthActions';
+import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 
 async function getAccessToken(): string {
     const response = await authActions.fetchAccessToken();
