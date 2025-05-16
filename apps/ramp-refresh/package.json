@@ -7,11 +7,12 @@
   "name": "@repo/ramp-refresh",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "check-types": "tsc --noEmit",
-    "dev": "tsc --watch",
-    "lint": "eslint . --max-warnings 0",
-    "start": "node dist/index.js"
+    "dotenv": "dotenvx",
+    "build": "dotenvx run --quiet -- tsc",
+    "check-types": "dotenvx run --quiet -- tsc --noEmit",
+    "dev": "dotenvx run --quiet -- tsc --watch",
+    "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
+    "start": "dotenvx run --quiet -- node dist/index.js"
   },
   "type": "module",
   "version": "0.0.0",
@@ -24,10 +25,11 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@repo/ramp-api": "workspace:*",
-    "@repo/ramp-db": "workspace:*",
+    "@dotenvx/dotenvx": "^1.44.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/jest-presets": "workspace:*",
+    "@repo/ramp-api": "workspace:*",
+    "@repo/ramp-db": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   }
 }
