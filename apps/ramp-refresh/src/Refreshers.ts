@@ -1,6 +1,6 @@
 /**
  * Functions to return the entire contents of specific models
- * via the Ramp API.
+ * via the Ramp API and store them in a local database.
  */
 
 // External Modules ----------------------------------------------------------
@@ -9,11 +9,6 @@
 
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
-/*
-import {
-  RampDepartment
-} from "@repo/ramp-api/Models";
-*/
 import {
   dbRamp,
   Department
@@ -33,33 +28,41 @@ export async function refreshAccessToken(): Promise<string> {
 export async function refreshDepartments(accessToken: string): Promise<void> {
 
   console.log("Fetching departments...");
-  const result = await fetchDepartments(
-    accessToken,
-    {
-      page_size: 100
-    }
-  );
-//  console.log("Departments result:", JSON.stringify(result, null, 2));
-  if (result.error) {
-    throw result.error;
-  }
-  // TODO - deal with pagination
   let count = 0;
-  for (const rampDepartment of result.model!.data) {
-    console.log(`Department ${rampDepartment.id}: ${rampDepartment.name}`);
-    const department: Department = {
-      id: rampDepartment.id,
-      name: rampDepartment.name,
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
+
+    const result = await fetchDepartments(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+//    console.log("fetchDepartments result:", JSON.stringify(result, null, 2));
+    if (result.error) {
+      throw result.error;
     }
-    await dbRamp.department.upsert({
-      where: {id: department.id},
-      update: department,
-      create: department,
-    });
-    // Any error thrown by Prisma will be forwarded back to the caller
-    count++;
+
+    for (const rampDepartment of result.model!.data) {
+//      console.log(`Department ${rampDepartment.id}: ${rampDepartment.name}`);
+      const department: Department = {
+        // id: rampDepartment.id,
+        // name: rampDepartment.name,
+        ...rampDepartment
+      }
+      await dbRamp.department.upsert({
+        where: {id: department.id},
+        update: department,
+        create: department,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+      count++;
+      nextStart = result.model!.page?.next || null;
+    }
+
+    console.log("Departments refreshed:", count);
+
   }
-  console.log("Departments refreshed:", count);
 
 }
-
