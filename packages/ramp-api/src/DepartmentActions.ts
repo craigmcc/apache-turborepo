@@ -36,7 +36,7 @@ export async function fetchDepartment(
   accessToken: string,
   // The ID of the department to fetch
   departmentId: string
-) {
+): Promise<RampResult<RampDepartment>> {
 
   if (!RAMP_PROD_API_BASE_URL) {
     return {
@@ -64,13 +64,13 @@ export async function fetchDepartment(
     return {
       error: { ...error, status: response.status },
     };
+  } else {
+    return {
+      headers: response.headers,
+      model: await response.json() as RampDepartment,
+    }
   }
 
-  const body = await response.json();
-  return {
-    headers: response.headers,
-    model: body as RampDepartment,
-  }
 }
 
 /**
@@ -112,13 +112,16 @@ export async function fetchDepartments(
   });
 
   if (!response.ok) {
+    const error = await response.json();
     return {
-      error: await response.json()
+      error: { ...error, status: response.status },
+      headers: response.headers,
     };
+  } else {
+    return {
+      headers: response.headers,
+      model: await response.json() as RampDepartmentsResponse,
+    }
   }
-
-  const result = await response.json() as RampResult<RampDepartmentsResponse>;
-
-  return result;
 
 }

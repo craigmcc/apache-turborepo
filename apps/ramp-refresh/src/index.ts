@@ -9,33 +9,26 @@
 
 // Internal Modules -----------------------------------------------------------
 
-import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
-//import { fetchDepartments} from "@repo/ramp-api/DepartmentActions";
-//import { fetchUsers } from "@repo/ramp-api/UserActions";
-//import { dbRamp, Department } from "@repo/ramp-db/client";
+import {
+  refreshAccessToken,
+  refreshDepartments,
+} from "./Refreshers.js";
 
 // Private Objects ------------------------------------------------------------
 
 async function main() {
-  console.log("Hello from Ramp Refresh!");
-  console.log("Fetching access token...");
-  let accessToken = "";
-  const accessTokenResponse = await fetchAccessToken();
-  if (accessTokenResponse.error) {
-    throw accessTokenResponse.error;
-  } else if (accessTokenResponse.model) {
-    accessToken = accessTokenResponse.model.access_token;
-    console.log("Access token fetched successfully.", accessToken);
-  }
-//  const departmentsResponse = await fetchDepartments(accessToken);
-//  const departments = await dbRamp.department.findMany();
+
+  console.log("Ramp Refresh started at ", new Date().toLocaleString());
+  const accessToken = await refreshAccessToken();
+  await refreshDepartments(accessToken);
+
 }
 
 // Main Program ----------------------------------------------------------------
 
 main()
   .then(() => {
-    console.log("Ramp Refresh completed successfully.");
+    console.log("Ramp Refresh finished at ", new Date().toLocaleString());
   })
   .catch((error) => {
     console.error("Error in Ramp Refresh:", error);

@@ -76,13 +76,13 @@ export async function fetchUser(
     return {
       error: { ...error, status: response.status },
     };
+  } else {
+    return {
+      headers: response.headers,
+      model: await response.json() as RampUser,
+    }
   }
 
-  const body = await response.json();
-  return {
-    headers: response.headers,
-    model: body as RampUser,
-  }
 }
 
 /**
@@ -125,13 +125,13 @@ export async function fetchUsers(
     const error = await response.json();
     return {
       error: { ...error, status: response.status },
+      headers: response.headers,
     };
-  }
-
-  const body = await response.json();
-  return {
-    headers: response.headers,
-    model: body as RampUsersResponse,
+  } else {
+    return {
+      headers: response.headers,
+      model: await response.json() as RampUsersResponse,
+    }
   }
 
 }
