@@ -9,9 +9,11 @@
 
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
+import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
-  Department
+  Department,
+  User,
 } from "@repo/ramp-db/client";
 
 // Public Objects ------------------------------------------------------------
@@ -62,6 +64,58 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
     }
 
     console.log("Departments refreshed:", count);
+
+  }
+
+}
+
+export async function refreshUsers(accessToken: string): Promise<void> {
+
+  console.log("Fetching users...");
+  let count = 0;
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
+
+    const result = await fetchUsers(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+  //  console.log("fetchUsers result:", JSON.stringify(result, null, 2));
+    if (result.error) {
+      throw result.error;
+    }
+
+    for (const rampUser of result.model!.data) {
+  //    console.log(`User ${rampUser.id}: ${rampUser.last_name}, ${rampUser.first_name}`);
+      const user: User = {
+        id: rampUser.id,
+        email: rampUser.email,
+        employee_id: rampUser.employee_id,
+        first_name: rampUser.first_name,
+        is_manager: rampUser.is_manager,
+        last_name: rampUser.last_name,
+        phone: rampUser.phone,
+        entity_id: rampUser.entity_id,
+        location_id: rampUser.location_id,
+        manager_id: rampUser.manager_id,
+        role: rampUser.role,
+        status: rampUser.status,
+        department_id: rampUser.department_id,
+      }
+      await dbRamp.user.upsert({
+        where: {id: user.id},
+        update: user,
+        create: user,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+      count++;
+      nextStart = result.model!.page?.next || null;
+    }
+
+    console.log("Users refreshed:", count);
 
   }
 

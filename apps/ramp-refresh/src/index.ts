@@ -12,6 +12,7 @@
 import {
   refreshAccessToken,
   refreshDepartments,
+  refreshUsers,
 } from "./Refreshers.js";
 
 // Private Objects ------------------------------------------------------------
@@ -21,6 +22,7 @@ async function main() {
   console.log("Ramp Refresh started at ", new Date().toLocaleString());
   const accessToken = await refreshAccessToken();
   await refreshDepartments(accessToken);
+  await refreshUsers(accessToken);
 
 }
 

@@ -195,8 +195,6 @@ model User {
 
   // Potential Relationships -------------------------------------------------
 
-  /// Unique ID of the Company that the User belongs to
-  company_id  String
   /// Unique ID of the business Entity that the User belongs to
   entity_id   String?
   /// Unique ID of the User's physical location

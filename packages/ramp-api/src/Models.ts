@@ -44,25 +44,25 @@ export type RampUser = {
   email: string;
   // Alternative identifier for an employee, which is from an external system,
   // that can be used in place of an email
-  employee_id?: string;
+  employee_id: string | null;
   // Unique identifier of the business entity that the user belongs to
   entity_id: string | null;
   // First name of the user
-  first_name?: string;
+  first_name: string | null;
   // Unique user identifier
-  id?: string;
+  id: string;
   // Is this user a manager?
   is_manager: boolean;
   // Last name of the user
-  last_name?: string;
+  last_name: string | null;
   // Unique identifier of the user's location
   location_id: string | null;
   // Unique identifier of the user's manager
   manager_id: string | null;
   // The user's phone number
-  phone?: string;
+  phone: string | null;
   // The user's role
-  role?: UserRole;
+  role: UserRole | null;
   // The user's status with respect to Ramp
   status: UserStatus;
 }
