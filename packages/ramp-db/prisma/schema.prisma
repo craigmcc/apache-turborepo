@@ -18,27 +18,27 @@ model Card {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this Card
-  id                    String     @id
+  id                     String     @id
   /// Card holder's full name
-  cardholder_name       String?
+  cardholder_name        String?
   /// Card Program ID
-  card_program_id       String?
+  card_program_id        String?
   /// Date/time this card was created (ISO8601 format)
-  created_at            String?
+  created_at             String?
   /// Cosmetic display name of the Card
-  display_name          String
+  display_name           String
   /// Expiration date of the Card (MMYY)
-  expiration            String
+  expiration             String
   // TODO - Skipping fulfillment
   /// Has the Card overridden the default settings for this Card Program?
-  has_program_overrides Boolean
+  has_program_overridden Boolean
   /// Is this Card a physical card?
-  is_physical           Boolean?
+  is_physical            Boolean?
   /// Last four digits of the Card number
-  last_four             String     @map("last_four")
+  last_four              String
   // TODO - Skipping spending_restrictions
   /// Current state of this Card
-  state                 CardState? @map("state")
+  state                  CardState?
 
   // Potential Relationships -------------------------------------------------
 
@@ -47,10 +47,11 @@ model Card {
 
   // Actual Relationships ----------------------------------------------------
 
-  /// Unique ID of the Card holder (User?)
+  /// Unique ID of the Cardholder (User) that this Card belongs to
   cardholder_id String
   /// User? that this Card belongs to
-  cardholder    User          @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
+  cardholder    User?         @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
+  /// Transactions for this Card
   Transaction   Transaction[]
 
   @@map("cards")
@@ -150,7 +151,7 @@ model Transaction {
   /// Card that this Transaction belongs to
   card_id String
   /// Card that this Transaction belongs to
-  card    Card   @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  card    Card?  @relation(fields: [card_id], references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }
@@ -202,9 +203,9 @@ model User {
   /// Unique ID of the User's manager
   manager_id  String? /// TODO - maybe circular to this table?
   /// The User's role
-  role        UserRole?  @map("role")
+  role        UserRole?
   /// The User's status
-  status      UserStatus @map("status")
+  status      UserStatus
 
   // Actual Relationships ----------------------------------------------------
 

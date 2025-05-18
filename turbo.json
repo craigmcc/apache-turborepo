@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": [
         "^build",
-        "^db-ramp:generate"
+        "^ramp-db:generate"
       ],
       "env": [
         "DATABASE_URL",
@@ -30,16 +30,6 @@
         "^check-types"
       ]
     },
-    "db-ramp:deploy": {
-      "cache": false
-    },
-    "db-ramp:generate": {
-      "cache": false
-    },
-    "db-ramp:migrate": {
-      "cache": false,
-      "persistent": true
-    },
     "dev": {
       "cache": false,
       "dependsOn": [
@@ -58,6 +48,15 @@
       "dependsOn": [
         "^lint"
       ]
+    },
+    "ramp-db:deploy": {
+      "cache": false
+    },
+    "ramp-db:generate": {
+      "cache": true
+    },
+    "ramp-db:migrate": {
+      "cache": true
     },
     "start": {
       "dependsOn": [

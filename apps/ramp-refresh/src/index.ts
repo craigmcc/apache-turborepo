@@ -11,6 +11,7 @@
 
 import {
   refreshAccessToken,
+  refreshCards,
   refreshDepartments,
   refreshUsers,
 } from "./Refreshers.js";
@@ -23,6 +24,7 @@ async function main() {
   const accessToken = await refreshAccessToken();
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
+  await refreshCards(accessToken);
 
 }
 

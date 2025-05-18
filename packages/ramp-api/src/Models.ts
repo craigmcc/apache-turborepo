@@ -5,6 +5,43 @@
 // Data Models ---------------------------------------------------------------
 
 /**
+ * A Ramp Card object.
+ */
+export type RampCard = {
+  // Unique identifier of the card
+  id: string;
+  // The name of the card
+  cardholder_name: string | null;
+  // The card program this card belongs to
+  card_program_id: string | null;
+  // Date/time this card was created (ISO 8601 format)
+  created_at: string | null;
+  // Cosmetic display name of the Card
+  display_name: string;
+  // Expiration date (MMYY) of the Card
+  expiration: string;
+  // Has the Card overridden the default settings for this Card Program?
+  has_program_overridden: boolean;
+  // Is this a physical card?
+  is_physical: boolean;
+  // The last four digits of the card number
+  last_four: string;
+  // Current state of this Card
+  state: CardState | null;
+  // Unique ID of the business Entity that this Card belongs to
+  entity_id: string | null;
+  // Unique ID of the Cardholder (User)
+  cardholder_id: string;
+}
+
+/**
+ * The state of a Ramp Card.
+ */
+export type CardState =
+  "ACTIVE" | "CHIP_LOCKED" | "SUSPENDED" |
+  "TERMINATED" | "UNACTIVATED";
+
+/**
  * A Ramp API Department object.
  */
 export type RampDepartment = {
@@ -85,6 +122,18 @@ export type UserStatus =
   "USER_INACTIVE" | "USER_ONBOARDING" | "USER_SUSPENDED";
 
 // Interface Definitions -----------------------------------------------------
+
+/**
+ * The Ramp API response for a fetch cards request.
+ */
+export type RampCardsResponse = {
+  // The list of cards
+  data: RampCard[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
+}
 
 /**
  * The Ramp API response for a fetch departments request.

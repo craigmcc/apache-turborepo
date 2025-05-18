@@ -8,9 +8,9 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "db-ramp:deploy": "prisma migrate deploy",
-    "db-ramp:generate" : "prisma generate",
-    "db-ramp:migrate": "prisma migrate dev --skip-generate"
+    "ramp-db:deploy": "prisma migrate deploy",
+    "ramp-db:generate" : "prisma generate",
+    "ramp-db:migrate": "prisma migrate dev --skip-generate"
   },
   "version": "0.0.0",
   "devDependencies": {

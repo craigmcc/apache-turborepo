@@ -8,10 +8,12 @@
 // Internal Modules -----------------------------------------------------------
 
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
+import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
+  Card,
   Department,
   User,
 } from "@repo/ramp-db/client";
@@ -25,6 +27,57 @@ export async function refreshAccessToken(): Promise<string> {
     throw accessTokenResponse.error;
   }
   return accessTokenResponse.model!.access_token;
+}
+
+export async function refreshCards(accessToken: string): Promise<void> {
+
+  console.log("Fetching cards...");
+  let count = 0;
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
+
+    const result = await fetchCards(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+//    console.log("fetchCards result:", JSON.stringify(result, null, 2));
+    if (result.error) {
+      throw result.error;
+    }
+
+    for (const rampCard of result.model!.data) {
+//      console.log("Processing Card", JSON.stringify(rampCard, null, 2));
+      const card: Card = {
+        id: rampCard.id,
+        cardholder_name: rampCard.cardholder_name,
+        card_program_id: rampCard.card_program_id,
+        created_at: rampCard.created_at,
+        display_name: rampCard.display_name,
+        expiration: rampCard.expiration,
+        has_program_overridden: rampCard.has_program_overridden,
+        is_physical: rampCard.is_physical,
+        last_four: rampCard.last_four,
+        state: rampCard.state,
+        entity_id: rampCard.entity_id,
+        cardholder_id: rampCard.cardholder_id,
+      }
+      await dbRamp.card.upsert({
+        where: {id: card.id},
+        update: card,
+        create: card,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+      count++;
+      nextStart = result.model!.page?.next || null;
+    }
+
+    console.log("Cards refreshed:", count);
+
+  }
+
 }
 
 export async function refreshDepartments(accessToken: string): Promise<void> {
