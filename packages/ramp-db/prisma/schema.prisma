@@ -48,11 +48,13 @@ model Card {
   // Actual Relationships ----------------------------------------------------
 
   /// Unique ID of the Cardholder (User) that this Card belongs to
-  cardholder_id String
+  cardholder_id         String
   /// User? that this Card belongs to
-  cardholder    User?         @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
+  cardholder            User?                     @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
+  /// Spending restrictions for this Card (1:1 relationship)
+  spending_restrictions CardSpendingRestrictions? @relation()
   /// Transactions for this Card
-  Transaction   Transaction[]
+  Transaction           Transaction[]
 
   @@map("cards")
 }
@@ -64,6 +66,46 @@ enum CardState {
   SUSPENDED
   TERMINATED
   UNACTIVATED
+}
+
+/// Card Spending Restrictions (part of https://ramp.com/developer/v1/cards)
+model CardSpendingRestrictions {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Card Spending Restrictions (same as RampCard.id)
+  card_id                  String                                 @id
+  /// Amount limit total per interval
+  amount                   Int?
+  /// Date to automatically lock the card (ISO 8601 format)
+  /// NOTE: This is not the same as the card expiration date
+  auto_lock_date           String?
+  /// Skipping blocked_categories (Array of ints not supported)
+  /// Skipping caegories (Array of ints not supported)
+  interval                 CardSpendingLimitRestrictionsInterval?
+  /// Whether this card has been locked
+  suspended                Boolean?
+  /// Maximum amount limit per transaction
+  transaction_amount_limit Int?
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// The Card that this Spending Restrictions belongs to (1:1 relationship)
+  card Card? @relation(fields: [card_id], references: [id], onDelete: Cascade)
+
+  @@map("cards_spending_restrictions")
+}
+
+/// Time limit interval that spending restrictions apply to
+/// for a Ramp Card.
+enum CardSpendingLimitRestrictionsInterval {
+  ANNUAL
+  DAILY
+  MONTHLY
+  QUARTERLY
+  TERTIARY
+  TOTAL
+  WEEKLY
+  YEARLY
 }
 
 /// Departments (https://ramp.com/developer/v1/departments)

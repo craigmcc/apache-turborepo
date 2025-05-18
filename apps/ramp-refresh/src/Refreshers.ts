@@ -14,6 +14,7 @@ import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
   Card,
+  CardSpendingRestrictions,
   Department,
   User,
 } from "@repo/ramp-db/client";
@@ -69,6 +70,26 @@ export async function refreshCards(accessToken: string): Promise<void> {
         update: card,
         create: card,
       });
+      // Any error thrown by Prisma will be forwarded back to the caller
+      if (rampCard.spending_restrictions) {
+        const cardSpendingRestrictions: CardSpendingRestrictions = {
+          card_id: rampCard.id,
+          amount: rampCard.spending_restrictions.amount || null,
+          auto_lock_date: rampCard.spending_restrictions.auto_lock_date || null,
+          interval: rampCard.spending_restrictions.interval || null,
+          suspended: rampCard.spending_restrictions.suspended || null,
+          transaction_amount_limit: rampCard.spending_restrictions.transaction_amount_limit || null,
+        }
+        await dbRamp.cardSpendingRestrictions.upsert({
+          where: {card_id: cardSpendingRestrictions.card_id},
+          update: cardSpendingRestrictions,
+          create: cardSpendingRestrictions,
+        });
+      } else {
+        await dbRamp.cardSpendingRestrictions.deleteMany({
+          where: {card_id: card.id}
+        });
+      }
       // Any error thrown by Prisma will be forwarded back to the caller
       count++;
       nextStart = result.model!.page?.next || null;

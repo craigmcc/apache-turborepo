@@ -32,6 +32,8 @@ export type RampCard = {
   entity_id: string | null;
   // Unique ID of the Cardholder (User)
   cardholder_id: string;
+  // The list of spending restrictions for this card
+  spending_restrictions?: RampCardSpendingRestrictions | null;
 }
 
 /**
@@ -40,6 +42,43 @@ export type RampCard = {
 export type CardState =
   "ACTIVE" | "CHIP_LOCKED" | "SUSPENDED" |
   "TERMINATED" | "UNACTIVATED";
+
+/**
+ * Separate table for spending_restrictions on a RampCard.
+ * This will be in a 1:1 relationship with RampCard.
+ *
+ * NOTE: Not all Cards will have a spending_restrictions object,
+ * since it is optional.
+ */
+export type RampCardSpendingRestrictions = {
+  // Unique identifier of the card (same as RampCard.id)
+  card_id: string;
+  // Amount limit total per interval.
+  amount: number | null;
+  // Date to automatically lock the card (ISO 8601 format).
+  // NOTE: This is not the same as the expiration date of the card.
+  auto_lock_date: string | null;
+  // The Ramp category codes blocked for this card
+  // as a comma-separated list of integers
+  // (NOT SUPPORTED IN SQLITE) blocked_categories: string | null;
+  // The Ramp category codes this card is restricted to
+  // as a comma-separated list of integers
+  // (NOT SUPPORTED IN SQLITE) categories: string | null;
+  // The time interval that the spending restrictions apply to
+  interval: RampCardSpendingRestrictionsInterval | null;
+  // Whether this card has been locked
+  suspended: boolean | null;
+  // Maximum amount limit per transaction
+  transaction_amount_limit: number | null;
+}
+
+/**
+ * The time limit interval that the spending restrictions apply to
+ * for a Ramp Card.
+ */
+export type RampCardSpendingRestrictionsInterval =
+  "ANNUAL" | "DAILY" | "MONTHLY" | "QUARTERLY" |
+  "TERTIARY" | "TOTAL" | "WEEKLY" | "YEARLY";
 
 /**
  * A Ramp API Department object.
