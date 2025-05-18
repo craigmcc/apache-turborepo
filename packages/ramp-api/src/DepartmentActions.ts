@@ -63,6 +63,7 @@ export async function fetchDepartment(
     const error = await response.json();
     return {
       error: { ...error, status: response.status },
+      headers: response.headers,
     };
   } else {
     return {
@@ -96,13 +97,13 @@ export async function fetchDepartments(
   const url = new URL(`${RAMP_PROD_API_BASE_URL}/developer/v1/departments`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined) {
+      if (value) {
         url.searchParams.append(key, value.toString());
       }
     });
   }
 
-  const response = await fetch(url.toString(), {
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Accept": "application/json",

@@ -48,7 +48,7 @@ export async function fetchUser(
   accessToken: string,
   // The ID of the user to fetch
   userId: string
-) {
+): Promise<RampResult<RampUser>> {
 
   if (!RAMP_PROD_API_BASE_URL) {
     return {
@@ -75,6 +75,7 @@ export async function fetchUser(
     const error = await response.json();
     return {
       error: { ...error, status: response.status },
+      headers: response.headers,
     };
   } else {
     return {

@@ -46,7 +46,7 @@ export async function fetchCard(
   accessToken: string,
   // The ID of the card to fetch
   cardId: string
-) {
+): Promise<RampResult<RampCard>> {
 
   if (!RAMP_PROD_API_BASE_URL) {
     return {
@@ -73,6 +73,7 @@ export async function fetchCard(
     const error = await response.json();
     return {
       error: { ...error, status: response.status },
+      headers: response.headers,
     };
   } else {
     return {
