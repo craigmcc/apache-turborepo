@@ -130,46 +130,49 @@ model Transaction {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this Transaction
-  id                            String                @id
+  id                              String                @id
   /// Date for this transaction for accounting purposes
-  accounting_date               String?
+  accounting_date                 String?
   // TODO - skipping accounting_field_selections but likely need them
-  /// Settled amount of the Transaction (amount, currency_code)
-  amount                        Json?
-  // TODO - skipping attendees
+  /// Settled amount of the Transaction (amount)
+  amount_amt                      Int?
+  /// Settled amount of the Transaction (currency_code)
+  amount_cc                       String?
   // TODO - skipping card_holder but likely need it
   /// Was the transaction processed using a card present terminal?
-  card_present                  Boolean?
+  card_present                    Boolean?
   /// Currency that the transaction settled in
-  currency_code                 String?
+  currency_code                   String?
   // TODO - skipping decline_details
   // TODO - skipping disputes
   // TODO - skipping line_items
   /// Optional memo for this Transaction
-  memo                          String?
+  memo                            String?
   /// Merchant category code (ISP 18245) classifying types of goods and services
-  merchant_category_code        String?
+  merchant_category_code          String?
   /// Description of the merchant category code
-  merchant_category_description String?
+  merchant_category_description   String?
   // TODO - skipping merchant_data
   // TODO - skipping merchant_descriptor
   // TODO - skipping merchant_location
   /// Name of the Merchant that the Transaction belongs to
-  merchant_name                 String?
-  /// Original Amount of the Transaction (amount, currency_code)
-  original_transaction_amount   Json?
+  merchant_name                   String?
+  /// Original Amount of the Transaction (amount)
+  original_transaction_amount_amt Int?
+  /// Original Amount of the Transaction (currency_code)
+  original_transaction_amount_cc  String?
   // TODO - skipping policy_violations
   // TODO - skipping receipts
   // Date/time this transaction was settled (ISO8601 format)
-  settlement_date               String?
+  settlement_date                 String?
   /// Ramp-internal category ID
-  sk_category_id                String?
+  sk_category_id                  String?
   /// Ramp-internal category name
-  sk_category_name              String?
+  sk_category_name                String?
   /// Synchronization status of this Transaction
-  sync_status                   TransactionSyncStatus
+  sync_status                     TransactionSyncStatus
   /// Date/time this transaction was synced (ISO8601 format)
-  synced_at                     String?
+  synced_at                       String?
 
   // Potential Relationships -------------------------------------------------
 

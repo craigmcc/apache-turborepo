@@ -10,6 +10,8 @@
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
+import { fetchLimits } from "@repo/ramp-api/LimitActions";
+import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
@@ -140,6 +142,70 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
     console.log("Departments refreshed:", count);
 
   }
+
+}
+
+// TODO - only dumps a few, no storage yet
+export async function refreshLimits(accessToken: string): Promise<void> {
+
+  console.log("Fetching limits...");
+/*
+  let count = 0;
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
+*/
+
+    const result = await fetchLimits(
+      accessToken,
+      {
+        page_size: 10,
+//        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    console.log("fetchLimits result:", JSON.stringify(result, null, 2));
+    if (result.error) {
+      throw result.error;
+    }
+
+    // TODO - process and respect pagination
+
+/*
+  }
+*/
+
+  console.log("Limits listed");
+
+}
+
+// TODO - only dumps a few, no storage yet
+export async function refreshTransactions(accessToken: string): Promise<void> {
+
+  console.log("Fetching transactions...");
+  /*
+    let count = 0;
+    let nextStart: string | null = "";
+    while (nextStart !== null) {
+  */
+
+  const result = await fetchTransactions(
+    accessToken,
+    {
+      page_size: 10,
+//        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+    }
+  );
+  console.log("fetchTransactions result:", JSON.stringify(result, null, 2));
+  if (result.error) {
+    throw result.error;
+  }
+
+  // TODO - process and respect pagination
+
+  /*
+    }
+  */
+
+  console.log("Transactions listed");
 
 }
 

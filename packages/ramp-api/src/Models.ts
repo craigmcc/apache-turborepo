@@ -105,6 +105,16 @@ export type RampTokenResponse = {
 }
 
 /**
+ * A Ramp Limit object.  NOTE - this has not been codified yet, so it is just an object.
+ */
+export type RampLimit = object;
+
+/**
+ * A Ramp Transaction object.  NOTE - this has not been codified yet, so it is just an object.
+ */
+export type RampTransaction = object;
+
+/**
  * A Ramp API User object.
  */
 export type RampUser = {
@@ -163,6 +173,17 @@ export type UserStatus =
 // Interface Definitions -----------------------------------------------------
 
 /**
+ * A compound amount of money in the smallest denomination of the currency.
+ * For USD, that is cents.
+ */
+export type RampAmount = {
+  // The amount of money, in the smallest denomination of the currency
+  amount: number;
+  // The currency of the money
+  currency_code: string;
+}
+
+/**
  * The Ramp API response for a fetch cards request.
  */
 export type RampCardsResponse = {
@@ -206,6 +227,18 @@ export type RampError = {
 }
 
 /**
+ * The Ramp API response for a fetch limits request.
+ */
+export type RampLimitsResponse = {
+  // The list of limits
+  data: RampLimit[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
+}
+
+/**
  * Generic describing the result returned by a Ramp API call.
  * Either an error or a model object will be included, but not both.
  * The headers from the response are normally included.
@@ -221,6 +254,18 @@ export type RampResult<M, E = RampError> = {
   headers?: Headers;
   // The model object returned by the action (if any)
   model?: M;
+}
+
+/**
+ * The Ramp API response for a fetch transactions request.
+ */
+export type RampTransactionsResponse = {
+  // The list of transactions
+  data: RampTransaction[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
 }
 
 /**
