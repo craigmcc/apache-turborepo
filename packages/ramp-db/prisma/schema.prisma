@@ -133,7 +133,7 @@ model Transaction {
   id                              String                @id
   /// Date for this transaction for accounting purposes
   accounting_date                 String?
-  // TODO - skipping accounting_field_selections but likely need them
+  // TODO - skipping accounting_field_selections (TOFIX)
   /// Settled amount of the Transaction (amount)
   amount_amt                      Int?
   /// Settled amount of the Transaction (currency_code)
@@ -145,7 +145,7 @@ model Transaction {
   currency_code                   String?
   // TODO - skipping decline_details
   // TODO - skipping disputes
-  // TODO - skipping line_items
+  // TODO - skipping line_items (TOFIX)
   /// Optional memo for this Transaction
   memo                            String?
   /// Merchant category code (ISP 18245) classifying types of goods and services
@@ -169,6 +169,8 @@ model Transaction {
   sk_category_id                  String?
   /// Ramp-internal category name
   sk_category_name                String?
+  // Transaction state
+  state                           TransactionState?
   /// Synchronization status of this Transaction
   sync_status                     TransactionSyncStatus
   /// Date/time this transaction was synced (ISO8601 format)
@@ -184,6 +186,8 @@ model Transaction {
   merchant_id           String?
   /// Unique ID of the spend program from which this limit was issued
   spend_program_id      String?
+  /// Statement ID of the Transaction (if available)
+  statement_id          String?
   /// Unique ID of the trip assocated with this Transaction
   trip_id               String?
   /// Trip name associated with this Transaction

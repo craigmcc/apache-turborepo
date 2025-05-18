@@ -91,6 +91,11 @@ export type RampDepartment = {
 }
 
 /**
+ * A Ramp Limit object.  NOTE - this has not been codified yet, so it is just an object.
+ */
+export type RampLimit = object;
+
+/**
  * The OAuth2 response for a successful token request.
  */
 export type RampTokenResponse = {
@@ -103,11 +108,6 @@ export type RampTokenResponse = {
   // The scope of the token
   scope: string;
 }
-
-/**
- * A Ramp Limit object.  NOTE - this has not been codified yet, so it is just an object.
- */
-export type RampLimit = object;
 
 /**
  * A Ramp Transaction object.  NOTE - this has not been codified yet, so it is just an object.
