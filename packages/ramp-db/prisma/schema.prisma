@@ -13,7 +13,7 @@ datasource db {
 
 // Ramp API Models (Database Schema) -----------------------------------------
 
-/// Cards (https://ramp.com/developer/v1/cards) TODO - maybe migrate to Limits?
+/// Cards (https://ramp.com/developer/v1/cards)
 model Card {
   // Scalar Fields -----------------------------------------------------------
 
@@ -36,7 +36,7 @@ model Card {
   is_physical            Boolean?
   /// Last four digits of the Card number
   last_four              String
-  // TODO - Skipping spending_restrictions
+  // TODO - Skipping spending_restrictions (TOFIX)
   /// Current state of this Card
   state                  CardState?
 
@@ -49,8 +49,10 @@ model Card {
 
   /// Unique ID of the Cardholder (User) that this Card belongs to
   cardholder_id         String
-  /// User? that this Card belongs to
+  /// User that this Card belongs to
   cardholder            User?                     @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
+  // The LimitCards associated with this Card
+  LimitCard             LimitCard[]               @relation("CardLimitCard")
   /// Spending restrictions for this Card (1:1 relationship)
   spending_restrictions CardSpendingRestrictions? @relation()
   /// Transactions for this Card
@@ -125,6 +127,123 @@ model Department {
   @@map("departments")
 }
 
+// Limits (https://ramp.com/developer/v1/limits)
+model Limit {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Limit
+  id                                        String      @id
+  /// Balance cleared (amount)
+  balance_cleared_amt                       Int?
+  /// Balance cleared (currency_code)
+  balance_cleared_cc                        String?
+  /// Balance pending (amount)
+  balance_pending_amt                       Int?
+  /// Balance pending (currency_code)
+  balance_pending_cc                        String?
+  /// Balance total (amount)
+  balance_total_amt                         Int?
+  /// Balance total (currency_code)
+  balance_total_cc                          String?
+  /// Date/time this Limit was created (ISO8601 format)
+  created_at                                String?
+  /// Cosmetic display name of the Limit
+  display_name                              String?
+  /// Does Limit's settings override those of its spend program?
+  has_program_overridden                    Boolean?
+  /// Is the spend limit shareable?
+  is_shareable                              Boolean?
+  /// Can the user's physical card be linked to this Limit?
+  permitted_primary_card_enabled            Boolean?
+  /// Can reimbursements be submitted against this Limit?
+  permitted_reimbursements_enabled          Boolean?
+  /// Restrictions -- Limit (amount)
+  restrictions_limit_amt                    Int?
+  /// Restrictions -- Limit (currency_code)
+  restrictions_limit_cc                     String?
+  /// Restrictions -- Temporary Limit (amount)
+  restrictions_temporary_limit_amt          Int?
+  /// Restrictions -- Temporary Limit (currency_code)
+  restrictions_temporary_limit_cc           String?
+  /// Restrictions -- Transaction Amount Limit (amount)
+  restrictions_transaction_amount_limit_amt Int?
+  /// Restrictions -- Transaction Amount Limit (currency_code)
+  restrictions_transaction_amount_limit_cc  String?
+  /// Current state of this Limit
+  state                                     LimitState?
+  /// Suspension -- acting User ID
+  suspension_acting_user_id                 String?
+  /// Suspension -- date/time this suspenstion was created (ISO8601 format)
+  suspension_inserted_at                    String?
+  /// Suspension -- was this suspension by Ramp?
+  suspension_suspended_by_ramp              Boolean?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Unique ID of the business Entity that the Limit belongs to
+  entity_id        String?
+  /// Unique ID of the spend program that this Limit is associated with
+  spend_program_id String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Info about Cards that belong to this Limit
+  cards LimitCard[] @relation("LimitLimitCard")
+  /// Info about Users that belong to this Limit
+  users LimitUser[] @relation("LimitLimitUser")
+
+  @@map("limits")
+}
+
+enum LimitState {
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+// Cards belonging to a Limit (https://ramp.com/developer/v1/limits)
+model LimitCard {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Expiration date of the LimitCard (MMYY)
+  expiration                 String
+  /// Was this card created manually by Ramp for high velocity spend?
+  is_ap_card                 Boolean
+  /// Last four digits of the LimitCard number
+  last_four                  String
+  /// Was this card creaed by "New Product or Service" option?
+  via_new_product_or_service Boolean
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Unique ID of the Card that this LimitCard belongs to
+  card_id  String
+  Card     Card   @relation("CardLimitCard", fields: [card_id], references: [id], onDelete: Cascade)
+  /// Unique ID of the Limit that this LimitCard belongs to
+  limit_id String
+  Limit    Limit  @relation("LimitLimitCard", fields: [limit_id], references: [id])
+
+  @@id([limit_id, card_id])
+  @@map("limits_cards")
+}
+
+// Users that can spend from the Limit
+model LimitUser {
+  // Actual Relationships ----------------------------------------------------
+
+  /// Unique ID of the User that this LimitUser belongs to
+  user_id  String
+  user     User   @relation("UserLimitUser", fields: [user_id], references: [id])
+  /// Unique ID of the Limit that this LimitCard belongs to
+  limit_id String
+  limit    Limit  @relation("LimitLimitUser", fields: [limit_id], references: [id])
+
+  @@id([limit_id, user_id])
+  @@map("limits_users")
+}
+
 // Transactions (https://ramp.com/developer/v1/transactions)
 model Transaction {
   // Scalar Fields -----------------------------------------------------------
@@ -138,7 +257,7 @@ model Transaction {
   amount_amt                      Int?
   /// Settled amount of the Transaction (currency_code)
   amount_cc                       String?
-  // TODO - skipping card_holder but likely need it
+  // TODO - skipping card_holder (TOFIX)
   /// Was the transaction processed using a card present terminal?
   card_present                    Boolean?
   /// Currency that the transaction settled in
@@ -161,8 +280,8 @@ model Transaction {
   original_transaction_amount_amt Int?
   /// Original Amount of the Transaction (currency_code)
   original_transaction_amount_cc  String?
-  // TODO - skipping policy_violations
-  // TODO - skipping receipts
+  // TODO - skipping policy_violations (TOFIX?)
+  // TODO - skipping receipts (TOFIX?)
   // Date/time this transaction was settled (ISO8601 format)
   settlement_date                 String?
   /// Ramp-internal category ID
@@ -229,7 +348,7 @@ model User {
 
   /// Primary key for this User
   id          String   @id
-  // TODO - Skipping custom_fields
+  // TODO - Skipping custom_fields (TOFIX?)
   /// The User's email address
   email       String
   /// Alternative ID for an employee, from an external system
@@ -250,7 +369,7 @@ model User {
   /// Unique ID of the User's physical location
   location_id String?
   /// Unique ID of the User's manager
-  manager_id  String? /// TODO - maybe circular to this table?
+  manager_id  String?
   /// The User's role
   role        UserRole?
   /// The User's status
@@ -259,12 +378,13 @@ model User {
   // Actual Relationships ----------------------------------------------------
 
   /// Cards this User has
-  cards Card[]
-
+  cards         Card[]
   /// Unique ID of the Department that the User belongs to
   department_id String?
   /// Department that the User belongs to
   department    Department? @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  /// Limits this User belongs to
+  limit_users   LimitUser[] @relation("UserLimitUser")
 
   @@map("users")
 }
