@@ -132,7 +132,7 @@ model Limit {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this Limit
-  id                                        String      @id
+  id                                        String                    @id
   /// Balance cleared (amount)
   balance_cleared_amt                       Int?
   /// Balance cleared (currency_code)
@@ -157,10 +157,24 @@ model Limit {
   permitted_primary_card_enabled            Boolean?
   /// Can reimbursements be submitted against this Limit?
   permitted_reimbursements_enabled          Boolean?
+  /// Restrictions -- allowed Ramp Categories (comma-separated list of category IDs)
+  restrictions_allowed_categories           String?
+  // TODO - skipped restrictions.allowed_vendors
+  /// Restrictions -- Date to automatically lock the Limit (ISO 8601 format?)
+  restrictions_auto_lock_date               String?
+  /// Restrictions -- Blocked Ramp Categories (comma-separated list of category codes)
+  restrictions_blocked_categories           String?
+  // TODO - skipped restrictions.blocked_vendors
+  /// Restrictions -- Time interval the limit is applied on
+  restrictions_interval                     LimitRestrictionInterval?
   /// Restrictions -- Limit (amount)
   restrictions_limit_amt                    Int?
   /// Restrictions -- Limit (currency_code)
   restrictions_limit_cc                     String?
+  /// Restrictions -- Date and time of next interval reset (ISO 8601 format)
+  restrictions_next_interval_reset          String?
+  /// Restrictions -- Date and time of start of current interval (ISO 8601 format)
+  restrictions_start_of_interval            String?
   /// Restrictions -- Temporary Limit (amount)
   restrictions_temporary_limit_amt          Int?
   /// Restrictions -- Temporary Limit (currency_code)
@@ -193,6 +207,17 @@ model Limit {
   users LimitUser[] @relation("LimitLimitUser")
 
   @@map("limits")
+}
+
+enum LimitRestrictionInterval {
+  ANNUAL
+  DAILY
+  MONTHLY
+  QUARTERLY
+  TERTIARY
+  TOTAL
+  WEEKLY
+  YEARLY
 }
 
 enum LimitState {
@@ -236,7 +261,7 @@ model LimitUser {
   /// Unique ID of the User that this LimitUser belongs to
   user_id  String
   user     User   @relation("UserLimitUser", fields: [user_id], references: [id])
-  /// Unique ID of the Limit that this LimitCard belongs to
+  /// Unique ID of the Limit that this LimitUser belongs to
   limit_id String
   limit    Limit  @relation("LimitLimitUser", fields: [limit_id], references: [id])
 
