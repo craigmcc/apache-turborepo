@@ -27,7 +27,7 @@ export type RampCard = {
   // The last four digits of the card number
   last_four: string;
   // Current state of this Card
-  state: CardState | null;
+  state: RampCardState | null;
   // Unique ID of the business Entity that this Card belongs to
   entity_id: string | null;
   // Unique ID of the Cardholder (User)
@@ -39,7 +39,7 @@ export type RampCard = {
 /**
  * The state of a Ramp Card.
  */
-export type CardState =
+export type RampCardState =
   "ACTIVE" | "CHIP_LOCKED" | "SUSPENDED" |
   "TERMINATED" | "UNACTIVATED";
 
@@ -93,7 +93,105 @@ export type RampDepartment = {
 /**
  * A Ramp Limit object.  NOTE - this has not been codified yet, so it is just an object.
  */
-export type RampLimit = object;
+export type RampLimit = {
+  // Unique identifier of this Limit
+  id: string;
+  // Balances for this Limit
+  balance: {
+    // The current balance of this limit
+    cleared: RampAmount | null;
+    // The pending balance of this limit
+    pending: RampAmount | null;
+    // The total balance of this limit
+    total: RampAmount | null;
+  } | null;
+  // The Ramp cards that are associated with this Limit
+  cards: RampLimitCard[] | null;
+  // Date/time this Limit was created (ISO 8601 format)
+  created_at: string | null;
+  // Cosmetic display name of the Limit
+  display_name: string | null;
+  // Unique ID of the Entity that the Limit belongs to
+  entity_id: string | null;
+  // Do Limit's settings override those of its spend program?
+  has_program_overridden: boolean | null;
+  // Is the spend limit shareable?
+  is_shareable: boolean | null;
+  // Permitted spend types for this Limit
+  permitted_spend_types: RampLimitPermittedSpendTypes | null;
+  // Restrictions imposed on this Limit
+  restrictions: RampLimitRestrictions | null;
+  // Unique of the associated spend program
+  spend_program_id: string | null;
+  // Current state of the Limit
+  state: RampLimitState | null;
+  // Suspension of this Limit
+  suspension: RampLimitSuspension | null;
+  // Users associated with this Limit
+  users: RampLimitUser[] | null;
+};
+
+export type RampLimitCard = {
+  // Unique identifier of the Card
+  card_id: string;
+  // Expiration date of the LimitCard (MMYY)
+  expiration: string;
+  // Was this card created manually by Ramp for high velocity spend?
+  is_ap_card: boolean;
+  // Last four digits of the LimitCard number
+  last_four: string;
+  // Was this card created by the "New Product or Service" option?
+  via_new_product_or_service: boolean;
+}
+
+export type RampLimitPermittedSpendTypes = {
+  // Can the User's physical card be linked to this Limit?
+  primary_card_enabled: boolean;
+  // Can reimbursements be submitted against this Limit?
+  reimbursements_enabled: boolean;
+}
+
+export type RampLimitRestrictions = {
+  // Allowed Ramp categories for this Limit
+  allowed_categories: number[];
+  // Date/time to automatically lock the Limit (ISO 8601 format)
+  auto_lock_date: string | null;
+  // Blocked Ramp categories for this Limit
+  blocked_categories: number[];
+  // Time interval that the limit is applied on
+  interval: RampLimitRestrictionsInterval | null;
+  // Spending limit
+  limit: RampAmount;
+  // Date/time of the next interval reset (ISO 8601 format)
+  next_interval_reset: string | null;
+  // Date/time this interval started (ISO 8601 format)
+  start_of_interval: string | null;
+  // Temporary spending limit
+  temporary_limit: RampAmount;
+  // Per-transaction spending limit;
+  transaction_amount_limit: RampAmount;
+}
+
+export type RampLimitRestrictionsInterval =
+  "ANNUAL" | "DAILY" | "MONTHLY" | "QUARTERLY" |
+  "TERTIARY" | "TOTAL" | "WEEKLY" | "YEARLY";
+
+export type RampLimitState =
+  "ACTIVE" | "SUSPENDED" | "TERMINATED";
+
+export type RampLimitSuspension = {
+  // Unique ID of the User who placed the suspension
+  acting_user_id: string | null;
+  // Date/time the suspension was placed (ISO 8601 format)
+  inserted_at: string | null;
+  // Was this suspension placed by Ramp?
+  suspended_by_ramp: boolean | null;
+}
+
+export type RampLimitUser = {
+  // Unique ID of a User that is associated with this Limit
+  user_id: string;
+}
 
 /**
  * The OAuth2 response for a successful token request.
