@@ -195,16 +195,17 @@ model Limit {
   // Potential Relationships -------------------------------------------------
 
   /// Unique ID of the business Entity that the Limit belongs to
-  entity_id        String?
-  /// Unique ID of the spend program that this Limit is associated with
-  spend_program_id String?
+  entity_id String?
 
   // Actual Relationships ----------------------------------------------------
 
   /// Info about Cards that belong to this Limit
-  cards LimitCard[] @relation("LimitLimitCard")
+  cards            LimitCard[]   @relation("LimitLimitCard")
+  /// Unique ID of the spend program that this Limit is associated with
+  spend_program_id String?
+  spend_program    SpendProgram? @relation("SpendProgramLimit", fields: [spend_program_id], references: [id], onDelete: Cascade)
   /// Info about Users that belong to this Limit
-  users LimitUser[] @relation("LimitLimitUser")
+  users            LimitUser[]   @relation("LimitLimitUser")
 
   @@map("limits")
 }
@@ -267,6 +268,61 @@ model LimitUser {
 
   @@id([limit_id, user_id])
   @@map("limits_users")
+}
+
+// Spend Programs (https://ramp.com/developer/v1/spend-programs)
+model SpendProgram {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Spend Program
+  id                                        String                    @id
+  /// Description of this Spend Program
+  description                               String?
+  /// Display Name of this Spend Program
+  display_name                              String?
+  /// Is the Spend Program shareable
+  is_shareable                              Boolean?
+  /// Should the Spend Program issue a physical card if needed?
+  issue_physical_card_if_needed             Boolean?
+  /// Can the user's physical card be linked to this Limit?
+  permitted_primary_card_enabled            Boolean?
+  /// Can reimbursements be submitted against this Limit?
+  permitted_reimbursements_enabled          Boolean?
+  /// Restrictions -- allowed Ramp Categories (comma-separated list of category IDs)
+  restrictions_allowed_categories           String?
+  // TODO - skipped restrictions.allowed_vendors
+  /// Restrictions -- Date to automatically lock the Limit (ISO 8601 format?)
+  restrictions_auto_lock_date               String?
+  /// Restrictions -- Blocked Ramp Categories (comma-separated list of category codes)
+  restrictions_blocked_categories           String?
+  // TODO - skipped restrictions.blocked_vendors
+  /// Restrictions -- Time interval the limit is applied on
+  restrictions_interval                     LimitRestrictionInterval?
+  /// Restrictions -- Limit (amount)
+  restrictions_limit_amt                    Int?
+  /// Restrictions -- Limit (currency_code)
+  restrictions_limit_cc                     String?
+  /// Restrictions -- Date and time of next interval reset (ISO 8601 format)
+  restrictions_next_interval_reset          String?
+  /// Restrictions -- Date and time of start of current interval (ISO 8601 format)
+  restrictions_start_of_interval            String?
+  /// Restrictions -- Temporary Limit (amount)
+  restrictions_temporary_limit_amt          Int?
+  /// Restrictions -- Temporary Limit (currency_code)
+  restrictions_temporary_limit_cc           String?
+  /// Restrictions -- Transaction Amount Limit (amount)
+  restrictions_transaction_amount_limit_amt Int?
+  /// Restrictions -- Transaction Amount Limit (currency_code)
+  restrictions_transaction_amount_limit_cc  String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Limits that belong to this Spend Program
+  limits Limit[] @relation("SpendProgramLimit")
+
+  @@map("spend_programs")
 }
 
 // Transactions (https://ramp.com/developer/v1/transactions)

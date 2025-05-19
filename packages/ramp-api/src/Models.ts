@@ -91,7 +91,7 @@ export type RampDepartment = {
 }
 
 /**
- * A Ramp Limit object.  NOTE - this has not been codified yet, so it is just an object.
+ * A Ramp Limit object.
  */
 export type RampLimit = {
   // Unique identifier of this Limit
@@ -144,6 +144,9 @@ export type RampLimitCard = {
   via_new_product_or_service: boolean;
 }
 
+/**
+ * Also used for Spend Programs.
+ */
 export type RampLimitPermittedSpendTypes = {
   // Can the User's physical card be linked to this Limit?
   primary_card_enabled: boolean;
@@ -151,6 +154,9 @@ export type RampLimitPermittedSpendTypes = {
   reimbursements_enabled: boolean;
 }
 
+/**
+ * Also used for Spend Programs.
+ */
 export type RampLimitRestrictions = {
   // Allowed Ramp categories for this Limit
   allowed_categories: number[];
@@ -191,6 +197,27 @@ export type RampLimitSuspension = {
 export type RampLimitUser = {
   // Unique ID of a User that is associated with this Limit
   user_id: string;
+}
+
+/**
+ * A Ramp Spend Program object.
+ */
+export type RampSpendProgram = {
+  // Unique Identifier of the Spend Program
+  id: string;
+  // Description of the Spend Program
+  description: string | null;
+  // Display name of the Spend Program
+  display_name: string | null;
+  // TODO - skipping icon
+  // Is the Spend Program shareable?
+  is_shareable: boolean | null;
+  // Should the Spend Program issue a physical card if needed?
+  issue_physical_card_if_needed: boolean | null;
+  // Permitted spend types for this Spend Program (same as RampLimit)
+  permitted_spend_types: RampLimitPermittedSpendTypes | null;
+  // Restrictions on this Spend Program (same as RampLimit)
+  restrictions: RampLimitRestrictions | null;
 }
 
 /**
