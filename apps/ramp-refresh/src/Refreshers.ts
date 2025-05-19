@@ -11,13 +11,16 @@ import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
-import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
+//import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
   Card,
   CardSpendingRestrictions,
   Department,
+  Limit,
+  LimitCard,
+  LimitUser,
   User,
 } from "@repo/ramp-db/client";
 
@@ -53,6 +56,7 @@ export async function refreshCards(accessToken: string): Promise<void> {
 
     for (const rampCard of result.model!.data) {
 //      console.log("Processing Card", JSON.stringify(rampCard, null, 2));
+
       const card: Card = {
         id: rampCard.id,
         cardholder_name: rampCard.cardholder_name,
@@ -73,6 +77,7 @@ export async function refreshCards(accessToken: string): Promise<void> {
         create: card,
       });
       // Any error thrown by Prisma will be forwarded back to the caller
+
       if (rampCard.spending_restrictions) {
         const cardSpendingRestrictions: CardSpendingRestrictions = {
           card_id: rampCard.id,
@@ -93,6 +98,7 @@ export async function refreshCards(accessToken: string): Promise<void> {
         });
       }
       // Any error thrown by Prisma will be forwarded back to the caller
+
       count++;
       nextStart = result.model!.page?.next || null;
     }
@@ -145,47 +151,137 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
 
 }
 
-// TODO - only dumps a few, no storage yet
 export async function refreshLimits(accessToken: string): Promise<void> {
 
   console.log("Fetching limits...");
-/*
   let count = 0;
   let nextStart: string | null = "";
   while (nextStart !== null) {
-*/
 
     const result = await fetchLimits(
       accessToken,
       {
-        page_size: 10,
-//        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-    console.log("fetchLimits result:", JSON.stringify(result, null, 2));
+//    console.log("fetchLimits result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
-    // TODO - process and respect pagination
+    for (const rampLimit of result.model!.data) {
+      console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name}`);
 
-/*
+      const limit: Limit = {
+        id: rampLimit.id,
+        balance_cleared_amt: rampLimit.balance?.cleared?.amount || null,
+        balance_cleared_cc: rampLimit.balance?.cleared?.currency_code || null,
+        balance_pending_amt: rampLimit.balance?.pending?.amount || null,
+        balance_pending_cc: rampLimit.balance?.pending?.currency_code || null,
+        balance_total_amt: rampLimit.balance?.total?.amount || null,
+        balance_total_cc: rampLimit.balance?.total?.currency_code || null,
+        created_at: rampLimit.created_at,
+        display_name: rampLimit.display_name,
+        entity_id: rampLimit.entity_id,
+        has_program_overridden: rampLimit.has_program_overridden,
+        is_shareable: rampLimit.is_shareable,
+        permitted_primary_card_enabled: rampLimit.permitted_spend_types?.primary_card_enabled || null,
+        permitted_reimbursements_enabled: rampLimit.permitted_spend_types?.reimbursements_enabled || null,
+        restrictions_allowed_categories: rampLimit.restrictions?.allowed_categories?.join(",")  || null,
+        restrictions_auto_lock_date: rampLimit.restrictions?.auto_lock_date || null,
+        restrictions_blocked_categories: rampLimit.restrictions?.blocked_categories?.join(",") || null,
+        restrictions_interval: rampLimit.restrictions?.interval || null,
+        restrictions_limit_amt: rampLimit.restrictions?.limit?.amount || null,
+        restrictions_limit_cc: rampLimit.restrictions?.limit?.currency_code || null,
+        restrictions_next_interval_reset: rampLimit.restrictions?.next_interval_reset || null,
+        restrictions_start_of_interval: rampLimit.restrictions?.start_of_interval || null,
+        restrictions_temporary_limit_amt: rampLimit.restrictions?.temporary_limit?.amount || null,
+        restrictions_temporary_limit_cc: rampLimit.restrictions?.temporary_limit?.currency_code || null,
+        restrictions_transaction_amount_limit_amt: rampLimit.restrictions?.transaction_amount_limit?.amount || null,
+        restrictions_transaction_amount_limit_cc: rampLimit.restrictions?.transaction_amount_limit?.currency_code || null,
+        spend_program_id: rampLimit.spend_program_id,
+        state: rampLimit.state,
+        suspension_acting_user_id: rampLimit.suspension?.acting_user_id || null,
+        suspension_inserted_at: rampLimit.suspension?.inserted_at || null,
+        suspension_suspended_by_ramp: rampLimit?.suspension?.suspended_by_ramp || null,
+      }
+      await dbRamp.limit.upsert({
+        where: {id: limit.id},
+        update: limit,
+        create: limit,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+
+      if (rampLimit.cards) {
+        for (const rampLimitCard of rampLimit.cards) {
+          const limitCard: LimitCard = {
+            expiration: rampLimitCard.expiration,
+            is_ap_card: rampLimitCard.is_ap_card,
+            last_four: rampLimitCard.last_four,
+            via_new_product_or_service: rampLimitCard.via_new_product_or_service,
+            card_id: rampLimitCard.card_id,
+            limit_id: rampLimit.id,
+          }
+          await dbRamp.limitCard.upsert({
+            where: {
+              limit_id_card_id: {limit_id: rampLimit.id, card_id: rampLimitCard.card_id }
+            },
+            update: limitCard,
+            create: limitCard,
+          });
+        }
+      } else {
+        await dbRamp.limitCard.deleteMany({
+          where: {limit_id: limit.id}
+        });
+      }
+
+      if (rampLimit.users) {
+        for (const rampUserCard of rampLimit.users) {
+          if (rampUserCard.user_id === "87b97b1c-3329-4b65-a402-397f2dbe7d61") {
+            console.log("BAD USER ID", rampLimit);
+            continue;
+          }
+          const limitUser: LimitUser = {
+            limit_id: rampLimit.id,
+            user_id: rampUserCard.user_id,
+          }
+          await dbRamp.limitUser.upsert({
+            where: {
+              limit_id_user_id: {limit_id: rampLimit.id, user_id: rampUserCard.user_id }
+            },
+            update: limitUser,
+            create: limitUser,
+          });
+        }
+      } else {
+        await dbRamp.limitUser.deleteMany({
+          where: {limit_id: limit.id}
+        });
+      }
+
+    }
+
+    count++;
+    nextStart = result.model!.page?.next || null;
+
   }
-*/
 
-  console.log("Limits listed");
+  console.log("Limits refreshed:", count);
 
 }
 
 // TODO - only dumps a few, no storage yet
+/*
 export async function refreshTransactions(accessToken: string): Promise<void> {
 
   console.log("Fetching transactions...");
-  /*
+  /!*
     let count = 0;
     let nextStart: string | null = "";
     while (nextStart !== null) {
-  */
+  *!/
 
   const result = await fetchTransactions(
     accessToken,
@@ -201,13 +297,14 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
   // TODO - process and respect pagination
 
-  /*
+  /!*
     }
-  */
+  *!/
 
   console.log("Transactions listed");
 
 }
+*/
 
 export async function refreshUsers(accessToken: string): Promise<void> {
 
@@ -223,13 +320,13 @@ export async function refreshUsers(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-  //  console.log("fetchUsers result:", JSON.stringify(result, null, 2));
+    //  console.log("fetchUsers result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampUser of result.model!.data) {
-  //    console.log(`User ${rampUser.id}: ${rampUser.last_name}, ${rampUser.first_name}`);
+      //    console.log(`User ${rampUser.id}: ${rampUser.last_name}, ${rampUser.first_name}`);
       const user: User = {
         id: rampUser.id,
         email: rampUser.email,
