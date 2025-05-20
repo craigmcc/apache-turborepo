@@ -36,7 +36,6 @@ model Card {
   is_physical            Boolean?
   /// Last four digits of the Card number
   last_four              String
-  // TODO - Skipping spending_restrictions (TOFIX)
   /// Current state of this Card
   state                  CardState?
 
@@ -81,8 +80,11 @@ model CardSpendingRestrictions {
   /// Date to automatically lock the card (ISO 8601 format)
   /// NOTE: This is not the same as the card expiration date
   auto_lock_date           String?
-  // TODO - Skipping blocked_categories (Array of ints not supported)
-  // TODO - Skipping categories (Array of ints not supported)
+  /// Comma-separated list of blocked Ramp categories
+  blocked_categories       String?
+  /// Comma-separated list of allowed Ramp categories
+  categories               String?
+  /// Date/time this Spending Restrictions was created (ISO8601 format)
   interval                 CardSpendingLimitRestrictionsInterval?
   /// Whether this card has been locked
   suspended                Boolean?

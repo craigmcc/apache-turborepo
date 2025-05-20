@@ -97,6 +97,8 @@ export async function refreshCards(accessToken: string): Promise<void> {
           card_id: rampCard.id,
           amount: rampCard.spending_restrictions.amount || null,
           auto_lock_date: rampCard.spending_restrictions.auto_lock_date || null,
+          blocked_categories: rampCard.spending_restrictions.blocked_categories?.join(",") || null,
+          categories: rampCard.spending_restrictions.categories?.join(",") || null,
           interval: rampCard.spending_restrictions.interval || null,
           suspended: rampCard.spending_restrictions.suspended || null,
           transaction_amount_limit: rampCard.spending_restrictions.transaction_amount_limit || null,

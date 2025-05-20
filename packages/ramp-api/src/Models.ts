@@ -59,11 +59,9 @@ export type RampCardSpendingRestrictions = {
   // NOTE: This is not the same as the expiration date of the card.
   auto_lock_date: string | null;
   // The Ramp category codes blocked for this card
-  // as a comma-separated list of integers
-  // (NOT SUPPORTED IN SQLITE) blocked_categories: string | null;
-  // The Ramp category codes this card is restricted to
-  // as a comma-separated list of integers
-  // (NOT SUPPORTED IN SQLITE) categories: string | null;
+  blocked_categories: number[] | null;
+  // The Ramp category codes allowed for this card
+  categories: number[] | null;
   // The time interval that the spending restrictions apply to
   interval: RampCardSpendingRestrictionsInterval | null;
   // Whether this card has been locked
