@@ -11,6 +11,7 @@ import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
+import { fetchSpendPrograms } from "@repo/ramp-api/SpendProgramActions";
 //import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
@@ -21,6 +22,7 @@ import {
   Limit,
   LimitCard,
   LimitUser,
+  SpendProgram,
   User,
 } from "@repo/ramp-db/client";
 
@@ -269,6 +271,67 @@ export async function refreshLimits(accessToken: string): Promise<void> {
   }
 
   console.log("Limits refreshed:", count);
+
+}
+
+export async function refreshSpendProgramss(accessToken: string): Promise<void> {
+
+  console.log("Fetching spend programs...");
+  let count = 0;
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
+
+    const result = await fetchSpendPrograms(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+//    console.log("fetchSpendPrograms result:", JSON.stringify(result, null, 2));
+    if (result.error) {
+      throw result.error;
+    }
+
+    for (const rampSpendProgram of result.model!.data) {
+      console.log(`Limit ${rampSpendProgram.id}: ${rampSpendProgram.display_name}`);
+
+      const spendProgram: SpendProgram = {
+        id: rampSpendProgram.id,
+        description: rampSpendProgram.description,
+        display_name: rampSpendProgram.display_name,
+        is_shareable: rampSpendProgram.is_shareable,
+        issue_physical_card_if_needed: rampSpendProgram.issue_physical_card_if_needed,
+        permitted_primary_card_enabled: rampSpendProgram.permitted_spend_types?.primary_card_enabled || null,
+        permitted_reimbursements_enabled: rampSpendProgram.permitted_spend_types?.reimbursements_enabled || null,
+        restrictions_allowed_categories: rampSpendProgram.restrictions?.allowed_categories?.join(",")  || null,
+        restrictions_auto_lock_date: rampSpendProgram.restrictions?.auto_lock_date || null,
+        restrictions_blocked_categories: rampSpendProgram.restrictions?.blocked_categories?.join(",") || null,
+        restrictions_interval: rampSpendProgram.restrictions?.interval || null,
+        restrictions_limit_amt: rampSpendProgram.restrictions?.limit?.amount || null,
+        restrictions_limit_cc: rampSpendProgram.restrictions?.limit?.currency_code || null,
+        restrictions_next_interval_reset: rampSpendProgram.restrictions?.next_interval_reset || null,
+        restrictions_start_of_interval: rampSpendProgram.restrictions?.start_of_interval || null,
+        restrictions_temporary_limit_amt: rampSpendProgram.restrictions?.temporary_limit?.amount || null,
+        restrictions_temporary_limit_cc: rampSpendProgram.restrictions?.temporary_limit?.currency_code || null,
+        restrictions_transaction_amount_limit_amt: rampSpendProgram.restrictions?.transaction_amount_limit?.amount || null,
+        restrictions_transaction_amount_limit_cc: rampSpendProgram.restrictions?.transaction_amount_limit?.currency_code || null,
+      }
+      await dbRamp.limit.upsert({
+        where: {id: spendProgram.id},
+        update: spendProgram,
+        create: spendProgram,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+
+    }
+
+    count++;
+    nextStart = result.model!.page?.next || null;
+
+  }
+
+  console.log("Spend Programs refreshed:", count);
 
 }
 

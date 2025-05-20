@@ -14,6 +14,7 @@ import {
   refreshCards,
   refreshDepartments,
   refreshLimits,
+  refreshSpendProgramss,
 //  refreshTransactions,
   refreshUsers,
 } from "./Refreshers.js";
@@ -27,6 +28,7 @@ async function main() {
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
   await refreshCards(accessToken);
+  await refreshSpendProgramss(accessToken);
   await refreshLimits(accessToken);
 //  await refreshTransactions(accessToken);
 

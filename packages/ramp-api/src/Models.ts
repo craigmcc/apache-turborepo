@@ -364,6 +364,18 @@ export type RampLimitsResponse = {
 }
 
 /**
+ * The Ramp API response for a fetch spend programs request.
+ */
+export type RampSpendProgramsResponse = {
+  // The list of spend programs
+  data: RampSpendProgram[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
+}
+
+/**
  * Generic describing the result returned by a Ramp API call.
  * Either an error or a model object will be included, but not both.
  * The headers from the response are normally included.
