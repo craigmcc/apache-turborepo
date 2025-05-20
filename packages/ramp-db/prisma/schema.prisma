@@ -81,8 +81,8 @@ model CardSpendingRestrictions {
   /// Date to automatically lock the card (ISO 8601 format)
   /// NOTE: This is not the same as the card expiration date
   auto_lock_date           String?
-  /// Skipping blocked_categories (Array of ints not supported)
-  /// Skipping caegories (Array of ints not supported)
+  // TODO - Skipping blocked_categories (Array of ints not supported)
+  // TODO - Skipping categories (Array of ints not supported)
   interval                 CardSpendingLimitRestrictionsInterval?
   /// Whether this card has been locked
   suspended                Boolean?

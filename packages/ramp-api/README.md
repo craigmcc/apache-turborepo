@@ -50,6 +50,6 @@ async function getAccessToken(): string {
     if (!response.ok) {
         throw new Error('Failed to fetch access token');
     }
-    return response.model.access_token;
+    return response.model!.access_token;
 }
 ```

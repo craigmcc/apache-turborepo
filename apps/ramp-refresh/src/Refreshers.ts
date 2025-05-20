@@ -28,13 +28,25 @@ import {
 
 // Public Objects ------------------------------------------------------------
 
-export async function refreshAccessToken(): Promise<string> {
+const BAD_USER_IDS = [
+  "87b97b1c-3329-4b65-a402-397f2dbe7d61",
+];
+
+export type refreshAccessTokenResult = {
+  access_token: string;
+  scope: string;
+}
+
+export async function refreshAccessToken(): Promise<refreshAccessTokenResult> {
   console.log("Fetching access token...");
   const accessTokenResponse = await fetchAccessToken();
   if (accessTokenResponse.error) {
     throw accessTokenResponse.error;
   }
-  return accessTokenResponse.model!.access_token;
+  return {
+    access_token: accessTokenResponse.model!.access_token,
+    scope: accessTokenResponse.model!.scope,
+  };
 }
 
 export async function refreshCards(accessToken: string): Promise<void> {
@@ -173,7 +185,7 @@ export async function refreshLimits(accessToken: string): Promise<void> {
     }
 
     for (const rampLimit of result.model!.data) {
-      console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name}`);
+//      console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name}`);
 
       const limit: Limit = {
         id: rampLimit.id,
@@ -241,21 +253,21 @@ export async function refreshLimits(accessToken: string): Promise<void> {
 
       if (rampLimit.users) {
         for (const rampUserCard of rampLimit.users) {
-          if (rampUserCard.user_id === "87b97b1c-3329-4b65-a402-397f2dbe7d61") {
-            console.log("BAD USER ID", rampLimit);
-            continue;
+          if (BAD_USER_IDS.includes(rampUserCard.user_id)) {
+            console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(40)}: skipping bad user_id ${rampUserCard.user_id}`);
+          } else {
+            const limitUser: LimitUser = {
+              limit_id: rampLimit.id,
+              user_id: rampUserCard.user_id,
+            }
+            await dbRamp.limitUser.upsert({
+              where: {
+                limit_id_user_id: {limit_id: rampLimit.id, user_id: rampUserCard.user_id }
+              },
+              update: limitUser,
+              create: limitUser,
+            });
           }
-          const limitUser: LimitUser = {
-            limit_id: rampLimit.id,
-            user_id: rampUserCard.user_id,
-          }
-          await dbRamp.limitUser.upsert({
-            where: {
-              limit_id_user_id: {limit_id: rampLimit.id, user_id: rampUserCard.user_id }
-            },
-            update: limitUser,
-            create: limitUser,
-          });
         }
       } else {
         await dbRamp.limitUser.deleteMany({
@@ -263,9 +275,10 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         });
       }
 
+      count++;
+
     }
 
-    count++;
     nextStart = result.model!.page?.next || null;
 
   }
@@ -274,7 +287,7 @@ export async function refreshLimits(accessToken: string): Promise<void> {
 
 }
 
-export async function refreshSpendProgramss(accessToken: string): Promise<void> {
+export async function refreshSpendPrograms(accessToken: string): Promise<void> {
 
   console.log("Fetching spend programs...");
   let count = 0;
