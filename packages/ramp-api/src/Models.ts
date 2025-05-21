@@ -263,7 +263,7 @@ export type RampTransaction = {
   // Name of the Merchant
   merchant_name: string | null;
   // Original amount of the Transaction
-  original_amount: RampAmount | null;
+  original_transaction_amount: RampAmount | null;
   // Settlement date/time (ISO 8601 format) when funds transferred
   settlement_date: string | null;
   // Ramp category code
