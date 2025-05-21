@@ -340,7 +340,6 @@ model Transaction {
   amount_amt                      Int?
   /// Settled amount of the Transaction (currency_code)
   amount_cc                       String?
-  // TODO - skipping card_holder (TOFIX)
   /// Was the transaction processed using a card present terminal?
   card_present                    Boolean?
   /// Currency that the transaction settled in
@@ -377,32 +376,36 @@ model Transaction {
   sync_status                     TransactionSyncStatus
   /// Date/time this transaction was synced (ISO8601 format)
   synced_at                       String?
+  /// Trip name (if available)
+  trip_name                       String?
+  /// User transaction date/time
+  user_transaction_time           String?
 
   // Potential Relationships -------------------------------------------------
 
   /// Unique ID of the Entity that the Transaction belongs to
-  entity_id             String?
+  entity_id        String?
   /// Unique ID of the spend limit associated with the Transaction
-  limit_id              String?
+  limit_id         String?
   /// Unique ID of the Merchant that the Transaction belongs to
-  merchant_id           String?
+  merchant_id      String?
   /// Unique ID of the spend program from which this limit was issued
-  spend_program_id      String?
+  spend_program_id String?
   /// Statement ID of the Transaction (if available)
-  statement_id          String?
+  statement_id     String?
   /// Unique ID of the trip assocated with this Transaction
-  trip_id               String?
-  /// Trip name associated with this Transaction
-  trip_name             String?
-  /// User transaction time
-  user_transaction_time String?
+  trip_id          String?
 
   // Actual Relationships ----------------------------------------------------
 
   /// Card that this Transaction belongs to
-  card_id String
+  card_id             String?
   /// Card that this Transaction belongs to
-  card    Card?  @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  card                Card?   @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  /// User ID of the User that is the card holder of this Transaction
+  card_holder_user_id String?
+  /// User that is the card holder of this Transaction
+  card_holder_user    User?   @relation("UserTransaction", fields: [card_holder_user_id], references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }
@@ -465,9 +468,11 @@ model User {
   /// Unique ID of the Department that the User belongs to
   department_id String?
   /// Department that the User belongs to
-  department    Department? @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  department    Department?   @relation(fields: [department_id], references: [id], onDelete: Cascade)
   /// Limits this User belongs to
-  limit_users   LimitUser[] @relation("UserLimitUser")
+  limit_users   LimitUser[]   @relation("UserLimitUser")
+  /// Transactions this User is the cardholder for
+  transactions  Transaction[] @relation("UserTransaction")
 
   @@map("users")
 }

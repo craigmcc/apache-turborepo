@@ -235,7 +235,65 @@ export type RampTokenResponse = {
 /**
  * A Ramp Transaction object.  NOTE - this has not been codified yet, so it is just an object.
  */
-export type RampTransaction = object;
+export type RampTransaction = {
+  // Date/time of the Transaction (ISO 8601 format) for accounting purposes
+  accounting_date: string | null;
+  // Settled amount of the Transaction (amount)
+  amount: number | null;
+  // Unique ID of the CardHolder for this Transaction
+  card_holder_user_id: string | null;
+  // Unique ID of the Card for this Transaction
+  card_id: string | null;
+  // Was the Transaction processed using a card present terminal?
+  card_present: boolean | null;
+  // Settled amount of the Transaction (currency)
+  currency_code: string | null;
+  // Unique ID of the Entity that the Transaction belongs to
+  entity_id: string | null;
+  // Unique ID of the Spend Limit for this transaction
+  limit_id: string | null;
+  // Optional memo for this Transaction
+  memo: string | null;
+  /// Merchant category code (ISP 18245) classifying types of goods and services
+  merchant_category_code: string | null;
+  /// Description of the Merchant category code
+  merchant_category_code_description: string | null;
+  // Unique ID of the Merchant for this transaction
+  merchant_id: string | null;
+  // Name of the Merchant
+  merchant_name: string | null;
+  // Original amount of the Transaction
+  original_amount: RampAmount | null;
+  // Settlement date/time (ISO 8601 format) when funds transferred
+  settlement_date: string | null;
+  // Ramp category code
+  sk_category_id: number | null;
+  // Ramp category name
+  sk_category_name: string | null;
+  // Unique ID of the Spend Program for this Transaction
+  spend_program_id: string | null;
+  // Current state of this Transaction
+  state: TransactionState | null;
+  /// Unique ID of the Statement associated with this Transaction
+  statement_id: string | null;
+  // Status of synchronization for this transaction
+  sync_status: TransactionSyncStatus | null;
+  // Date/time the transaction was synced (ISO 8601 format)
+  synced_at: string | null;
+  // Unique ID of the Trip associated with this Transaction
+  trip_id: string | null;
+  // Name of the Trip for this Transaction
+  trip_name: string | null;
+  // Date/time the transaction was user created (ISO 8601 format)
+  user_transaction_time: string | null;
+};
+
+export type TransactionState =
+  "ALL" | "CLEARED" | "COMPLETION" | "DECLINED" |
+  "ERROR" | "PENDING" | "PENDING_INITIATION";
+
+export type TransactionSyncStatus =
+  "NOT_SYNC_READY" | "SYNCED" | "SYNC_READY";
 
 /**
  * A Ramp API User object.
