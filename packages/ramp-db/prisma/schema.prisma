@@ -340,6 +340,7 @@ model Transaction {
   amount_amt                      Int?
   /// Settled amount of the Transaction (currency_code)
   amount_cc                       String?
+  // TODO - skipping attendees
   /// Was the transaction processed using a card present terminal?
   card_present                    Boolean?
   /// Currency that the transaction settled in

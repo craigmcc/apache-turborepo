@@ -29,8 +29,9 @@ async function main() {
   console.log("Ramp Refresh started at ", new Date().toLocaleString());
   const result = await refreshAccessToken();
   const accessToken = result.access_token;
+  console.log("Requested Scope: ", process.env.RAMP_PROD_API_SCOPE);
+  console.log("Returned Scope:  ", result.scope);
   const scopes = result.scope.split(" ");
-//  console.log("Ramp Refresh access token scope: ", result.scope);
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
   await refreshCards(accessToken);

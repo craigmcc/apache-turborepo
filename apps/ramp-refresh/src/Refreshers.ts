@@ -39,6 +39,7 @@ export type refreshAccessTokenResult = {
 
 export async function refreshAccessToken(): Promise<refreshAccessTokenResult> {
   console.log("Fetching access token...");
+  console.log("Client ID: ", process.env.RAMP_PROD_API_CLIENT_ID);
   const accessTokenResponse = await fetchAccessToken();
   if (accessTokenResponse.error) {
     throw accessTokenResponse.error;

@@ -236,12 +236,16 @@ export type RampTokenResponse = {
  * A Ramp Transaction object.  NOTE - this has not been codified yet, so it is just an object.
  */
 export type RampTransaction = {
+  // Unique identifier of the Transaction
+  id: string;
   // Date/time of the Transaction (ISO 8601 format) for accounting purposes
   accounting_date: string | null;
+  // List of accounting fields selected to code the transaction
+  accounting_field_selections: TransactionAccountingFieldSelection[] | null;
   // Settled amount of the Transaction (amount)
   amount: number | null;
   // Unique ID of the CardHolder for this Transaction
-  card_holder_user_id: string | null;
+  card_holder: TransactionCardHolder | null;
   // Unique ID of the Card for this Transaction
   card_id: string | null;
   // Was the Transaction processed using a card present terminal?
@@ -252,6 +256,8 @@ export type RampTransaction = {
   entity_id: string | null;
   // Unique ID of the Spend Limit for this transaction
   limit_id: string | null;
+  // Line items for this transaction
+  line_items: TransactionLineItem[] | null;
   // Optional memo for this Transaction
   memo: string | null;
   /// Merchant category code (ISP 18245) classifying types of goods and services
@@ -287,6 +293,61 @@ export type RampTransaction = {
   // Date/time the transaction was user created (ISO 8601 format)
   user_transaction_time: string | null;
 };
+
+export type TransactionAccountingFieldCategoryInfo = {
+  // External ID of this option (should uniquely identify it on the ERP)
+  external_id: string | null;
+  // Unique ID of this accounting field (within Ramp)
+  id: string | null;
+  // Name of this accounting field option
+  name: string | null;
+  // Type of this accounting field
+  type: TransactionAccountingFieldType | null;
+}
+
+export type TransactionAccountingFieldSelection = {
+  // The accounting field category info this option belongs to
+  category_info: TransactionAccountingFieldCategoryInfo | null;
+  // External code of this option (displayed on the ERP)
+  external_code: string | null;
+  // External ID of this option (should uniquely identify it on the ERP)
+  external_id: string | null;
+  // Unique ID of an accounting field (within Ramp)
+  id: string | null;
+  // Name of this accounting field option
+  name: string | null;
+  // Source of this accounting field option
+  source: {
+    type: string | null;
+  } | null;
+  // Accounting field type
+  type: TransactionAccountingFieldType | null;
+};
+
+export type TransactionCardHolder = {
+  department_id: string | null;
+  department_name: string | null;
+  employee_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  location_id: string | null;
+  location_name: string | null;
+  user_id: string | null;
+}
+
+export type TransactionLineItem = {
+  amount: RampAmount | null;
+  converted_amount: RampAmount | null;
+  // Accounting Field Selections relevant to this line item
+  accounting_field_selections: TransactionAccountingFieldSelection[] | null;
+  memo: string | null;
+}
+
+export type TransactionAccountingFieldType =
+  "AMORTIZATION_TEMPLATE" | "BILLABLE" | "COST_CENTER" | "CUSTOMERS_JOBS" |
+  "DEFERRAL_CODE" | "EXPENSE_ENTITY" | "GL_ACCOUNT" | "INVENTORY_ITEM" |
+  "JOURNAL" | "MERCHANT" | "OTHER" | "PROJECT" | "REPORTING_TAG" |
+  "SUBSIDIARY" | "TAX_CODE";
 
 export type TransactionState =
   "ALL" | "CLEARED" | "COMPLETION" | "DECLINED" |
