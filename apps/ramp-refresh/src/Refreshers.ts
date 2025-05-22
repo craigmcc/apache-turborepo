@@ -12,7 +12,7 @@ import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
 import { fetchSpendPrograms } from "@repo/ramp-api/SpendProgramActions";
-import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
+//import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
@@ -23,7 +23,7 @@ import {
   LimitCard,
   LimitUser,
   SpendProgram,
-  Transaction,
+//  Transaction,
   User,
 } from "@repo/ramp-db/client";
 
@@ -354,7 +354,7 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
 
 export async function refreshTransactions(accessToken: string): Promise<void> {
 
-  console.log("Fetching transactions... not implemented yet");
+  console.log("Fetching transactions... not implemented yet", accessToken);
   return;
 /*
   let count = 0;
