@@ -272,8 +272,8 @@ export type RampTransaction = {
   original_transaction_amount: RampAmount | null;
   // Settlement date/time (ISO 8601 format) when funds transferred
   settlement_date: string | null;
-  // Ramp category code
-  sk_category_id: number | null;
+  // Ramp category code(s) - comma delimited list
+  sk_category_id: string | null;
   // Ramp category name
   sk_category_name: string | null;
   // Unique ID of the Spend Program for this Transaction
@@ -283,7 +283,7 @@ export type RampTransaction = {
   /// Unique ID of the Statement associated with this Transaction
   statement_id: string | null;
   // Status of synchronization for this transaction
-  sync_status: TransactionSyncStatus | null;
+  sync_status: TransactionSyncStatus;
   // Date/time the transaction was synced (ISO 8601 format)
   synced_at: string | null;
   // Unique ID of the Trip associated with this Transaction

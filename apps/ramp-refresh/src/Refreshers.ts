@@ -12,7 +12,7 @@ import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
 import { fetchSpendPrograms } from "@repo/ramp-api/SpendProgramActions";
-//import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
+import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
@@ -23,6 +23,7 @@ import {
   LimitCard,
   LimitUser,
   SpendProgram,
+  Transaction,
   User,
 } from "@repo/ramp-db/client";
 
@@ -351,39 +352,87 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
 
 }
 
-// TODO - only dumps a few, no storage yet
-/*
 export async function refreshTransactions(accessToken: string): Promise<void> {
 
-  console.log("Fetching transactions...");
-  /!*
-    let count = 0;
-    let nextStart: string | null = "";
-    while (nextStart !== null) {
-  *!/
+  console.log("Fetching transactions... not implemented yet");
+  return;
+/*
+  let count = 0;
+  let nextStart: string | null = "";
+  while (nextStart !== null) {
 
-  const result = await fetchTransactions(
-    accessToken,
-    {
-      page_size: 10,
-//        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+    const result = await fetchTransactions(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
     }
-  );
-  console.log("fetchTransactions result:", JSON.stringify(result, null, 2));
-  if (result.error) {
-    throw result.error;
+
+    for (const rampTransaction of result.model!.data) {
+      if (count > 5) { // TODO
+        break;
+      }
+      console.log(`Transaction ${count+1}:`,  `${JSON.stringify(rampTransaction, null, 2)}`);
+
+      const transaction: Transaction = {
+        id: rampTransaction.id,
+        accounting_date: rampTransaction.accounting_date,
+        amount_amt: rampTransaction.amount ? rampTransaction.amount * 100 : null,
+        amount_cc: rampTransaction.currency_code,
+        card_id: rampTransaction.card_id,
+        card_holder_user_id: rampTransaction.card_holder?.user_id
+          ? rampTransaction.card_holder.user_id
+          : null,
+        card_present: rampTransaction.card_present,
+        currency_code: rampTransaction.currency_code, // TODO - redundant to amount_cc
+        entity_id: rampTransaction.entity_id,
+        limit_id: rampTransaction.limit_id,
+        memo: rampTransaction.memo,
+        merchant_category_code: rampTransaction.merchant_category_code,
+        merchant_category_description: rampTransaction.merchant_category_code_description,
+        merchant_id: rampTransaction.merchant_id,
+        merchant_name: rampTransaction.merchant_name,
+        original_transaction_amount_amt: rampTransaction.original_transaction_amount?.amount
+          ? rampTransaction.original_transaction_amount.amount
+          : null,
+        original_transaction_amount_cc: rampTransaction.original_transaction_amount?.currency_code
+          ? rampTransaction.original_transaction_amount.currency_code
+          : null,
+        settlement_date: rampTransaction.settlement_date,
+        sk_category_id: rampTransaction.sk_category_id?.toString() || null, // TODO - type???
+        sk_category_name: rampTransaction.sk_category_name,
+        spend_program_id: rampTransaction.spend_program_id,
+        state: rampTransaction.state,
+        statement_id: rampTransaction.statement_id,
+        sync_status: rampTransaction.sync_status || "NOT_SYNC_READY", // TODO
+        synced_at: rampTransaction.synced_at,
+        trip_id: rampTransaction.trip_id,
+        trip_name: rampTransaction.trip_name,
+        user_transaction_time: rampTransaction.user_transaction_time,
+      }
+      await dbRamp.transaction.upsert({
+        where: {id: transaction.id},
+        update: transaction,
+        create: transaction,
+      });
+      // Any error thrown by Prisma will be forwarded back to the caller
+
+    }
+
+    count++;
+    nextStart = result.model!.page?.next || null;
+
   }
 
-  // TODO - process and respect pagination
-
-  /!*
-    }
-  *!/
-
-  console.log("Transactions listed");
+  console.log("Transactions refreshed:", count);
+*/
 
 }
-*/
+
 
 export async function refreshUsers(accessToken: string): Promise<void> {
 

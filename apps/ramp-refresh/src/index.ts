@@ -15,7 +15,7 @@ import {
   refreshDepartments,
   refreshLimits,
   refreshSpendPrograms,
-//  refreshTransactions,
+  refreshTransactions,
   refreshUsers,
 } from "./Refreshers.js";
 
@@ -45,7 +45,7 @@ async function main() {
   } else {
     console.log(`Fetching spend programs...skipped, scope '${LIMITS_READ_SCOPE}' not found`);
   }
-//  await refreshTransactions(accessToken);
+  await refreshTransactions(accessToken);
 
 }
 
