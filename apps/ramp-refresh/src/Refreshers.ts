@@ -11,8 +11,8 @@ import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
-import { fetchSpendPrograms } from "@repo/ramp-api/SpendProgramActions";
-//import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
+import { fetchSpendPrograms } from "@repo/ramp-api/SpendProgramActions"
+import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
@@ -23,15 +23,11 @@ import {
   LimitCard,
   LimitUser,
   SpendProgram,
-//  Transaction,
+  Transaction,
   User,
 } from "@repo/ramp-db/client";
 
 // Public Objects ------------------------------------------------------------
-
-const BAD_USER_IDS = [
-  "87b97b1c-3329-4b65-a402-397f2dbe7d61",
-];
 
 export type refreshAccessTokenResult = {
   access_token: string;
@@ -56,11 +52,13 @@ export async function refreshCards(accessToken: string): Promise<void> {
   console.log("Fetching cards...");
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
     const result = await fetchCards(
       accessToken,
       {
+        is_activated: false,
         page_size: 100,
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
@@ -71,7 +69,8 @@ export async function refreshCards(accessToken: string): Promise<void> {
     }
 
     for (const rampCard of result.model!.data) {
-//      console.log("Processing Card", JSON.stringify(rampCard, null, 2));
+
+      //      console.log("Processing Card", JSON.stringify(rampCard, null, 2));
 
       const card: Card = {
         id: rampCard.id,
@@ -87,12 +86,12 @@ export async function refreshCards(accessToken: string): Promise<void> {
         entity_id: rampCard.entity_id,
         cardholder_id: rampCard.cardholder_id,
       }
+//      console.log(`Upserting Card ${count+1}`, JSON.stringify(card, null, 2));
       await dbRamp.card.upsert({
         where: {id: card.id},
         update: card,
         create: card,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
 
       if (rampCard.spending_restrictions) {
         const cardSpendingRestrictions: CardSpendingRestrictions = {
@@ -105,6 +104,7 @@ export async function refreshCards(accessToken: string): Promise<void> {
           suspended: rampCard.spending_restrictions.suspended || null,
           transaction_amount_limit: rampCard.spending_restrictions.transaction_amount_limit || null,
         }
+//        console.log(`Upserting CardSpendingRestrictions ${count+1}`, JSON.stringify(cardSpendingRestrictions, null, 2));
         await dbRamp.cardSpendingRestrictions.upsert({
           where: {card_id: cardSpendingRestrictions.card_id},
           update: cardSpendingRestrictions,
@@ -115,15 +115,16 @@ export async function refreshCards(accessToken: string): Promise<void> {
           where: {card_id: card.id}
         });
       }
-      // Any error thrown by Prisma will be forwarded back to the caller
 
       count++;
-      nextStart = result.model!.page?.next || null;
+
     }
 
-    console.log("Cards refreshed:", count);
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
+
+  console.log("Cards refreshed:", count);
 
 }
 
@@ -132,6 +133,7 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
   console.log("Fetching departments...");
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
     const result = await fetchDepartments(
@@ -147,33 +149,40 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
     }
 
     for (const rampDepartment of result.model!.data) {
-//      console.log(`Department ${rampDepartment.id}: ${rampDepartment.name}`);
+
+      //      console.log(`Department ${rampDepartment.id}: ${rampDepartment.name}`);
+
       const department: Department = {
         // id: rampDepartment.id,
         // name: rampDepartment.name,
         ...rampDepartment
       }
+//      console.log(`Upserting Department ${count+1}`, JSON.stringify(department, null, 2));
       await dbRamp.department.upsert({
         where: {id: department.id},
         update: department,
         create: department,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
+
       count++;
-      nextStart = result.model!.page?.next || null;
+
     }
 
-    console.log("Departments refreshed:", count);
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
+
+  console.log("Departments refreshed:", count);
 
 }
 
 export async function refreshLimits(accessToken: string): Promise<void> {
 
   console.log("Fetching limits...");
+  const userIds = await fetchUserIds(accessToken);
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
     const result = await fetchLimits(
@@ -183,13 +192,11 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-//    console.log("fetchLimits result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampLimit of result.model!.data) {
-//      console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name}`);
 
       const limit: Limit = {
         id: rampLimit.id,
@@ -224,12 +231,12 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         suspension_inserted_at: rampLimit.suspension?.inserted_at || null,
         suspension_suspended_by_ramp: rampLimit?.suspension?.suspended_by_ramp || null,
       }
+//      console.log(`Upserting Limit ${count+1}, JSON.stringify(limit, null, 2));
       await dbRamp.limit.upsert({
         where: {id: limit.id},
         update: limit,
         create: limit,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
 
       if (rampLimit.cards) {
         for (const rampLimitCard of rampLimit.cards) {
@@ -241,6 +248,7 @@ export async function refreshLimits(accessToken: string): Promise<void> {
             card_id: rampLimitCard.card_id,
             limit_id: rampLimit.id,
           }
+//          console.log(`Upserting LimitCard ${count+1}`, JSON.stringify(limitCard, null, 2));
           await dbRamp.limitCard.upsert({
             where: {
               limit_id_card_id: {limit_id: rampLimit.id, card_id: rampLimitCard.card_id }
@@ -257,13 +265,14 @@ export async function refreshLimits(accessToken: string): Promise<void> {
 
       if (rampLimit.users) {
         for (const rampUserCard of rampLimit.users) {
-          if (BAD_USER_IDS.includes(rampUserCard.user_id)) {
-            console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(40)}: skipping bad user_id ${rampUserCard.user_id}`);
+          if (rampUserCard.user_id && !userIds.has(rampUserCard.user_id)) {
+            console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(30)}: skipping bad user_id ${rampUserCard.user_id}`);
           } else {
             const limitUser: LimitUser = {
               limit_id: rampLimit.id,
               user_id: rampUserCard.user_id,
             }
+//            console.log(`Upserting LimitUser ${count+1}`, JSON.stringify(limitUser, null, 2));
             await dbRamp.limitUser.upsert({
               where: {
                 limit_id_user_id: {limit_id: rampLimit.id, user_id: rampUserCard.user_id }
@@ -283,7 +292,7 @@ export async function refreshLimits(accessToken: string): Promise<void> {
 
     }
 
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
 
@@ -296,6 +305,7 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
   console.log("Fetching spend programs...");
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
     const result = await fetchSpendPrograms(
@@ -305,13 +315,11 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-//    console.log("fetchSpendPrograms result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampSpendProgram of result.model!.data) {
-      console.log(`Limit ${rampSpendProgram.id}: ${rampSpendProgram.display_name}`);
 
       const spendProgram: SpendProgram = {
         id: rampSpendProgram.id,
@@ -334,17 +342,18 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
         restrictions_transaction_amount_limit_amt: rampSpendProgram.restrictions?.transaction_amount_limit?.amount || null,
         restrictions_transaction_amount_limit_cc: rampSpendProgram.restrictions?.transaction_amount_limit?.currency_code || null,
       }
+
+      console.log(`Upserting SpendProgram ${count + 1}`, JSON.stringify(spendProgram, null, 2));
       await dbRamp.limit.upsert({
         where: {id: spendProgram.id},
         update: spendProgram,
         create: spendProgram,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
 
+      count++;
     }
 
-    count++;
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
 
@@ -354,13 +363,15 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
 
 export async function refreshTransactions(accessToken: string): Promise<void> {
 
-  console.log("Fetching transactions... not implemented yet", accessToken);
-  return;
-/*
+  console.log("Fetching transactions...");
+  const cardIds = await fetchCardIds(accessToken);
+  const userIds = await fetchUserIds(accessToken);
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
+    console.log("Next Start:", nextStart);
     const result = await fetchTransactions(
       accessToken,
       {
@@ -371,12 +382,9 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
     if (result.error) {
       throw result.error;
     }
+    console.log(`Retrieved ${result.model!.data.length} transactions`);
 
     for (const rampTransaction of result.model!.data) {
-      if (count > 5) { // TODO
-        break;
-      }
-      console.log(`Transaction ${count+1}:`,  `${JSON.stringify(rampTransaction, null, 2)}`);
 
       const transaction: Transaction = {
         id: rampTransaction.id,
@@ -414,22 +422,31 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
         trip_name: rampTransaction.trip_name,
         user_transaction_time: rampTransaction.user_transaction_time,
       }
+      if (transaction.card_id && !cardIds.has(transaction.card_id)) {
+        console.log(`Transaction ${transaction.id}: skipping bad card_id ${transaction.card_id}`);
+        continue;
+      }
+      if (transaction.card_holder_user_id && !userIds.has(transaction.card_holder_user_id)) {
+        console.log(`Transaction ${transaction.id}: skipping bad card_holder_user_id ${transaction.card_holder_user_id}`);
+        continue;
+      }
+
+//      console.log(`Upserting Transaction ${count + 1}`, JSON.stringify(transaction, null, 2));
       await dbRamp.transaction.upsert({
         where: {id: transaction.id},
         update: transaction,
         create: transaction,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
+
+      count++;
 
     }
 
-    count++;
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
 
   console.log("Transactions refreshed:", count);
-*/
 
 }
 
@@ -439,6 +456,7 @@ export async function refreshUsers(accessToken: string): Promise<void> {
   console.log("Fetching users...");
   let count = 0;
   let nextStart: string | null = "";
+
   while (nextStart !== null) {
 
     const result = await fetchUsers(
@@ -448,13 +466,12 @@ export async function refreshUsers(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-    //  console.log("fetchUsers result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampUser of result.model!.data) {
-      //    console.log(`User ${rampUser.id}: ${rampUser.last_name}, ${rampUser.first_name}`);
+
       const user: User = {
         id: rampUser.id,
         email: rampUser.email,
@@ -470,18 +487,89 @@ export async function refreshUsers(accessToken: string): Promise<void> {
         status: rampUser.status,
         department_id: rampUser.department_id,
       }
+
+//       console.log(`Upserting User ${count + 1}`, JSON.stringify(user, null, 2));
       await dbRamp.user.upsert({
         where: {id: user.id},
         update: user,
         create: user,
       });
-      // Any error thrown by Prisma will be forwarded back to the caller
+
       count++;
-      nextStart = result.model!.page?.next || null;
+
     }
 
-    console.log("Users refreshed:", count);
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
 
   }
 
+  console.log("Users refreshed:", count);
+
+}
+
+// Private Objects -----------------------------------------------------------
+
+function extractNextPaginationId(nextPageUrl: string | null): string | null {
+  if (!nextPageUrl) {
+    return null;
+  }
+  const url = new URL(nextPageUrl);
+  const params = new URLSearchParams(url.search);
+  const nextStart = params.get("start");
+  if (nextStart) {
+    return nextStart;
+  } else {
+    throw new Error(`No 'start' parameter found in URL: ${nextPageUrl}`);
+  }
+}
+
+async function fetchCardIds(accessToken: string): Promise<Set<string>> {
+
+  const cardIds: Set<string> = new Set();
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+    const result = await fetchCards(
+      accessToken,
+      {
+        is_activated: false,
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+    for (const rampCard of result.model!.data) {
+      cardIds.add(rampCard.id);
+    }
+    nextStart = result.model!.page?.next || null;
+  }
+
+  return cardIds;
+}
+
+async function fetchUserIds(accessToken: string): Promise<Set<string>> {
+
+  const userIds: Set<string> = new Set();
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+    const result = await fetchUsers(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+    for (const rampUser of result.model!.data) {
+      userIds.add(rampUser.id);
+    }
+    nextStart = result.model!.page?.next || null;
+  }
+
+  return userIds;
 }

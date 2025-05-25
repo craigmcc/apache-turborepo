@@ -23,6 +23,7 @@ import {
 
 const LIMITS_READ_SCOPE = "limits:read";
 const SPEND_PROGRAMS_READ_SCOPE = "spend_programs:read";
+const TRANSACTIONS_READ_SCOPE = "transactions:read";
 
 async function main() {
 
@@ -45,7 +46,12 @@ async function main() {
   } else {
     console.log(`Fetching spend programs...skipped, scope '${LIMITS_READ_SCOPE}' not found`);
   }
-  await refreshTransactions(accessToken);
+  if (scopes.includes(TRANSACTIONS_READ_SCOPE)) {
+    await refreshTransactions(accessToken);
+  } else {
+    console.log(`Fetching transactions...skipped, scope '${TRANSACTIONS_READ_SCOPE}' not found`);
+  }
+  console.log("Done with refreshing data")
 
 }
 
@@ -56,5 +62,5 @@ main()
     console.log("Ramp Refresh finished at ", new Date().toLocaleString());
   })
   .catch((error) => {
-    console.error("Error in Ramp Refresh:", error);
+    console.error("Error in Ramp Refresh:", JSON.stringify(error, null, 2));
   });
