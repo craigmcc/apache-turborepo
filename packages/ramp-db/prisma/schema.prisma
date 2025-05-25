@@ -507,3 +507,15 @@ enum UserStatus {
   USER_ONBOARDING
   USER_SUSPENDED
 }
+
+// Violations of Foreign Key Constraints -------------------------------------
+// (Recorded during a refresh)
+model Violation {
+  from_model String
+  from_id    String
+  to_model   String
+  to_id      String
+
+  @@id([from_model, from_id, to_model, to_id])
+  @@map("violations")
+}

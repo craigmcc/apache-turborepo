@@ -10,6 +10,7 @@
 // Internal Modules -----------------------------------------------------------
 
 import {
+  eraseViolations,
   refreshAccessToken,
   refreshCards,
   refreshDepartments,
@@ -33,6 +34,7 @@ async function main() {
   console.log("Requested Scopes: ", process.env.RAMP_PROD_API_SCOPE);
   console.log("Returned Scopes:  ", result.scope);
   const scopes = result.scope.split(" ");
+  await eraseViolations();
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
   await refreshCards(accessToken);

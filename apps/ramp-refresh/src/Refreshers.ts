@@ -25,6 +25,7 @@ import {
   SpendProgram,
   Transaction,
   User,
+  Violation
 } from "@repo/ramp-db/client";
 
 // Public Objects ------------------------------------------------------------
@@ -34,9 +35,13 @@ export type refreshAccessTokenResult = {
   scope: string;
 }
 
+export async function eraseViolations(): Promise<void> {
+  console.log("Erasing violations...");
+  await dbRamp.violation.deleteMany({});
+}
+
 export async function refreshAccessToken(): Promise<refreshAccessTokenResult> {
   console.log("Fetching access token...");
-  console.log("Client ID: ", process.env.RAMP_PROD_API_CLIENT_ID);
   const accessTokenResponse = await fetchAccessToken();
   if (accessTokenResponse.error) {
     throw accessTokenResponse.error;
@@ -267,6 +272,7 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         for (const rampUserCard of rampLimit.users) {
           if (rampUserCard.user_id && !userIds.has(rampUserCard.user_id)) {
             console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(30)}: skipping bad user_id ${rampUserCard.user_id}`);
+            await recordViolation("Limit", rampLimit.id, "User", rampUserCard.user_id);
           } else {
             const limitUser: LimitUser = {
               limit_id: rampLimit.id,
@@ -424,10 +430,12 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
       }
       if (transaction.card_id && !cardIds.has(transaction.card_id)) {
         console.log(`Transaction ${transaction.id}: skipping bad card_id ${transaction.card_id}`);
+        await recordViolation("Transaction", transaction.id, "Card", transaction.card_id);
         continue;
       }
       if (transaction.card_holder_user_id && !userIds.has(transaction.card_holder_user_id)) {
         console.log(`Transaction ${transaction.id}: skipping bad card_holder_user_id ${transaction.card_holder_user_id}`);
+        await recordViolation("Transaction", transaction.id, "User", transaction.card_holder_user_id);
         continue;
       }
 
@@ -573,3 +581,31 @@ async function fetchUserIds(accessToken: string): Promise<Set<string>> {
 
   return userIds;
 }
+
+async function recordViolation(
+  from_model: string,
+  from_id: string,
+  to_model: string,
+  to_id: string,
+): Promise<void> {
+
+  const violation: Violation = {
+    from_model: from_model,
+    from_id: from_id,
+    to_model: to_model,
+    to_id: to_id,
+  }
+  await dbRamp.violation.upsert({
+    where: {
+      from_model_from_id_to_model_to_id: {
+        from_model: violation.from_model,
+        from_id: violation.from_id,
+        to_model: violation.to_model,
+        to_id: violation.to_id,
+      }
+    },
+    update: violation,
+    create: violation,
+  });
+}
+
