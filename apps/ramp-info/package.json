@@ -14,13 +14,13 @@
   "version": "0.1.0",
   "dependencies": {
     "@repo/shared-utils": "workspace:*",
-    "bootstrap": "catalog:bootstrap",
+    "bootstrap": "catalog:bootstrap5",
     "clsx": "catalog:clsx",
     "lucide-react": "catalog:lucide-react",
     "next": "catalog:next15",
     "pino": "catalog:pino",
     "react": "catalog:react19",
-    "react-bootstrap": "catalog:bootstrap",
+    "react-bootstrap": "catalog:bootstrap5",
     "react-bootstrap-toasts": "^0.2.0",
     "react-dom": "catalog:react19",
     "zod": "catalog:zod"

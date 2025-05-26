@@ -33,7 +33,7 @@
     "dev": {
       "cache": false,
       "dependsOn": [
-        "^db-ramp:generate"
+        "^ramp-db:generate"
       ],
       "env": [
         "DATABASE_URL",
