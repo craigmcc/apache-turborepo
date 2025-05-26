@@ -15,9 +15,9 @@
   "version": "0.0.0",
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "prisma": "^6.7.0"
+    "prisma": "catalog:prisma6"
   },
   "dependencies": {
-    "@prisma/client": "^6.7.0"
+    "@prisma/client": "catalog:prisma6"
   }
 }

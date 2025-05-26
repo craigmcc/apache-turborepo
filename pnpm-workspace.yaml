@@ -27,6 +27,9 @@ catalogs:
     node: "^22.16.0"
   pino:
     pino: "^9.7.0"
+  prisma6:
+    "@prisma/client": "^6.8.2"
+    prisma: "^6.8.2"
   react19:
     "@types/react": "^19.1.5"
     "@types/react-dom": "^19.1.5"
