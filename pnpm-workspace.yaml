@@ -4,6 +4,8 @@ catalogs:
     react-bootstrap: "^2.10.10"
   clsx:
     clsx: "^2.1.1"
+  date-fns:
+    date-fns: "^4.1.0"
   dotenvx:
     "@dotenvx/dotenvx": "^1.44.1"
   eslint:
