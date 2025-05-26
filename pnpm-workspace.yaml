@@ -16,6 +16,7 @@ catalogs:
   jest29:
     "@types/jest": "^29.5.14"
     jest: "^29.7.0"
+    jest-environment-jsdom: "^29.7.0"
     ts-jest: "^29.3.4"
   lucide-react:
     lucide-react: "^0.511.0"
