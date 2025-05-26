@@ -5,7 +5,7 @@ catalogs:
   clsx:
     clsx: "^2.1.1"
   dotenvx:
-    "@/dotenvx/dotenvx": "^1.44.1"
+    "@dotenvx/dotenvx": "^1.44.1"
   eslint:
     "@eslint/eslintrc": "^3.3.1"
     eslint: "^9.27.0"
