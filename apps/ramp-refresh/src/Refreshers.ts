@@ -28,6 +28,8 @@ import {
   Violation
 } from "@repo/ramp-db/client";
 
+const UNKNOWN_CARD_ID_REPLACEMENT = "f6d3437d-a174-4e76-8340-4c7f0a9def0d";
+
 // Public Objects ------------------------------------------------------------
 
 export type refreshAccessTokenResult = {
@@ -429,9 +431,9 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
         user_transaction_time: rampTransaction.user_transaction_time,
       }
       if (transaction.card_id && !cardIds.has(transaction.card_id)) {
-        console.log(`Transaction ${transaction.id}: skipping bad card_id ${transaction.card_id}`);
+        console.log(`Transaction ${transaction.id}: replacing bad card_id ${transaction.card_id}`);
         await recordViolation("Transaction", transaction.id, "Card", transaction.card_id);
-        continue;
+        transaction.card_id = UNKNOWN_CARD_ID_REPLACEMENT;
       }
       if (transaction.card_holder_user_id && !userIds.has(transaction.card_holder_user_id)) {
         console.log(`Transaction ${transaction.id}: skipping bad card_holder_user_id ${transaction.card_holder_user_id}`);
