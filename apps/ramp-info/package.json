@@ -14,28 +14,28 @@
   "version": "0.1.0",
   "dependencies": {
     "@repo/shared-utils": "workspace:*",
-    "bootstrap": "^5.3.6",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.509.0",
-    "next": "15.3.2",
-    "pino": "^9.6.0",
-    "react": "^19.0.0",
-    "react-bootstrap": "^2.10.9",
+    "bootstrap": "catalog:bootstrap",
+    "clsx": "catalog:clsx",
+    "lucide-react": "catalog:lucide-react",
+    "next": "catalog:next15",
+    "pino": "catalog:pino",
+    "react": "catalog:react19",
+    "react-bootstrap": "catalog:bootstrap",
     "react-bootstrap-toasts": "^0.2.0",
-    "react-dom": "^19.0.0",
-    "zod": "^3.24.4"
+    "react-dom": "catalog:react19",
+    "zod": "catalog:zod"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "catalog:eslint",
     "@repo/jest-presets": "workspace:*",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.2",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.3.2",
-    "typescript": "^5"
+    "@types/jest": "catalog:jest29",
+    "@types/node": "catalog:node22",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "eslint": "catalog:eslint",
+    "eslint-config-next": "catalog:eslint",
+    "jest": "catalog:jest29",
+    "ts-jest": "catalog:jest29",
+    "typescript": "catalog:typescript5"
   }
 }
