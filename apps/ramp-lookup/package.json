@@ -16,6 +16,7 @@
   "dependencies": {
     "@repo/ramp-db": "workspace:*",
     "@repo/shared-utils": "workspace:*",
+    "@uidotdev/usehooks": "catalog:uidotdev",
     "bootstrap": "catalog:bootstrap5",
     "clsx": "catalog:clsx",
     "lucide-react": "catalog:lucide-react",
