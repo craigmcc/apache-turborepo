@@ -4,8 +4,6 @@
   "compilerOptions": {
     "allowJs": true,
     "jsx": "preserve",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "noEmit": false
   }
 }

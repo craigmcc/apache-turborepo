@@ -12,8 +12,10 @@
     "ramp-db:generate" : "prisma generate",
     "ramp-db:migrate": "prisma migrate dev --skip-generate"
   },
+  "type": "module",
   "version": "0.0.0",
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "prisma": "catalog:prisma6"
   },

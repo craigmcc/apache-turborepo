@@ -1,7 +1,7 @@
 {
   "exports": {
     "./base": "./base.js",
-    "./next-js": "./next.js",
+    "./nextjs": "./nextjs.js",
     "./node": "./node.js",
     "./react-internal": "./react-internal.js"
   },

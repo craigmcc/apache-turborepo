@@ -1,6 +1,6 @@
 {
   "exports": {
-    "./*": ".src/*.ts"
+    "./*": "./dist/index.js"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
@@ -16,6 +16,7 @@
     "test": "jest --watch",
     "test:ci": "jest"
   },
+  "type": "module",
   "version": "0.0.0",
   "dependencies": {
     "date-fns": "catalog:date-fns"
