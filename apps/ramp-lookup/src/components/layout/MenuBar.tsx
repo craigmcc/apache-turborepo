@@ -36,13 +36,11 @@ export function MenuBar() {
   }
 
   return (
-    <Container className="bg-light" fluid>
+    <Container className="bg-info-subtle" fluid>
       <Row className="my-2">
         <Col className="mt-1">
-          <Link href="/">
             <Images className="pe-2" size={38}/>
             RAMP Lookup
-          </Link>
         </Col>
         <Col className="w-100">
           <Tabs
