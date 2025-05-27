@@ -6,7 +6,9 @@
 
 // External Imports ----------------------------------------------------------
 
+//import { useLocalStorage } from "@uidotdev/usehooks";
 import { Images } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import Col from "react-bootstrap/Col";
@@ -21,7 +23,17 @@ import Tabs from "react-bootstrap/Tabs";
 
 export function MenuBar() {
 
-  const [key, setKey] = useState<string | null>(null);
+//  const [key, setKey] = useLocalStorage<string>(LOCAL_STORAGE_KEY, "Home");
+  const [key, setKey] = useState<string>("Home");
+
+  const router = useRouter();
+
+  function handleSelect(eventKey: string | null) {
+    const actualKey = eventKey ? eventKey : "Home";
+    setKey(actualKey);
+    const path = KEY_PAGE_MAPPINGS.get(actualKey) || "/";
+    router.push(path);
+  }
 
   return (
     <Container className="bg-light" fluid>
@@ -37,29 +49,39 @@ export function MenuBar() {
             activeKey={key ? key : undefined}
             fill
             id="ramp-lookup-tabs"
-            onSelect={(k) => setKey(k)}
+            onSelect={(k) => handleSelect(k)}
           >
+            <Tab
+              eventKey="Home"
+              title="Home"
+            />
             <Tab
               eventKey="Departments"
               title="Departments"
-            >
-              TODO - redirect to departments page
-            </Tab>
+            />
             <Tab
               eventKey="Users"
               title="Users"
-            >
-              TODO - redirect to users page
-            </Tab>
+            />
             <Tab
               eventKey="Cards"
               title="Cards"
-            >
-              TODO - redirect to cards page
-            </Tab>
-            </Tabs>
+            />
+          </Tabs>
         </Col>
       </Row>
     </Container>
   );
 }
+
+// Private Objects -----------------------------------------------------------
+
+const LOCAL_STORAGE_KEY = "ramp-lookup.SelectedTab";
+
+const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
+  ["Home", "/"],
+  ["Cards", "/cards"],
+  ["Departments", "/departments"],
+  ["Users", "/users"],
+]);
+

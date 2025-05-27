@@ -10,7 +10,7 @@ import Container from 'react-bootstrap/Container';
 
 // Public Objects ------------------------------------------------------------
 
-export default function RootPage() {
+export default function HomePage() {
   return (
     <Container className="p-3">
       <Container className="p-2 mb-4 bg-light rounded-3">
