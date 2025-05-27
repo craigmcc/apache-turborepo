@@ -7,7 +7,6 @@
 // External Imports ----------------------------------------------------------
 
 import { Images } from "lucide-react";
-import React from "react";
 
 // Internal Imports ----------------------------------------------------------
 

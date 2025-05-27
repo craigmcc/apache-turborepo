@@ -14,6 +14,7 @@
   "type": "module",
   "version": "0.1.0",
   "dependencies": {
+    "@repo/ramp-db": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "bootstrap": "catalog:bootstrap5",
     "clsx": "catalog:clsx",

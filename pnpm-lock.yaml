@@ -215,6 +215,9 @@ importers:
 
   apps/ramp-lookup:
     dependencies:
+      '@repo/ramp-db':
+        specifier: workspace:*
+        version: link:../../packages/ramp-db
       '@repo/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
