@@ -9,7 +9,6 @@
       ],
       "env": [
         "DATABASE_URL",
-        "NODE_ENV",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
         "RAMP_PROD_API_CLIENT_SECRET",
@@ -38,7 +37,6 @@
       ],
       "env": [
         "DATABASE_URL",
-        "NODE_ENV",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
         "RAMP_PROD_API_CLIENT_SECRET",
@@ -49,14 +47,6 @@
     "lint": {
       "dependsOn": [
         "^lint"
-      ],
-      "env": [
-        "DATABASE_URL",
-        "NODE_ENV",
-        "RAMP_PROD_API_BASE_URL",
-        "RAMP_PROD_API_CLIENT_ID",
-        "RAMP_PROD_API_CLIENT_SECRET",
-        "RAMP_PROD_API_SCOPE"
       ]
     },
     "ramp-db:deploy": {
@@ -74,7 +64,6 @@
       ],
       "env": [
         "DATABASE_URL",
-        "NODE_ENV",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
         "RAMP_PROD_API_CLIENT_SECRET",
