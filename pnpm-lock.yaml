@@ -87,10 +87,6 @@ catalogs:
     typescript:
       specifier: ^5.8.3
       version: 5.8.3
-  uidotdev:
-    '@uidotdev/usehooks':
-      specifier: 2.4.1
-      version: 2.4.1
   zod:
     zod:
       specifier: ^3.25.28
@@ -222,9 +218,6 @@ importers:
       '@repo/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
-      '@uidotdev/usehooks':
-        specifier: catalog:uidotdev
-        version: 2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       bootstrap:
         specifier: catalog:bootstrap5
         version: 5.3.6(@popperjs/core@2.11.8)
@@ -259,15 +252,9 @@ importers:
       '@eslint/eslintrc':
         specifier: catalog:eslint
         version: 3.3.1
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
       '@repo/jest-presets':
         specifier: workspace:*
         version: link:../../packages/jest-presets
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
       '@types/jest':
         specifier: catalog:jest29
         version: 29.5.14
@@ -1350,13 +1337,6 @@ packages:
   '@typescript-eslint/visitor-keys@8.31.0':
     resolution: {integrity: sha512-QcGHmlRHWOl93o64ZUMNewCdwKGU6WItOU52H0djgNmn1EOrhVudrDzXz4OycCRSCPwFCDrE2iIt5vmuUdHxuQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@uidotdev/usehooks@2.4.1':
-    resolution: {integrity: sha512-1I+RwWyS+kdv3Mv0Vmc+p0dPYH0DTRAo04HLyXReYBL9AeseDWUJyi4THuksBJcu9F0Pih69Ak150VDnqbVnXg==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-dom: '>=18.0.0'
 
   '@unrs/resolver-binding-darwin-arm64@1.7.2':
     resolution: {integrity: sha512-vxtBno4xvowwNmO/ASL0Y45TpHqmNkAaDtz4Jqb+clmcVSSl8XCG/PNFFkGsXXXS6AMjP+ja/TtNCFFa1QwLRg==}
@@ -5318,11 +5298,6 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.31.0
       eslint-visitor-keys: 4.2.0
-
-  '@uidotdev/usehooks@2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
-    dependencies:
-      react: 19.1.0
-      react-dom: 19.1.0(react@19.1.0)
 
   '@unrs/resolver-binding-darwin-arm64@1.7.2':
     optional: true
