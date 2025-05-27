@@ -10,6 +10,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 // Internal Modules ----------------------------------------------------------
 
+import { MenuBar } from "@/components/layout/MenuBar";
+
 // Public Objects ------------------------------------------------------------
 
   export const metadata: Metadata = {
@@ -25,6 +27,7 @@ import { Geist, Geist_Mono } from "next/font/google";
     return (
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <MenuBar />
         {children}
         </body>
       </html>
