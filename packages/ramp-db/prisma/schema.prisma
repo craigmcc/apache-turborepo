@@ -246,12 +246,12 @@ model LimitCard {
 
   // Actual Relationships ----------------------------------------------------
 
-  /// Unique ID of the Card that this LimitCard belongs to TODO
+  /// Unique ID of the Card that this LimitCard belongs to
   card_id  String
-  Card     Card   @relation("CardLimitCard", fields: [card_id], references: [id], onDelete: Cascade)
+  card     Card   @relation("CardLimitCard", fields: [card_id], references: [id], onDelete: Cascade)
   /// Unique ID of the Limit that this LimitCard belongs to
   limit_id String
-  Limit    Limit  @relation("LimitLimitCard", fields: [limit_id], references: [id])
+  limit    Limit  @relation("LimitLimitCard", fields: [limit_id], references: [id])
 
   @@id([limit_id, card_id])
   @@map("limits_cards")
