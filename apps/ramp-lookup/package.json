@@ -16,6 +16,7 @@
   "dependencies": {
     "@repo/ramp-db": "workspace:*",
     "@repo/shared-utils": "workspace:*",
+    "@tanstack/react-table": "catalog:tanstack",
     "@uidotdev/usehooks": "catalog:uidotdev",
     "bootstrap": "catalog:bootstrap5",
     "clsx": "catalog:clsx",

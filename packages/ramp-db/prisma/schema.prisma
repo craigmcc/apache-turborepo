@@ -246,7 +246,7 @@ model LimitCard {
 
   // Actual Relationships ----------------------------------------------------
 
-  /// Unique ID of the Card that this LimitCard belongs to
+  /// Unique ID of the Card that this LimitCard belongs to TODO
   card_id  String
   Card     Card   @relation("CardLimitCard", fields: [card_id], references: [id], onDelete: Cascade)
   /// Unique ID of the Limit that this LimitCard belongs to

@@ -9,7 +9,6 @@
 //import { useLocalStorage } from "@uidotdev/usehooks";
 import { Images } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -23,7 +22,6 @@ import Tabs from "react-bootstrap/Tabs";
 
 export function MenuBar() {
 
-//  const [key, setKey] = useLocalStorage<string>(LOCAL_STORAGE_KEY, "Home");
   const [key, setKey] = useState<string>("Home");
 
   const router = useRouter();
@@ -73,8 +71,6 @@ export function MenuBar() {
 }
 
 // Private Objects -----------------------------------------------------------
-
-const LOCAL_STORAGE_KEY = "ramp-lookup.SelectedTab";
 
 const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
   ["Home", "/"],
