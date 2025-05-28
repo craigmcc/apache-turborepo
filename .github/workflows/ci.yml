@@ -16,9 +16,6 @@ jobs:
     #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
-    env:
-      DATABASE_URL: file:./github_actions.db
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -38,10 +35,16 @@ jobs:
         run: pnpm install
 
       - name: Generate Prisma client and migrate to dummy database for ramp-db
+        env:
+          DATABASE_URL: file:./github_actions.db
         run: cd packages/ramp-db; pnpm run ramp-db:generate; pnpm run ramp-db:migrate; cd ../..
 
       - name: Build
+        env:
+          DATABASE_URL: file:./github_actions.db
         run: pnpm build
 
       - name: Test
+        env:
+          DATABASE_URL: file:./github_actions.db
         run: pnpm test:ci
