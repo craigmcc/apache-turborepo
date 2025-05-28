@@ -16,15 +16,17 @@ jobs:
     #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     #  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
+    env:
+      DATABASE_URL: file:./github_actions.db
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - uses: pnpm/action-setup@v3
-#        with:
-#          version: 8
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v3
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
