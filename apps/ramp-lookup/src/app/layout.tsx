@@ -14,6 +14,9 @@ import { MenuBar } from "@/components/layout/MenuBar";
 
 // Public Objects ------------------------------------------------------------
 
+// Attenpt to avoid prerendering on pages that do Prisma calls -- breaks on GitHub Actions
+export const dynamic = "force-dynamic";
+
   export const metadata: Metadata = {
     title: "Ramp Lookup",
     description: "Look up recently refreshed Ramp data",
