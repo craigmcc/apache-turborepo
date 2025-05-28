@@ -40,9 +40,7 @@ jobs:
         run: cd packages/ramp-db; pnpm run ramp-db:generate; pnpm run ramp-db:migrate; cd ../..
 
       - name: Build
-        env:
-          DATABASE_URL: file:./github_actions.db
-        run: pnpm build
+        run: DATABASE_URL=file:./github_actions.db pnpm build
 
       - name: Test
         env:
