@@ -23,10 +23,10 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
 
   function handleSelectDepartment(department: DepartmentPlus) {
     if (department.id === selectedDepartment?.id) {
-      console.log("Unselecting department", department.name);
+//      console.log("Unselecting department", department.name);
       changeSelectedDepartment(null);
     } else {
-      console.log("Selecting department", department.name);
+//      console.log("Selecting department", department.name);
       changeSelectedDepartment(department);
     }
   }
@@ -35,7 +35,7 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
     <>
       <p className="header text-center">Click on a Department to use it as a filter in other searches</p>
       <div className="p-2 mb-4 bg-light rounded-3">
-        <table className="table table-striped">
+        <table className="table table-bordered table-striped">
           <thead>
           <tr>
             <th scope="col">Name</th>
