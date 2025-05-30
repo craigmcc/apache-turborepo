@@ -6,14 +6,25 @@
 
 // External Imports ----------------------------------------------------------
 
+import {
+//  CellContext,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+//  getPaginationRowModel,
+//  PaginationState,
+  useReactTable,
+} from "@tanstack/react-table";
+
 // Internal Imports ----------------------------------------------------------
 
-import { DepartmentPlus } from "@/types/types";
 import {useSelectedDepartmentContext} from "@/contexts/SelectedDepartmentContext";
+import { DepartmentPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 export type DepartmentsTableProps = {
+  // All Departments to display in the table
   allDepartments: DepartmentPlus[];
 }
 
@@ -31,31 +42,59 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
     }
   }
 
+  // Column definitions
+  const columnHelper = createColumnHelper<DepartmentPlus>();
+  const columns = [
+    columnHelper.display({
+      cell: info => info.getValue(),
+      header: "Name",
+      id: "name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const usersCount = info.row.original.users?.length || 0;
+        return <span>{usersCount}</span>
+      },
+      header: "#Users",
+      id: "usersCount",
+    }),
+  ];
+
+  // Overall table instance
+  const table = useReactTable<DepartmentPlus>({
+    columns,
+    data: allDepartments,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
-    <>
-      <p className="header text-center">Click on a Department to use it as a filter in other searches</p>
-      <div className="p-2 mb-4 bg-light rounded-3">
-        <table className="table table-bordered table-striped">
-          <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">#Users</th>
+    <table className="table table-bordered table-striped">
+      <thead>
+        {table.getHeaderGroups().map(headerGroup => (
+          <tr key={headerGroup.id}>
+            {headerGroup.headers.map(header => (
+              <th key={header.id} colSpan={header.colSpan}>
+                {flexRender(header.column.columnDef.header, header.getContext())}
+              </th>
+            ))}
           </tr>
-          </thead>
-          <tbody>
-          {allDepartments.map((department) => (
-            <tr
-              className={selectedDepartment?.id === department.id ? "table-primary" : ""}
-              key={department.id}
-              onClick={() => handleSelectDepartment(department)}
-            >
-              <td>{department.name}</td>
-              <td>{department.users?.length || 0}</td>
-            </tr>
-          ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+        ))}
+      </thead>
+      <tbody>
+        {table.getRowModel().rows.map(row => (
+          <tr
+            className={selectedDepartment?.id === row.original.id ? "table-primary" : ""}
+            key={row.id}
+            onClick={() => handleSelectDepartment(row.original)}
+          >
+            {row.getVisibleCells().map(cell => (
+              <td key={cell.id}>
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

@@ -8,7 +8,7 @@
 // External Modules ----------------------------------------------------------
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { Department } from "@repo/ramp-db/client";
+//import { Department } from "@repo/ramp-db/client";
 
 // Internal Modules ----------------------------------------------------------
 
