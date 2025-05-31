@@ -17,6 +17,7 @@ export default async function UsersPage() {
     include: {
       cards: true,
       department: true,
+      limit_users: true,
     },
     orderBy: [
       { last_name: "asc" },
