@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * React Context to provide the currently selected User to the application
- * and save it in local storage.
+ * React Context to provide the currently selected Department to the
+ * application and save it in local storage.
  */
 
 // External Modules ----------------------------------------------------------

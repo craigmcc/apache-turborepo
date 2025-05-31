@@ -1,21 +1,31 @@
 /**
- * Base page for users.
+ * Base page for Users.
  */
 
 // External Imports ----------------------------------------------------------
 
-import Container from "react-bootstrap/Container";
-
 // Internal Imports ----------------------------------------------------------
+
+import { UsersTable } from "@/components/users/UsersTable";
+import { dbRamp } from "@repo/ramp-db/dist";
 
 // Public Objects ------------------------------------------------------------
 
-export default function UsersPage() {
+export default async function UsersPage() {
+
+  const allUsers = await dbRamp.user.findMany({
+    include: {
+      cards: true,
+      department: true,
+    },
+    orderBy: [
+      { last_name: "asc" },
+      { first_name: "asc" },
+    ],
+  });
+
   return (
-    <Container className="p-2 mb-4 bg-light rounded-3" fluid>
-      <h1 className="header text-center">
-        Users Page
-      </h1>
-    </Container>
+    <UsersTable allUsers={allUsers}/>
   );
+
 }

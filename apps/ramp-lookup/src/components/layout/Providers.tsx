@@ -9,13 +9,16 @@
 // Internal Modules ----------------------------------------------------------
 
 import { SelectedDepartmentContextProvider } from "@/contexts/SelectedDepartmentContext";
+import { SelectedUserContextProvider } from "@/contexts/SelectedUserContext";
 
 // Public Objects ------------------------------------------------------------
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SelectedDepartmentContextProvider>
-      {children}
+      <SelectedUserContextProvider>
+        {children}
+      </SelectedUserContextProvider>
     </SelectedDepartmentContextProvider>
   );
 }

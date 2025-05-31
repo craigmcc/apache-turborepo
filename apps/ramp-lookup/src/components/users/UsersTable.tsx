@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Overview table for Departments.
+ * Overview table for Users.
  */
 
 // External Imports ----------------------------------------------------------
@@ -19,64 +19,72 @@ import Container from "react-bootstrap/Container";
 
 // Internal Imports ----------------------------------------------------------
 
-import {useSelectedDepartmentContext} from "@/contexts/SelectedDepartmentContext";
-import { DepartmentPlus } from "@/types/types";
+// import { useSelectedDepartmentContext } from "@/contexts/SelectedDepartmentContext";
+import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
+import { UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
-export type DepartmentsTableProps = {
-  // All Departments to display in the table
-  allDepartments: DepartmentPlus[];
+export type UsersTableProps = {
+  // All Users to display in the table
+  allUsers: UserPlus[];
 }
 
-export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
+export function UsersTable({ allUsers }: UsersTableProps) {
 
-  const { selectedDepartment, changeSelectedDepartment } = useSelectedDepartmentContext();
+//  const { selectedDepartment, changeSelectedDepartment } = useSelectedDepartmentContext();
+  const { selectedUser, changeSelectedUser } = useSelectedUserContext();
 
-  function handleSelectDepartment(department: DepartmentPlus) {
-    if (department.id === selectedDepartment?.id) {
-//      console.log("Unselecting department", department.name);
-      changeSelectedDepartment(null);
+  function handleSelectUser(user: UserPlus) {
+    if (user.id === selectedUser?.id) {
+//      console.log("Unselecting user", user.name);
+      changeSelectedUser(null);
     } else {
-//      console.log("Selecting department", department.name);
-      changeSelectedDepartment(department);
+//      console.log("Selecting user", user.name);
+      changeSelectedUser(user);
     }
   }
 
   // Column definitions
-  const columnHelper = createColumnHelper<DepartmentPlus>();
+  const columnHelper = createColumnHelper<UserPlus>();
   const columns = [
     columnHelper.display({
       cell: info => {
-        return <span>{info.row.original.name}</span>;
+        const name = `${info.row.original.last_name}, ${info.row.original.first_name}`;
+        return <span>{name}</span>;
       },
       header: "Name",
       id: "name",
     }),
     columnHelper.display({
+      cell: info => info.row.original.department?.name || "N/A",
+      header: "Department",
+      id: "department",
+    }),
+    columnHelper.display({
       cell: info => {
-        const usersCount = info.row.original.users?.length || 0;
-        return <span>{usersCount}</span>
+        const cardsCount = info.row.original.cards?.length || 0;
+        return <span>{cardsCount}</span>
       },
-      header: "#Users",
-      id: "usersCount",
+      header: "#Cards",
+      id: "cardsCount",
     }),
   ];
 
   // Overall table instance
-  const table = useReactTable<DepartmentPlus>({
+  const table = useReactTable<UserPlus>({
     columns,
-    data: allDepartments,
+    data: allUsers,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
     <Container className="p-2 mb-4 bg-light rounded-3" fluid>
       <h1 className="header text-center">
-        Departments Table
+        Users Table
       </h1>
       <div className="text-center">
-        Click on a row to select or deselect a Department.
+        Click on a row to select or deselect a User.
       </div>
       <table className="table table-bordered table-striped">
         <thead>
@@ -93,9 +101,9 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
         <tbody>
         {table.getRowModel().rows.map(row => (
           <tr
-            className={selectedDepartment?.id === row.original.id ? "table-primary" : ""}
+            className={selectedUser?.id === row.original.id ? "table-primary" : ""}
             key={row.id}
-            onClick={() => handleSelectDepartment(row.original)}
+            onClick={() => handleSelectUser(row.original)}
           >
             {row.getVisibleCells().map(cell => (
               <td key={cell.id}>
