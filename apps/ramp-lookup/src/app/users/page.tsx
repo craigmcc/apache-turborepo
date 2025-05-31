@@ -8,10 +8,17 @@
 
 import { UsersTable } from "@/components/users/UsersTable";
 import { dbRamp } from "@repo/ramp-db/dist";
+import {allowedDisplayValues} from "next/dist/compiled/@next/font/dist/constants";
 
 // Public Objects ------------------------------------------------------------
 
 export default async function UsersPage() {
+
+  const allDepartments = await dbRamp.department.findMany({
+    orderBy: {
+      name: "asc",
+    },
+  });
 
   const allUsers = await dbRamp.user.findMany({
     include: {
@@ -26,7 +33,10 @@ export default async function UsersPage() {
   });
 
   return (
-    <UsersTable allUsers={allUsers}/>
+    <UsersTable
+      allDepartments={allDepartments}
+      allUsers={allUsers}
+    />
   );
 
 }

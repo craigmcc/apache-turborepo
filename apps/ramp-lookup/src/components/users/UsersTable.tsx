@@ -15,31 +15,49 @@ import {
   PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
+import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import { useState } from "react";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import {ChangeEvent, useState} from "react";
 
 // Internal Imports ----------------------------------------------------------
 
-// import { useSelectedDepartmentContext } from "@/contexts/SelectedDepartmentContext";
-import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
-import { UserPlus } from "@/types/types";
-import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import {useSelectedDepartmentContext} from "@/contexts/SelectedDepartmentContext";
+import {useSelectedUserContext} from "@/contexts/SelectedUserContext";
+import {DepartmentPlus, UserPlus} from "@/types/types";
+import {PaginationFooter} from "@/components/tables/PaginationFooter";
 
 // Public Objects ------------------------------------------------------------
 
 export type UsersTableProps = {
+  // All Departments for the selection filter
+  allDepartments: DepartmentPlus[];
   // All Users to display in the table
   allUsers: UserPlus[];
 }
 
-export function UsersTable({ allUsers }: UsersTableProps) {
+export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
 
+  const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-//  const { selectedDepartment, changeSelectedDepartment } = useSelectedDepartmentContext();
-  const { selectedUser, changeSelectedUser } = useSelectedUserContext();
+  const {selectedDepartment, changeSelectedDepartment} = useSelectedDepartmentContext();
+  const {selectedUser, changeSelectedUser} = useSelectedUserContext();
+
+  function handleSelectDepartment(event: ChangeEvent<HTMLSelectElement>) : void {
+    const departmentId = event.target.value;
+    const department = allDepartments.find(d => d.id === departmentId);
+    changeSelectedDepartment(department || null);
+    if (department) {
+      const filtered = allUsers.filter(user => user.department?.id === department.id);
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers(allUsers);
+    }
+  }
 
   function handleSelectUser(user: UserPlus) {
     if (user.id === selectedUser?.id) {
@@ -97,7 +115,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
   // Overall table instance
   const table = useReactTable<UserPlus>({
     columns,
-    data: allUsers,
+    data: filteredUsers,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: setPagination,
@@ -109,12 +127,32 @@ export function UsersTable({ allUsers }: UsersTableProps) {
   return (
     <Container className="p-2 mb-4 bg-light rounded-3" fluid>
 
-      <h1 className="header text-center">
-        Users Table
-      </h1>
-      <div className="text-center">
-        Click on a row to select or deselect a User.
-      </div>
+      <Row>
+        <h1 className="header text-center">
+          Users Table
+        </h1>
+      </Row>
+      <Row className="mb-2">
+        <Col>
+          <Form.Group controlId="departmentSelect">
+            <span>Filter by Department:</span>
+            <Form.Select
+              onChange={(event) => handleSelectDepartment(event)}
+              value={selectedDepartment?.id || ""}
+            >
+              <option value="">(All Departments)</option>
+              {allDepartments.map(department => (
+                <option key={department.id} value={department.id}>
+                  {department.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col className="text-center">
+          Click on a row to select or deselect a User.
+        </Col>
+      </Row>
 
       <table className="table table-bordered table-striped">
 
