@@ -151,6 +151,82 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
+  apps/ramp-download:
+    dependencies:
+      '@repo/ramp-api':
+        specifier: workspace:*
+        version: link:../../packages/ramp-api
+      '@repo/ramp-db':
+        specifier: workspace:*
+        version: link:../../packages/ramp-db
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
+      bootstrap:
+        specifier: catalog:bootstrap5
+        version: 5.3.6(@popperjs/core@2.11.8)
+      clsx:
+        specifier: catalog:clsx
+        version: 2.1.1
+      lucide-react:
+        specifier: catalog:lucide-react
+        version: 0.511.0(react@19.1.0)
+      next:
+        specifier: catalog:next15
+        version: 15.3.2(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      pino:
+        specifier: catalog:pino
+        version: 9.7.0
+      react:
+        specifier: catalog:react19
+        version: 19.1.0
+      react-bootstrap:
+        specifier: catalog:bootstrap5
+        version: 2.10.10(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-dom:
+        specifier: catalog:react19
+        version: 19.1.0(react@19.1.0)
+      zod:
+        specifier: catalog:zod
+        version: 3.25.28
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: catalog:eslint
+        version: 3.3.1
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@repo/jest-presets':
+        specifier: workspace:*
+        version: link:../../packages/jest-presets
+      '@types/jest':
+        specifier: catalog:jest29
+        version: 29.5.14
+      '@types/node':
+        specifier: catalog:node22
+        version: 22.15.21
+      '@types/react':
+        specifier: catalog:react19
+        version: 19.1.5
+      '@types/react-dom':
+        specifier: catalog:react19
+        version: 19.1.5(@types/react@19.1.5)
+      eslint:
+        specifier: catalog:eslint
+        version: 9.27.0(jiti@2.4.2)
+      eslint-config-next:
+        specifier: catalog:eslint
+        version: 15.3.2(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
+      jest:
+        specifier: catalog:jest29
+        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
+      ts-jest:
+        specifier: catalog:jest29
+        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
+      typescript:
+        specifier: catalog:typescript5
+        version: 5.8.3
+
   apps/ramp-info:
     dependencies:
       '@repo/shared-utils':
