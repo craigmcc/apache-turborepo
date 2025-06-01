@@ -15,7 +15,7 @@ import {
   PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
-import {ChangeEvent, useEffect, useState} from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -23,10 +23,10 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import {useSelectedDepartmentContext} from "@/contexts/SelectedDepartmentContext";
-import {useSelectedUserContext} from "@/contexts/SelectedUserContext";
-import {DepartmentPlus, UserPlus} from "@/types/types";
-import {PaginationFooter} from "@/components/tables/PaginationFooter";
+import { useSelectedDepartmentContext } from "@/contexts/SelectedDepartmentContext";
+import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
+import { DepartmentPlus, UserPlus } from "@/types/types";
+import { PaginationFooter } from "@/components/tables/PaginationFooter";
 
 // Public Objects ------------------------------------------------------------
 
@@ -37,7 +37,7 @@ export type UsersTableProps = {
   allUsers: UserPlus[];
 }
 
-export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
+export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
   const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
   const [nameFilter, setNameFilter] = useState<string>("");

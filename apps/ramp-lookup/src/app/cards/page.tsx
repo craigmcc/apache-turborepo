@@ -4,18 +4,28 @@
 
 // External Imports ----------------------------------------------------------
 
-import Container from "react-bootstrap/Container";
-
 // Internal Imports ----------------------------------------------------------
+
+import { CardsTable } from "@/components/cards/CardsTable";
+import { dbRamp } from "@repo/ramp-db/dist";
 
 // Public Objects ------------------------------------------------------------
 
-export default function CardsPage() {
+export default async function CardsPage() {
+
+  const allCards = await dbRamp.card.findMany({
+    include: {
+      cardholder: true,
+    },
+    orderBy: [
+      { cardholder: { last_name: "asc" } },
+      { cardholder: { first_name: "asc" } },
+      { display_name: "asc" },
+    ],
+  });
+
   return (
-    <Container className="p-2 mb-4 bg-light rounded-3" fluid>
-      <h1 className="header text-center">
-        Cards Page
-      </h1>
-    </Container>
+    <CardsTable allCards={allCards}/>
   );
+
 }
