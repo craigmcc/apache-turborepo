@@ -21,12 +21,13 @@ import {
   Department,
   Limit,
   LimitCard,
+  LimitSpendingRestrictions,
   LimitUser,
   SpendProgram,
   Transaction,
   User,
   Violation
-} from "@repo/ramp-db/client";
+} from "@repo/ramp-db/dist";
 
 const UNKNOWN_CARD_ID_REPLACEMENT = "f6d3437d-a174-4e76-8340-4c7f0a9def0d";
 
@@ -121,6 +122,7 @@ export async function refreshCards(accessToken: string): Promise<void> {
         await dbRamp.cardSpendingRestrictions.deleteMany({
           where: {card_id: card.id}
         });
+
       }
 
       count++;
@@ -220,18 +222,6 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         is_shareable: rampLimit.is_shareable,
         permitted_primary_card_enabled: rampLimit.permitted_spend_types?.primary_card_enabled || null,
         permitted_reimbursements_enabled: rampLimit.permitted_spend_types?.reimbursements_enabled || null,
-        restrictions_allowed_categories: rampLimit.restrictions?.allowed_categories?.join(",")  || null,
-        restrictions_auto_lock_date: rampLimit.restrictions?.auto_lock_date || null,
-        restrictions_blocked_categories: rampLimit.restrictions?.blocked_categories?.join(",") || null,
-        restrictions_interval: rampLimit.restrictions?.interval || null,
-        restrictions_limit_amt: rampLimit.restrictions?.limit?.amount || null,
-        restrictions_limit_cc: rampLimit.restrictions?.limit?.currency_code || null,
-        restrictions_next_interval_reset: rampLimit.restrictions?.next_interval_reset || null,
-        restrictions_start_of_interval: rampLimit.restrictions?.start_of_interval || null,
-        restrictions_temporary_limit_amt: rampLimit.restrictions?.temporary_limit?.amount || null,
-        restrictions_temporary_limit_cc: rampLimit.restrictions?.temporary_limit?.currency_code || null,
-        restrictions_transaction_amount_limit_amt: rampLimit.restrictions?.transaction_amount_limit?.amount || null,
-        restrictions_transaction_amount_limit_cc: rampLimit.restrictions?.transaction_amount_limit?.currency_code || null,
         spend_program_id: rampLimit.spend_program_id,
         state: rampLimit.state,
         suspension_acting_user_id: rampLimit.suspension?.acting_user_id || null,
@@ -266,6 +256,37 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         }
       } else {
         await dbRamp.limitCard.deleteMany({
+          where: {limit_id: limit.id}
+        });
+      }
+
+      if (rampLimit.restrictions) {
+        const limitSpendingRestrictions: LimitSpendingRestrictions = {
+          limit_id: rampLimit.id,
+          allowed_categories: rampLimit.restrictions.allowed_categories?.join(",") || null,
+          allowed_vendors: rampLimit.restrictions.allowed_vendors?.join("|") || null,
+          auto_lock_date: rampLimit.restrictions.auto_lock_date || null,
+          blocked_categories: rampLimit.restrictions.blocked_categories?.join(",") || null,
+          blocked_vendors: rampLimit.restrictions.blocked_vendors?.join("|") || null,
+          interval: rampLimit.restrictions.interval || null,
+          limit_amt: rampLimit.restrictions.limit?.amount,
+          limit_cc: rampLimit.restrictions.limit?.currency_code,
+          next_interval_reset: rampLimit.restrictions.next_interval_reset || null,
+          start_of_interval: rampLimit.restrictions.start_of_interval || null,
+          temporary_limit_amt: rampLimit.restrictions.temporary_limit?.amount,
+          temporary_limit_cc: rampLimit.restrictions.temporary_limit?.currency_code,
+          transaction_amount_limit_amt: rampLimit.restrictions.transaction_amount_limit?.amount,
+          transaction_amount_limit_cc: rampLimit.restrictions.transaction_amount_limit?.currency_code,
+          suspended: rampLimit.state === "SUSPENDED",
+        };
+//        console.log(`Upserting LimitSpendingRestrictions ${count+1}`, JSON.stringify(limitSpendingRestrictions, null, 2));
+        await dbRamp.limitSpendingRestrictions.upsert({
+          where: {limit_id: limitSpendingRestrictions.limit_id},
+          update: limitSpendingRestrictions,
+          create: limitSpendingRestrictions,
+        });
+      } else {
+        await dbRamp.limitSpendingRestrictions.deleteMany({
           where: {limit_id: limit.id}
         });
       }

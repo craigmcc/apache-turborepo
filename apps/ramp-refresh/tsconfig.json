@@ -10,5 +10,7 @@
   ],
   "include": [
     "src",
-  ]
+  ],
+  "module": "esnext",
+  "moduleResolution": "bundler",
 }

@@ -158,10 +158,14 @@ export type RampLimitPermittedSpendTypes = {
 export type RampLimitRestrictions = {
   // Allowed Ramp categories for this Limit
   allowed_categories: number[];
+  // Allowed vendors for this Limit
+  allowed_vendors: string[] | null;
   // Date/time to automatically lock the Limit (ISO 8601 format)
   auto_lock_date: string | null;
   // Blocked Ramp categories for this Limit
   blocked_categories: number[];
+  // Blocked vendors for this Limit
+  blocked_vendors: string[] | null;
   // Time interval that the limit is applied on
   interval: RampLimitRestrictionsInterval | null;
   // Spending limit
