@@ -8,6 +8,7 @@
 
 // Internal Modules ----------------------------------------------------------
 
+import { SelectedCardContextProvider } from "@/contexts/SelectedCardContext";
 import { SelectedDepartmentContextProvider } from "@/contexts/SelectedDepartmentContext";
 import { SelectedUserContextProvider } from "@/contexts/SelectedUserContext";
 
@@ -17,7 +18,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SelectedDepartmentContextProvider>
       <SelectedUserContextProvider>
-        {children}
+        <SelectedCardContextProvider>
+          {children}
+        </SelectedCardContextProvider>
       </SelectedUserContextProvider>
     </SelectedDepartmentContextProvider>
   );

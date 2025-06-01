@@ -22,6 +22,7 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
+import { useSelectedCardContext } from "@/contexts/SelectedCardContext";
 import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
 import { CardPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
@@ -40,7 +41,8 @@ export function CardsTable({ allCards }: CardsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
-  const { selectedUser } = useSelectedUserContext();
+  const { selectedCard, changeSelectedCard } = useSelectedCardContext();
+  const { selectedUser, changeSelectedUser } = useSelectedUserContext();
 
   useEffect(() => {
     // Whenever the selected user changes, filter the cards
@@ -56,6 +58,26 @@ export function CardsTable({ allCards }: CardsTableProps) {
   function formatAmount(amount: number | null | undefined): string {
     if (!amount) return "n/a";
     return `$${amount.toFixed(2)}`;
+  }
+
+  function handleSelectCard(cellId: string, card: CardPlus) {
+    if (cellId.endsWith("_name")) {
+      if (card.id === selectedCard?.id) {
+  //      console.log("Deselecting card", card.display_name);
+        changeSelectedCard(null);
+        changeSelectedUser(null);
+      } else {
+  //      console.log("Selecting card", card.display_name);
+        changeSelectedCard(card);
+        changeSelectedUser(card.cardholder || null);
+      }
+    }
+    // If the user is selected, also update the selected user
+    if (card.cardholder) {
+      changeSelectedUser(card.cardholder);
+    } else {
+      changeSelectedUser(null);
+    }
   }
 
   // Column definitions
@@ -173,11 +195,13 @@ export function CardsTable({ allCards }: CardsTableProps) {
         <tbody>
         {table.getRowModel().rows.map(row => (
           <tr
+            className={selectedCard?.id === row.original.id ? "table-primary" : ""}
             key={row.id}
           >
             {row.getVisibleCells().map(cell => (
               <td
                 key={cell.id}
+                onClick={() => handleSelectCard(cell.id, row.original)}
               >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
