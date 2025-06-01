@@ -15,11 +15,11 @@ import {
   PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
+import {ChangeEvent, useEffect, useState} from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
-import {ChangeEvent, useState} from "react";
 
 // Internal Imports ----------------------------------------------------------
 
@@ -40,6 +40,7 @@ export type UsersTableProps = {
 export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
 
   const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
+  const [nameFilter, setNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -47,25 +48,45 @@ export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
   const {selectedDepartment, changeSelectedDepartment} = useSelectedDepartmentContext();
   const {selectedUser, changeSelectedUser} = useSelectedUserContext();
 
+  // Whenever the selected department or name filter changes, reapply filters
+  useEffect(() => {
+//    console.log(`filteringUsers: departmentFilter='${selectedDepartment?.name || "All"'} nameFilter='${nameFilter}'`);
+    let matchingUsers: UserPlus[] = allUsers;
+    // Filter by selected department (if any)
+    if (selectedDepartment) {
+      matchingUsers = matchingUsers.filter(user => user.department?.id === selectedDepartment.id);
+    }
+    // Filter by name (if any)
+    if (nameFilter.length > 0) {
+      const filterValue = nameFilter.toLowerCase();
+      matchingUsers = matchingUsers.filter(user => {
+        const fullName = `${user.last_name}, ${user.first_name}`.toLowerCase();
+        return fullName.includes(filterValue);
+      });
+    }
+    // Set the current filtered users
+    setFilteredUsers(matchingUsers);
+  }, [allUsers, nameFilter, selectedDepartment]);
+
+  function handleNameFilter(event: ChangeEvent<HTMLInputElement>) {
+    const filterValue = event.target.value.toLowerCase();
+    setNameFilter(filterValue);
+  }
+
   function handleSelectDepartment(event: ChangeEvent<HTMLSelectElement>) : void {
     const departmentId = event.target.value;
     const department = allDepartments.find(d => d.id === departmentId);
     changeSelectedDepartment(department || null);
-    if (department) {
-      const filtered = allUsers.filter(user => user.department?.id === department.id);
-      setFilteredUsers(filtered);
-    } else {
-      setFilteredUsers(allUsers);
-    }
   }
 
-  function handleSelectUser(user: UserPlus) {
-    if (user.id === selectedUser?.id) {
-//      console.log("Unselecting user", user.name);
-      changeSelectedUser(null);
-    } else {
-//      console.log("Selecting user", user.name);
-      changeSelectedUser(user);
+  function handleSelectUser(cellId: string, user: UserPlus) {
+//    console.log(`handleSelectUser cellId=${cellId} user=${user.last_name}, ${user.first_name}`);
+    if (cellId.endsWith("_name")) {
+      if (user.id === selectedUser?.id) {
+        changeSelectedUser(null);
+      } else {
+        changeSelectedUser(user);
+      }
     }
   }
 
@@ -137,7 +158,7 @@ export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
           <Form.Group controlId="departmentSelect">
             <span>Filter by Department:</span>
             <Form.Select
-              onChange={(event) => handleSelectDepartment(event)}
+              onChange={handleSelectDepartment}
               value={selectedDepartment?.id || ""}
             >
               <option value="">(All Departments)</option>
@@ -149,8 +170,19 @@ export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
             </Form.Select>
           </Form.Group>
         </Col>
+        <Col>
+          <Form.Group controlId="nameFilter">
+            <span>Filter by Name:</span>
+            <Form.Control
+              onChange={handleNameFilter}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={nameFilter}
+            />
+          </Form.Group>
+        </Col>
         <Col className="text-center">
-          Click on a row to select or deselect a User.
+          Click on a name to select or deselect that User.
         </Col>
       </Row>
 
@@ -173,10 +205,12 @@ export function UsersTable({allDepartments, allUsers}: UsersTableProps) {
           <tr
             className={selectedUser?.id === row.original.id ? "table-primary" : ""}
             key={row.id}
-            onClick={() => handleSelectUser(row.original)}
           >
             {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
+              <td
+                key={cell.id}
+                onClick={() => handleSelectUser(cell.id, row.original)}
+              >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}

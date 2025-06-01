@@ -33,13 +33,15 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
 
   const { selectedDepartment, changeSelectedDepartment } = useSelectedDepartmentContext();
 
-  function handleSelectDepartment(department: DepartmentPlus) {
-    if (department.id === selectedDepartment?.id) {
+  function handleSelectDepartment(cellId: string, department: DepartmentPlus) {
+    if (cellId.endsWith("_name")) {
+      if (department.id === selectedDepartment?.id) {
 //      console.log("Unselecting department", department.name);
-      changeSelectedDepartment(null);
-    } else {
+        changeSelectedDepartment(null);
+      } else {
 //      console.log("Selecting department", department.name);
-      changeSelectedDepartment(department);
+        changeSelectedDepartment(department);
+      }
     }
   }
 
@@ -76,7 +78,7 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
         Departments Table
       </h1>
       <div className="text-center">
-        Click on a row to select or deselect a Department.
+        Click on a name to select or deselect that Department.
       </div>
       <table className="table table-bordered table-striped">
         <thead>
@@ -95,10 +97,12 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
           <tr
             className={selectedDepartment?.id === row.original.id ? "table-primary" : ""}
             key={row.id}
-            onClick={() => handleSelectDepartment(row.original)}
           >
             {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
+              <td
+                key={cell.id}
+                onClick={() => handleSelectDepartment(cell.id, row.original)}
+              >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}

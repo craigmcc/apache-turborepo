@@ -13,11 +13,10 @@ import Tooltip from "react-bootstrap/Tooltip";
 
 // Public Objects ------------------------------------------------------------
 
-// @ts-expect-error "any" types should maybe be replaced
+// @ts-expect-error "any" needed so we can use this with tables with different generic types
 export function PaginationFooter({ table }) {
 
   const pageCount = table.getPageCount();
-//  const tableMeta = table.options.meta;
 
   return (
     <div className="text-center">
