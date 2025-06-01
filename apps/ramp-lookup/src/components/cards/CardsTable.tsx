@@ -52,6 +52,12 @@ export function CardsTable({ allCards }: CardsTableProps) {
     }
   }, [selectedUser, allCards]);
 
+  // Format an amount as a string with a currency symbol and two decimal places
+  function formatAmount(amount: number | null | undefined): string {
+    if (!amount) return "n/a";
+    return `$${amount.toFixed(2)}`;
+  }
+
   // Column definitions
   const columnHelper = createColumnHelper<CardPlus>();
   const columns = [
@@ -83,6 +89,39 @@ export function CardsTable({ allCards }: CardsTableProps) {
       },
       header: "State",
       id: "state",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmount(info.row.original.spending_restrictions?.amount)}</span>;
+      },
+      header: "Interval Limit",
+      id: "amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.spending_restrictions?.interval}</span>;
+      },
+      header: "Interval",
+      id: "interval",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmount(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
+      },
+      header: "Transaction Limit",
+      id: "transaction_amount_limit",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const suspended = info.row.original.spending_restrictions?.suspended;
+        if (suspended) {
+          return <span className="text-danger">Yes</span>;
+        } else {
+          return <span className="text-success">No</span>;
+        }
+      },
+      header: "Suspended?",
+      id: "suspended",
     }),
   ];
 

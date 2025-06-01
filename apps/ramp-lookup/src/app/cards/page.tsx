@@ -16,6 +16,7 @@ export default async function CardsPage() {
   const allCards = await dbRamp.card.findMany({
     include: {
       cardholder: true,
+      spending_restrictions: true,
     },
     orderBy: [
       { cardholder: { last_name: "asc" } },
