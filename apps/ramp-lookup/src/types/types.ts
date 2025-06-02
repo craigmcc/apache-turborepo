@@ -10,6 +10,7 @@ import {
   Department,
   Limit,
   LimitCard,
+  LimitSpendingRestrictions,
   LimitUser,
   SpendProgram,
   User
@@ -49,6 +50,7 @@ export type DepartmentPlus = Department & {
 export type LimitPlus = Limit & {
   cards?: LimitCard[] | null;
   spend_program?: SpendProgram | null;
+  spending_restrictions?: LimitSpendingRestrictions | null;
   users?: LimitUser[] | null;
 }
 

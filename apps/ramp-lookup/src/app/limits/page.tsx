@@ -4,18 +4,27 @@
 
 // External Imports ----------------------------------------------------------
 
-import Container from "react-bootstrap/Container";
-
 // Internal Imports ----------------------------------------------------------
+
+import { LimitsTable } from "@/components/limits/LimitsTable";
+import { dbRamp } from "@repo/ramp-db/dist";
 
 // Public Objects ------------------------------------------------------------
 
-export default function LimitsPage() {
+export default async function LimitsPage() {
+
+  const allLimits = await dbRamp.limit.findMany({
+    include: {
+      cards: true,
+      spending_restrictions: true,
+      users: true,
+    },
+    orderBy: {
+      display_name: "asc",
+    },
+  });
+
   return (
-    <Container className="p-2 mb-4 bg-light rounded-3" fluid>
-      <h1 className="header text-center">
-        Limits Page
-      </h1>
-    </Container>
+    <LimitsTable allLimits={allLimits}/>
   );
 }
