@@ -261,13 +261,13 @@ model LimitSpendingRestrictions {
   /// Date and time of start of current interval (ISO 8601 format)
   start_of_interval            String?
   /// Temporary limit total per interval (amount)
-  temporary_limit_amt          Int
+  temporary_limit_amt          Int?
   /// Temporary limit total per interval (currency_code)
-  temporary_limit_cc           String
+  temporary_limit_cc           String?
   /// Per-transaction amount limit (amount)
-  transaction_amount_limit_amt Int
+  transaction_amount_limit_amt Int?
   /// Per-transaction amount limit (currency_code)
-  transaction_amount_limit_cc  String
+  transaction_amount_limit_cc  String?
 
   /// Whether this card has been locked
   suspended Boolean?
