@@ -5,6 +5,36 @@
 // Data Models ---------------------------------------------------------------
 
 /**
+ * A Ramp Accounting GL Account object.
+ */
+export type RampAccountingGLAccount = {
+  // Unique identifier of the GL Account
+  id: string;
+  // Classification of the GL Account
+  classification: RampAccountingGLAccountClassification | null;
+  // The code of the GL Account
+  code: string | null;
+  // The date/time this GL Account was created (ISO 8601 format)
+  created_at: string | null;
+  // Remote/external category code for this GL Account
+  gl_account_category_id: string | null;
+  // Remote/external category name for this GL Account
+  gl_account_category_name: string | null;
+  // Unique Ramp ID of the GL Account
+  gl_account_ramp_id_id: string | null;
+  // Is this GL Account active?
+  is_active: boolean | null;
+  // Name of the GL Account
+  name: string;
+  // The date/time this GL Account was last updated (ISO 8601 format)
+  updated_at: string | null;
+}
+
+export type RampAccountingGLAccountClassification =
+  "ANY" | "ASSET" | "CREDITCARD" | "EQUITY" | "EXPENSE" |
+  "LIABILITY" | "REVENUE" | "UNKNOWN";
+
+/**
  * A Ramp Card object.
  */
 export type RampCard = {
@@ -417,6 +447,18 @@ export type UserStatus =
   "USER_INACTIVE" | "USER_ONBOARDING" | "USER_SUSPENDED";
 
 // Interface Definitions -----------------------------------------------------
+
+/**
+ * The Ramp API response for a fetch Accounting GL accounts request.
+ */
+export type RampAccountingGLAccountsResponse = {
+  // The list of GL accounts
+  data: RampAccountingGLAccount[];
+  // Optional forward link for pagination
+  page?: {
+    next?: string;
+  }
+}
 
 /**
  * A compound amount of money in the smallest denomination of the currency.

@@ -2,6 +2,7 @@
  * Export the relevant action functions.
  */
 
+export * from "./AccountingGLAccountActions.js";
 export * from "./AuthActions.js";
 export * from "./CardActions.js";
 export * from "./DepartmentActions.js";

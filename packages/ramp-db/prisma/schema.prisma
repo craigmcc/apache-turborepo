@@ -13,6 +13,49 @@ datasource db {
 
 // Ramp API Models (Database Schema) -----------------------------------------
 
+/// Accounting GL Accounts (https://ramp.com/developer/v1/accounting-gl-accounts)
+model AccountingGLAccount {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Accounting GL Account
+  id                       String                             @id
+  /// Classification of this Accounting GL Account
+  classification           AccountingGLAccountClassification?
+  /// Code for this Accounting GL Account (our GL account number ?)
+  code                     String?
+  /// Date/time this Accounting GL Account was created (ISO8601 format)
+  created_at               String?
+  /// Remote/external category from the ERP system
+  gl_account_category_id   String?
+  /// Name of the accounting category in the ERP system
+  gl_account_category_name String?
+  /// Unique Ramp ID of the accounting category
+  gl_account_ramp_id       String?
+  /// Is this Accounting GL Account active?
+  is_active                Boolean?
+  /// Name of this Accounting GL Account
+  name                     String
+  /// Date/time this Accounting GL Account was last updated (ISO8601 format)
+  updated_at               String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  @@map("accounting_gl_accounts")
+}
+
+enum AccountingGLAccountClassification {
+  ANY
+  ASSET
+  CREDITCARD
+  EQUITY
+  EXPENSE
+  LIABILITY
+  REVENUE
+  UNKNOWN
+}
+
 /// Cards (https://ramp.com/developer/v1/cards)
 model Card {
   // Scalar Fields -----------------------------------------------------------
