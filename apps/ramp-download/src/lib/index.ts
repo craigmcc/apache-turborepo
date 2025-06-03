@@ -12,6 +12,7 @@
 import {
   eraseViolations,
   refreshAccessToken,
+  refreshAccountingGLAccounts,
   refreshCards,
   refreshDepartments,
   refreshLimits,
@@ -35,6 +36,7 @@ export async function main() {
   console.log("Returned Scopes:  ", result.scope);
   const scopes = result.scope.split(" ");
   await eraseViolations();
+  await refreshAccountingGLAccounts(accessToken);
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
   await refreshCards(accessToken);
@@ -64,5 +66,5 @@ main()
     console.log("Ramp Refresh finished at ", new Date().toLocaleString());
   })
   .catch((error) => {
-    console.error("Error in Ramp Refresh:", JSON.stringify(error, null, 2));
+    console.error("Error in Ramp Download:", JSON.stringify(error, null, 2));
   });

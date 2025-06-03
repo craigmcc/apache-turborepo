@@ -16,12 +16,8 @@ export type RampAccountingGLAccount = {
   code: string | null;
   // The date/time this GL Account was created (ISO 8601 format)
   created_at: string | null;
-  // Remote/external category code for this GL Account
-  gl_account_category_id: string | null;
-  // Remote/external category name for this GL Account
-  gl_account_category_name: string | null;
-  // Unique Ramp ID of the GL Account
-  gl_account_ramp_id_id: string | null;
+  // Category information about this GL Account
+  gl_account_category_info: RampAccountingGLAccountCategoryInfo | null;
   // Is this GL Account active?
   is_active: boolean | null;
   // Name of the GL Account
@@ -31,8 +27,17 @@ export type RampAccountingGLAccount = {
 }
 
 export type RampAccountingGLAccountClassification =
-  "ANY" | "ASSET" | "CREDITCARD" | "EQUITY" | "EXPENSE" |
+  "ANY" | "ASSET" | "CREDCARD" | "EQUITY" | "EXPENSE" |
   "LIABILITY" | "REVENUE" | "UNKNOWN";
+
+export type RampAccountingGLAccountCategoryInfo = {
+  // Remote/external ID of this category (should uniquely identify it on the ERP)
+  id: string | null;
+  // Name of this category
+  name: string | null;
+  // Internal Ramp ID of this category
+  ramp_id: string | null;
+}
 
 /**
  * A Ramp Card object.

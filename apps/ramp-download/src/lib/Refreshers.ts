@@ -8,6 +8,7 @@
 // Internal Modules -----------------------------------------------------------
 
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
+import { fetchAccountingGLAccounts } from "@repo/ramp-api/AccountingGLAccountActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
@@ -26,7 +27,7 @@ import {
   SpendProgram,
   Transaction,
   User,
-  Violation
+  Violation, AccountingGLAccount
 } from "@repo/ramp-db/dist";
 
 const UNKNOWN_CARD_ID_REPLACEMENT = "f6d3437d-a174-4e76-8340-4c7f0a9def0d";
@@ -53,6 +54,70 @@ export async function refreshAccessToken(): Promise<refreshAccessTokenResult> {
     access_token: accessTokenResponse.model!.access_token,
     scope: accessTokenResponse.model!.scope,
   };
+}
+
+export async function refreshAccountingGLAccounts(accessToken: string): Promise<void> {
+
+  console.log("Fetching Accounting GL accounts...");
+  let count = 0;
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+
+//    console.log("Fetching Accounting GL accounts...", nextStart);
+    const result = await fetchAccountingGLAccounts(
+      accessToken,
+      {
+        is_active: true,
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+//    console.log("Fetched Accounting GL accounts...", result.model!.data.length);
+//    console.log("Next start:", result.model!.page?.next || null);
+
+    for (const rampAccount of result.model!.data) {
+
+      if (!rampAccount.code) {
+        console.log(`Accounting GL Account ${rampAccount.id} has no code, skipping`);
+        continue; // Skip accounts without a code
+      }
+
+  //    console.log("INPUT", JSON.stringify(rampAccount, null, 2));
+      const account: AccountingGLAccount = {
+        id: rampAccount.id,
+        classification: rampAccount.classification || null,
+        code: rampAccount.code || null,
+        created_at: rampAccount.created_at || null,
+        gl_account_category_id: rampAccount.gl_account_category_info?.id || null,
+        gl_account_category_name: rampAccount.gl_account_category_info?.name || null,
+        gl_account_ramp_id: rampAccount.gl_account_category_info?.ramp_id || null,
+        is_active: rampAccount.is_active || null,
+        name: rampAccount.name,
+        updated_at: rampAccount.updated_at || null,
+      }
+  //    console.log("OUTPUT", JSON.stringify(account, null, 2));
+
+      // console.log(`Upserting AccountingGLAccount ${count+1}`, JSON.stringify(account, null, 2));
+      await dbRamp.accountingGLAccount.upsert({
+        where: {id: account.id},
+        update: account,
+        create: account,
+      });
+
+      count++;
+
+    }
+
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
+
+  }
+
+  console.log("Accounting GL Accounts refreshed:", count);
+
 }
 
 export async function refreshCards(accessToken: string): Promise<void> {

@@ -48,7 +48,7 @@ model AccountingGLAccount {
 enum AccountingGLAccountClassification {
   ANY
   ASSET
-  CREDITCARD
+  CREDCARD
   EQUITY
   EXPENSE
   LIABILITY
