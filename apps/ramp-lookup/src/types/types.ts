@@ -5,6 +5,7 @@
 // External Imports ----------------------------------------------------------
 
 import {
+  AccountingGLAccount,
   Card,
   CardSpendingRestrictions,
   Department,
@@ -30,6 +31,9 @@ export const USER_KEY = "ramp-lookup.User";                 // User | null
 /**
  * Define extended model types that include optional related data.
  */
+
+export type AccountingGLAccountPlus = AccountingGLAccount & {
+}
 
 export type CardPlus = Card & {
   cardholder?: User | null;
