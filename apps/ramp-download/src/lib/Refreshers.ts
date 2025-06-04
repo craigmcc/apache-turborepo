@@ -26,6 +26,7 @@ import {
   LimitUser,
   SpendProgram,
   Transaction,
+  TransactionAccountingFieldSelection,
   User,
   Violation, AccountingGLAccount
 } from "@repo/ramp-db/dist";
@@ -459,6 +460,7 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
   console.log("Fetching transactions...");
   const cardIds = await fetchCardIds(accessToken);
+//  const limitIds = await fetchLimitIds(accessToken);
   const userIds = await fetchUserIds(accessToken);
   let count = 0;
   let nextStart: string | null = "";
@@ -533,6 +535,37 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
         update: transaction,
         create: transaction,
       });
+
+      if (rampTransaction.accounting_field_selections) {
+
+        for (const rampAccountingFieldSelection of rampTransaction.accounting_field_selections) {
+
+  //        console.log(`INPUT Accounting Field Selection for Transaction ${transaction.id}:`, JSON.stringify(rampAccountingFieldSelection, null, 2));
+          const accountingFieldSelection: TransactionAccountingFieldSelection = {
+            external_code: rampAccountingFieldSelection.external_code,
+            external_id: rampAccountingFieldSelection.external_id,
+            name: rampAccountingFieldSelection.name,
+            ramp_id: rampAccountingFieldSelection.id,
+            source_type: rampAccountingFieldSelection.source?.type || null,
+            transaction_id: transaction.id,
+            type: rampAccountingFieldSelection.type
+          }
+
+  //        console.log(`OUTPUT Accounting Field Selection for Transaction ${transaction.id}:`, JSON.stringify(accountingFieldSelection, null, 2));
+          await dbRamp.transactionAccountingFieldSelection.upsert({
+            where: {
+              transaction_id_ramp_id: {
+                transaction_id: rampTransaction.id,
+                ramp_id: accountingFieldSelection.ramp_id
+              },
+            },
+            update: accountingFieldSelection,
+            create: accountingFieldSelection,
+          });
+
+        }
+
+      }
 
       count++;
 
@@ -644,6 +677,33 @@ async function fetchCardIds(accessToken: string): Promise<Set<string>> {
 
   return cardIds;
 }
+
+/*
+async function fetchLimitIds(accessToken: string): Promise<Set<string>> {
+
+  const limitIds: Set<string> = new Set();
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+    const result = await fetchLimits(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+    for (const rampLimit of result.model!.data) {
+      limitIds.add(rampLimit.id);
+    }
+    nextStart = result.model!.page?.next || null;
+  }
+
+  return limitIds;
+}
+*/
 
 async function fetchUserIds(accessToken: string): Promise<Set<string>> {
 

@@ -52,7 +52,7 @@ export async function fetchAccountingGLAccount(
     };
   }
 
-  const url = new URL(`${RAMP_PROD_API_BASE_URL}/developer/v1/accounting/accounts//${accountingGLAccountId}`);
+  const url = new URL(`${RAMP_PROD_API_BASE_URL}/developer/v1/accounting/accounts/${accountingGLAccountId}`);
 
   const response = await fetch(url, {
     method: "GET",

@@ -352,7 +352,7 @@ export type TransactionAccountingFieldSelection = {
   // External ID of this option (should uniquely identify it on the ERP)
   external_id: string | null;
   // Unique ID of an accounting field (within Ramp)
-  id: string | null;
+  id: string;
   // Name of this accounting field option
   name: string | null;
   // Source of this accounting field option

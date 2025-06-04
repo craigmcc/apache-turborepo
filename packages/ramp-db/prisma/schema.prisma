@@ -412,6 +412,7 @@ model Transaction {
 
   /// Primary key for this Transaction
   id                              String                @id
+  // TODO - skipping accounting_categories (Deprecated)
   /// Date for this transaction for accounting purposes
   accounting_date                 String?
   // TODO - skipping accounting_field_selections (TOFIX)
@@ -422,11 +423,11 @@ model Transaction {
   // TODO - skipping attendees
   /// Was the transaction processed using a card present terminal?
   card_present                    Boolean?
-  /// Currency that the transaction settled in
+  /// Currency that the transaction settled in  TODO - redundant to amount_cc?
   currency_code                   String?
   // TODO - skipping decline_details
   // TODO - skipping disputes
-  // TODO - skipping line_items (TOFIX)
+  // TODO - skipping line_items (TOFIX?)
   /// Optional memo for this Transaction
   memo                            String?
   /// Merchant category code (ISP 18245) classifying types of goods and services
@@ -465,7 +466,7 @@ model Transaction {
 
   /// Unique ID of the Entity that the Transaction belongs to
   entity_id        String?
-  /// Unique ID of the spend limit associated with the Transaction
+  /// Unique ID of the spend limit associated with the Transaction TODO - TOFIX?
   limit_id         String?
   /// Unique ID of the Merchant that the Transaction belongs to
   merchant_id      String?
@@ -479,15 +480,69 @@ model Transaction {
   // Actual Relationships ----------------------------------------------------
 
   /// Card that this Transaction belongs to
-  card_id             String?
+  card_id                     String?
   /// Card that this Transaction belongs to
-  card                Card?   @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  card                        Card?                                 @relation(fields: [card_id], references: [id], onDelete: Cascade)
   /// User ID of the User that is the card holder of this Transaction
-  card_holder_user_id String?
+  card_holder_user_id         String?
   /// User that is the card holder of this Transaction
-  card_holder_user    User?   @relation("UserTransaction", fields: [card_holder_user_id], references: [id], onDelete: Cascade)
+  card_holder_user            User?                                 @relation("UserTransaction", fields: [card_holder_user_id], references: [id], onDelete: Cascade)
+  // Accounting field selections for this Transaction
+  accounting_field_selections TransactionAccountingFieldSelection[]
 
   @@map("transactions")
+}
+
+// TransactionAccountingFieldSelection
+model TransactionAccountingFieldSelection {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Transaction Accounting Field Selection
+  //  id            String                          @id
+  // TODO - skipping category_info (TOFIX?)
+  /// External code of the accounting field option (displayed on the ERP)
+  external_code String?
+  /// External ID of the accounting field option (displayed on the ERP)
+  external_id   String?
+  /// Name of the accounting field option
+  name          String?
+  /// Source type that added this selection
+  source_type   String?
+  /// Type of the accounting field option
+  type          TransactionAccountingFieldType?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Ramp ID of the accounting field option (id in the Ramp API)
+  ramp_id String
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Unique ID of the Transaction that this field selection belongs to
+  transaction_id String
+  transaction    Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+
+  @@id([transaction_id, ramp_id])
+  @@map("transactions_accounting_field_selections")
+}
+
+/// Transaction Accounting Field Type
+enum TransactionAccountingFieldType {
+  AMORTIZATION_TEMPLATE
+  BILLABLE
+  COST_CENTER
+  CUSTOMERS_JOBS
+  DEFERRAL_CODE
+  EXPENSE_ENTITY
+  GL_ACCOUNT
+  INVENTORY_ITEM
+  JOURNAL
+  MERCHANT
+  OTHER
+  PROJECT
+  REPORTING_TAG
+  SUBSIDIARY
+  TAX_CODE
 }
 
 /// Transaction state
