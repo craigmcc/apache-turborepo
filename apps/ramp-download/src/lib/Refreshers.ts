@@ -542,6 +542,10 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
   //        console.log(`INPUT Accounting Field Selection for Transaction ${transaction.id}:`, JSON.stringify(rampAccountingFieldSelection, null, 2));
           const accountingFieldSelection: TransactionAccountingFieldSelection = {
+            category_info_external_id: rampAccountingFieldSelection.category_info?.external_id || null,
+            category_info_id: rampAccountingFieldSelection.category_info?.id || null,
+            category_info_name: rampAccountingFieldSelection.category_info?.name || null,
+            category_info_type: rampAccountingFieldSelection.category_info?.type || null,
             external_code: rampAccountingFieldSelection.external_code,
             external_id: rampAccountingFieldSelection.external_id,
             name: rampAccountingFieldSelection.name,

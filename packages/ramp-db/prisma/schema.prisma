@@ -499,17 +499,24 @@ model TransactionAccountingFieldSelection {
 
   /// Primary key for this Transaction Accounting Field Selection
   //  id            String                          @id
-  // TODO - skipping category_info (TOFIX?)
+  /// Category Info: External ID of accounting field
+  category_info_external_id String?
+  /// Category Info: ID of accounting field (within Ramp)
+  category_info_id          String?
+  /// Category Info: Name of accounting field
+  category_info_name        String?
+  /// Category Info: Type of accounting field
+  category_info_type        TransactionAccountingFieldType?
   /// External code of the accounting field option (displayed on the ERP)
-  external_code String?
+  external_code             String?
   /// External ID of the accounting field option (displayed on the ERP)
-  external_id   String?
+  external_id               String?
   /// Name of the accounting field option
-  name          String?
+  name                      String?
   /// Source type that added this selection
-  source_type   String?
+  source_type               String?
   /// Type of the accounting field option
-  type          TransactionAccountingFieldType?
+  type                      TransactionAccountingFieldType?
 
   // Potential Relationships -------------------------------------------------
 
