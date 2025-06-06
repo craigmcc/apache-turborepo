@@ -273,10 +273,10 @@ export async function refreshLimits(accessToken: string): Promise<void> {
           limit_cc: rampLimit.restrictions.limit?.currency_code,
           next_interval_reset: rampLimit.restrictions.next_interval_reset || null,
           start_of_interval: rampLimit.restrictions.start_of_interval || null,
-          temporary_limit_amt: rampLimit.restrictions.temporary_limit?.amount,
-          temporary_limit_cc: rampLimit.restrictions.temporary_limit?.currency_code,
-          transaction_amount_limit_amt: rampLimit.restrictions.transaction_amount_limit?.amount,
-          transaction_amount_limit_cc: rampLimit.restrictions.transaction_amount_limit?.currency_code,
+          temporary_limit_amt: rampLimit.restrictions.temporary_limit?.amount || null,
+          temporary_limit_cc: rampLimit.restrictions.temporary_limit?.currency_code || null,
+          transaction_amount_limit_amt: rampLimit.restrictions.transaction_amount_limit?.amount || null,
+          transaction_amount_limit_cc: rampLimit.restrictions.transaction_amount_limit?.currency_code || null,
           suspended: rampLimit.state === "SUSPENDED",
         };
 //        console.log(`Upserting LimitSpendingRestrictions ${count+1}`, JSON.stringify(limitSpendingRestrictions, null, 2));
