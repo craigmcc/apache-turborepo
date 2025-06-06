@@ -210,9 +210,9 @@ export type RampLimitRestrictions = {
   // Date/time this interval started (ISO 8601 format)
   start_of_interval: string | null;
   // Temporary spending limit
-  temporary_limit: RampAmount;
+  temporary_limit: RampAmount | null;
   // Per-transaction spending limit;
-  transaction_amount_limit: RampAmount;
+  transaction_amount_limit: RampAmount | null;
 }
 
 export type RampLimitRestrictionsInterval =
@@ -237,7 +237,7 @@ export type RampLimitUser = {
 }
 
 /**
- * A Ramp Spend Program object.
+ * A Ramp Spend-Program object.
  */
 export type RampSpendProgram = {
   // Unique Identifier of the Spend Program
@@ -280,11 +280,11 @@ export type RampTransaction = {
   // Date/time of the Transaction (ISO 8601 format) for accounting purposes
   accounting_date: string | null;
   // List of accounting fields selected to code the transaction
-  accounting_field_selections: TransactionAccountingFieldSelection[] | null;
+  accounting_field_selections: RampTransactionAccountingFieldSelection[] | null;
   // Settled amount of the Transaction (amount)
   amount: number | null;
   // Unique ID of the CardHolder for this Transaction
-  card_holder: TransactionCardHolder | null;
+  card_holder: RampTransactionCardHolder | null;
   // Unique ID of the Card for this Transaction
   card_id: string | null;
   // Was the Transaction processed using a card present terminal?
@@ -296,7 +296,7 @@ export type RampTransaction = {
   // Unique ID of the Spend Limit for this transaction
   limit_id: string | null;
   // Line items for this transaction
-  line_items: TransactionLineItem[] | null;
+  line_items: RampTransactionLineItem[] | null;
   // Optional memo for this Transaction
   memo: string | null;
   /// Merchant category code (ISP 18245) classifying types of goods and services
@@ -318,11 +318,11 @@ export type RampTransaction = {
   // Unique ID of the Spend Program for this Transaction
   spend_program_id: string | null;
   // Current state of this Transaction
-  state: TransactionState | null;
+  state: RampTransactionState | null;
   /// Unique ID of the Statement associated with this Transaction
   statement_id: string | null;
   // Status of synchronization for this transaction
-  sync_status: TransactionSyncStatus;
+  sync_status: RampTransactionSyncStatus;
   // Date/time the transaction was synced (ISO 8601 format)
   synced_at: string | null;
   // Unique ID of the Trip associated with this Transaction
@@ -333,7 +333,7 @@ export type RampTransaction = {
   user_transaction_time: string | null;
 };
 
-export type TransactionAccountingFieldCategoryInfo = {
+export type RampTransactionAccountingFieldCategoryInfo = {
   // External ID of this option (should uniquely identify it on the ERP)
   external_id: string | null;
   // Unique ID of this accounting field (within Ramp)
@@ -341,12 +341,12 @@ export type TransactionAccountingFieldCategoryInfo = {
   // Name of this accounting field option
   name: string | null;
   // Type of this accounting field
-  type: TransactionAccountingFieldType | null;
+  type: RampTransactionAccountingFieldType | null;
 }
 
-export type TransactionAccountingFieldSelection = {
+export type RampTransactionAccountingFieldSelection = {
   // The accounting field category info this option belongs to
-  category_info: TransactionAccountingFieldCategoryInfo | null;
+  category_info: RampTransactionAccountingFieldCategoryInfo | null;
   // External code of this option (displayed on the ERP)
   external_code: string | null;
   // External ID of this option (should uniquely identify it on the ERP)
@@ -360,10 +360,10 @@ export type TransactionAccountingFieldSelection = {
     type: string | null;
   } | null;
   // Accounting field type
-  type: TransactionAccountingFieldType | null;
+  type: RampTransactionAccountingFieldType | null;
 };
 
-export type TransactionCardHolder = {
+export type RampTransactionCardHolder = {
   department_id: string | null;
   department_name: string | null;
   employee_id: string | null;
@@ -374,25 +374,25 @@ export type TransactionCardHolder = {
   user_id: string | null;
 }
 
-export type TransactionLineItem = {
+export type RampTransactionLineItem = {
   amount: RampAmount | null;
   converted_amount: RampAmount | null;
   // Accounting Field Selections relevant to this line item
-  accounting_field_selections: TransactionAccountingFieldSelection[] | null;
+  accounting_field_selections: RampTransactionAccountingFieldSelection[] | null;
   memo: string | null;
 }
 
-export type TransactionAccountingFieldType =
+export type RampTransactionAccountingFieldType =
   "AMORTIZATION_TEMPLATE" | "BILLABLE" | "COST_CENTER" | "CUSTOMERS_JOBS" |
   "DEFERRAL_CODE" | "EXPENSE_ENTITY" | "GL_ACCOUNT" | "INVENTORY_ITEM" |
   "JOURNAL" | "MERCHANT" | "OTHER" | "PROJECT" | "REPORTING_TAG" |
   "SUBSIDIARY" | "TAX_CODE";
 
-export type TransactionState =
+export type RampTransactionState =
   "ALL" | "CLEARED" | "COMPLETION" | "DECLINED" |
   "ERROR" | "PENDING" | "PENDING_INITIATION";
 
-export type TransactionSyncStatus =
+export type RampTransactionSyncStatus =
   "NOT_SYNC_READY" | "SYNCED" | "SYNC_READY";
 
 /**

@@ -90,13 +90,12 @@ model Card {
   // Actual Relationships ----------------------------------------------------
 
   /// Unique ID of the Cardholder (User) that this Card belongs to
-  cardholder_id         String
-  /// User that this Card belongs to
+  cardholder_id         String?
   cardholder            User?                     @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
   // The LimitCards associated with this Card
-  LimitCard             LimitCard[]               @relation("CardLimitCard")
+  LimitCard             LimitCard[]
   /// Spending restrictions for this Card (1:1 relationship)
-  spending_restrictions CardSpendingRestrictions? @relation()
+  spending_restrictions CardSpendingRestrictions?
   /// Transactions for this Card
   Transaction           Transaction[]
 
@@ -219,14 +218,14 @@ model Limit {
   // Actual Relationships ----------------------------------------------------
 
   /// Info about Cards that belong to this Limit
-  cards                 LimitCard[]                @relation("LimitLimitCard")
+  cards                 LimitCard[]
   /// Unique ID of the spend program that this Limit is associated with
   spend_program_id      String?
-  spend_program         SpendProgram?              @relation("SpendProgramLimit", fields: [spend_program_id], references: [id], onDelete: Cascade)
+  spend_program         SpendProgram?              @relation(fields: [spend_program_id], references: [id], onDelete: Cascade)
   /// Spending restrictions for this Limit (1:1 relationship)
-  spending_restrictions LimitSpendingRestrictions? @relation("LimitLimitSpendingRestrictions", fields: [id], references: [limit_id])
+  spending_restrictions LimitSpendingRestrictions?
   /// Info about Users that belong to this Limit
-  users                 LimitUser[]                @relation("LimitLimitUser")
+  users                 LimitUser[]
 
   @@map("limits")
 }
@@ -267,10 +266,10 @@ model LimitCard {
 
   /// Unique ID of the Card that this LimitCard belongs to
   card_id  String
-  card     Card   @relation("CardLimitCard", fields: [card_id], references: [id], onDelete: Cascade)
+  card     Card   @relation(fields: [card_id], references: [id], onDelete: Cascade)
   /// Unique ID of the Limit that this LimitCard belongs to
   limit_id String
-  limit    Limit  @relation("LimitLimitCard", fields: [limit_id], references: [id])
+  limit    Limit  @relation(fields: [limit_id], references: [id], onDelete: Cascade)
 
   @@id([limit_id, card_id])
   @@map("limits_cards")
@@ -280,7 +279,7 @@ model LimitCard {
 model LimitSpendingRestrictions {
   // Scalar Fields -----------------------------------------------------------
 
-  /// Primary key for this Limit Spending Restrictions (same as RampLimit.id)
+  /// Primary key for this Limit Spending Restrictions (same as Limit.id)
   limit_id                     String                                  @id
   /// Comma-separated list of allowed Ramp categories
   allowed_categories           String?
@@ -318,7 +317,7 @@ model LimitSpendingRestrictions {
   // Actual Relationships ----------------------------------------------------
 
   /// The Limit that this Spending Restrictions belongs to (1:1 relationship)
-  limit Limit? @relation("LimitLimitSpendingRestrictions")
+  limit Limit @relation(fields: [limit_id], references: [id], onDelete: Cascade)
 
   @@map("limits_spending_restrictions")
 }
@@ -340,12 +339,12 @@ enum LimitSpendingLimitRestrictionsInterval {
 model LimitUser {
   // Actual Relationships ----------------------------------------------------
 
-  /// Unique ID of the User that this LimitUser belongs to
-  user_id  String
-  user     User   @relation("UserLimitUser", fields: [user_id], references: [id])
   /// Unique ID of the Limit that this LimitUser belongs to
   limit_id String
-  limit    Limit  @relation("LimitLimitUser", fields: [limit_id], references: [id])
+  limit    Limit  @relation(fields: [limit_id], references: [id], onDelete: Cascade)
+  /// Unique ID of the User that this LimitUser belongs to
+  user_id  String
+  User     User?  @relation(fields: [user_id], references: [id])
 
   @@id([limit_id, user_id])
   @@map("limits_users")
@@ -401,7 +400,7 @@ model SpendProgram {
   // Actual Relationships ----------------------------------------------------
 
   /// Limits that belong to this Spend Program
-  limits Limit[] @relation("SpendProgramLimit")
+  limits Limit[]
 
   @@map("spend_programs")
 }
@@ -415,7 +414,6 @@ model Transaction {
   // TODO - skipping accounting_categories (Deprecated)
   /// Date for this transaction for accounting purposes
   accounting_date                 String?
-  // TODO - skipping accounting_field_selections (TOFIX)
   /// Settled amount of the Transaction (amount)
   amount_amt                      Int?
   /// Settled amount of the Transaction (currency_code)
@@ -423,11 +421,8 @@ model Transaction {
   // TODO - skipping attendees
   /// Was the transaction processed using a card present terminal?
   card_present                    Boolean?
-  /// Currency that the transaction settled in  TODO - redundant to amount_cc?
-  currency_code                   String?
   // TODO - skipping decline_details
   // TODO - skipping disputes
-  // TODO - skipping line_items (TOFIX?)
   /// Optional memo for this Transaction
   memo                            String?
   /// Merchant category code (ISP 18245) classifying types of goods and services
@@ -479,16 +474,18 @@ model Transaction {
 
   // Actual Relationships ----------------------------------------------------
 
-  /// Card that this Transaction belongs to
-  card_id                     String?
-  /// Card that this Transaction belongs to
-  card                        Card?                                 @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  /// Accounting field selections for this Transaction
+  accounting_field_selections           TransactionAccountingFieldSelection[]
   /// User ID of the User that is the card holder of this Transaction
-  card_holder_user_id         String?
-  /// User that is the card holder of this Transaction
-  card_holder_user            User?                                 @relation("UserTransaction", fields: [card_holder_user_id], references: [id], onDelete: Cascade)
-  // Accounting field selections for this Transaction
-  accounting_field_selections TransactionAccountingFieldSelection[]
+  card_holder_user_id                   String?
+  card_holder_user                      User?                                         @relation(fields: [card_holder_user_id], references: [id], onDelete: Cascade)
+  /// Card that this Transaction belongs to
+  card_id                               String?
+  card                                  Card?                                         @relation(fields: [card_id], references: [id], onDelete: Cascade)
+  /// Line items for this Transaction
+  line_items                            TransactionLineItem[]
+  /// Line item accounting field selections for this Transaction
+  line_item_accounting_field_selections TransactionLineItemAccountingFieldSelection[]
 
   @@map("transactions")
 }
@@ -497,8 +494,8 @@ model Transaction {
 model TransactionAccountingFieldSelection {
   // Scalar Fields -----------------------------------------------------------
 
-  /// Primary key for this Transaction Accounting Field Selection
-  //  id            String                          @id
+  /// Ramp ID of the accounting field option (id in the Ramp API)
+  ramp_id                   String
   /// Category Info: External ID of accounting field
   category_info_external_id String?
   /// Category Info: ID of accounting field (within Ramp)
@@ -520,9 +517,6 @@ model TransactionAccountingFieldSelection {
 
   // Potential Relationships -------------------------------------------------
 
-  /// Ramp ID of the accounting field option (id in the Ramp API)
-  ramp_id String
-
   // Actual Relationships ----------------------------------------------------
 
   /// Unique ID of the Transaction that this field selection belongs to
@@ -531,6 +525,78 @@ model TransactionAccountingFieldSelection {
 
   @@id([transaction_id, ramp_id])
   @@map("transactions_accounting_field_selections")
+}
+
+// Transaction Line Item (part of https://ramp.com/developer/v1/transactions)
+model TransactionLineItem {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Amount of the line item (amount)
+  amount_amt           Int?
+  /// Amount of the line item (currency_code)
+  amount_cc            String?
+  /// Converted amount of the line item (amount)
+  converted_amount_amt Int?
+  /// Converted amount of the line item (currency_code)
+  converted_amount_cc  String?
+  /// Optional memo of the line item
+  memo                 String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Zero-relative index of the line item in the transaction
+  index_line_item             Int
+  /// Unique ID of the Transaction that this line item belongs to
+  transaction_id              String
+  transaction                 Transaction                                   @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  /// The accounting field selections for this line item
+  accounting_field_selections TransactionLineItemAccountingFieldSelection[]
+
+  @@id([transaction_id, index_line_item])
+  @@map("transactions_line_items")
+}
+
+// Transaction Accounting Field Type for Line Items (part of https://ramp.com/developer/v1/transactions)
+model TransactionLineItemAccountingFieldSelection {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Category Info: External ID of accounting field
+  category_info_external_id String?
+  /// Category Info: ID of accounting field (within Ramp)
+  category_info_id          String?
+  /// Category Info: Name of accounting field
+  category_info_name        String?
+  /// Category Info: Type of accounting field
+  category_info_type        TransactionAccountingFieldType?
+  /// External code of the accounting field option (displayed on the ERP)
+  external_code             String?
+  /// External ID of the accounting field (displayed on the ERP)
+  external_id               String?
+  /// Name of the accounting field
+  name                      String?
+  /// Source type that added this selection
+  source_type               String?
+  /// Type of the accounting field
+  type                      TransactionAccountingFieldType?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Zero-relative index of the line item in the transaction
+  index_line_item       Int
+  /// Ramp ID of the accounting field option (id in the Ramp API)
+  ramp_id               String
+  /// Unique ID of the Transaction
+  transaction_id        String
+  transaction           Transaction         @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  // Transaction Line Item that this Accounting Field Selection belongs to
+  transaction_line_item TransactionLineItem @relation(fields: [transaction_id, index_line_item], references: [transaction_id, index_line_item], onDelete: Cascade)
+
+  @@id([transaction_id, index_line_item, ramp_id])
+  @@map("transactions_line_items_accounting_field_selections")
 }
 
 /// Transaction Accounting Field Type
@@ -609,12 +675,11 @@ model User {
   cards         Card[]
   /// Unique ID of the Department that the User belongs to
   department_id String?
-  /// Department that the User belongs to
-  department    Department?   @relation(fields: [department_id], references: [id], onDelete: Cascade)
+  department    Department?   @relation(fields: [department_id], references: [id])
   /// Limits this User belongs to
-  limit_users   LimitUser[]   @relation("UserLimitUser")
+  limit_users   LimitUser[]
   /// Transactions this User is the cardholder for
-  transactions  Transaction[] @relation("UserTransaction")
+  transactions  Transaction[]
 
   @@map("users")
 }

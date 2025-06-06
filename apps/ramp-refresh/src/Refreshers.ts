@@ -425,7 +425,6 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
           ? rampTransaction.card_holder.user_id
           : null,
         card_present: rampTransaction.card_present,
-        currency_code: rampTransaction.currency_code, // TODO - redundant to amount_cc
         entity_id: rampTransaction.entity_id,
         limit_id: rampTransaction.limit_id,
         memo: rampTransaction.memo,
