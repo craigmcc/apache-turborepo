@@ -14,6 +14,10 @@ import {
   LimitSpendingRestrictions,
   LimitUser,
   SpendProgram,
+  Transaction,
+  TransactionAccountingFieldSelection,
+  TransactionLineItem,
+  TransactionLineItemAccountingFieldSelection,
   User
 } from "@repo/ramp-db/client";
 
@@ -70,6 +74,28 @@ export type LimitUserPlus = LimitUser & {
 
 export type SpendProgramPlus = SpendProgram & {
   limits?: Limit[] | null;
+}
+
+export type TransactionPlus = Transaction & {
+  accounting_field_selections?: TransactionAccountingFieldSelectionPlus[] | null;
+  card?: Card | null;
+  card_holder_user?: User | null;
+  line_items?: TransactionLineItemPlus[] | null;
+  line_item_accounting_field_selections?: TransactionLineItemAccountingFieldSelectionPlus[] | null;
+}
+
+export type TransactionAccountingFieldSelectionPlus = TransactionAccountingFieldSelection & {
+  transaction?: TransactionPlus | null;
+}
+
+export type TransactionLineItemPlus = TransactionLineItem & {
+  accounting_field_selections?: TransactionLineItemAccountingFieldSelectionPlus[] | null;
+  transaction?: TransactionPlus | null;
+}
+
+export type TransactionLineItemAccountingFieldSelectionPlus = TransactionLineItemAccountingFieldSelection & {
+  transaction: TransactionPlus | null;
+  transaction_line_item?: TransactionLineItemPlus | null;
 }
 
 export type UserPlus = User & {

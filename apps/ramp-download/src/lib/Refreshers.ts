@@ -46,7 +46,8 @@ import {
   createUser,
 } from "@/lib/Creators"
 
-const UNKNOWN_CARD_ID_REPLACEMENT = "f6d3437d-a174-4e76-8340-4c7f0a9def0d";
+const UNKNOWN_CARD_ID_REPLACEMENT = "3523fed1-69c6-497b-ab76-973349753801";
+const UNKNOWN_USER_ID_REPLACEMENT = "01974b9c-a5b3-7445-a39e-cd0925288a50";
 
 // Public Objects ------------------------------------------------------------
 
@@ -304,28 +305,26 @@ export async function refreshLimits(accessToken: string): Promise<void> {
         for (const rampLimitUser of rampLimit.users) {
 
           if (rampLimitUser.user_id && !userIds.has(rampLimitUser.user_id)) {
-
-//            console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(30)}: skipping bad user_id ${rampLimitUser.user_id}`);
+            console.log(`Limit ${rampLimit.id} replacing bad user_id ${rampLimitUser.user_id}`);
             await recordViolation("Limit", rampLimit.id, "User", rampLimitUser.user_id);
+            rampLimitUser.user_id = UNKNOWN_USER_ID_REPLACEMENT;
+          }
 
-          } else {
-
-//            console.log("Processing LimitUser", JSON.stringify(rampLimitUser, null, 2));
-            const limitUser = createLimitUser(rampLimitUser, rampLimit);
+//          console.log("Processing LimitUser", JSON.stringify(rampLimitUser, null, 2));
+          const limitUser = createLimitUser(rampLimitUser, rampLimit);
 
 //            console.log("Upserting LimitUser", JSON.stringify(limitUser, null, 2));
-            await dbRamp.limitUser.upsert({
-              where: {
-                limit_id_user_id: {
-                  limit_id: rampLimit.id,
-                  user_id: rampLimitUser.user_id
-                }
-              },
-              update: limitUser,
-              create: limitUser,
-            });
+          await dbRamp.limitUser.upsert({
+            where: {
+              limit_id_user_id: {
+                limit_id: rampLimit.id,
+                user_id: rampLimitUser.user_id
+              }
+            },
+            update: limitUser,
+            create: limitUser,
+          });
 
-          }
 
         }
 
@@ -415,10 +414,9 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
         transaction.card_id = UNKNOWN_CARD_ID_REPLACEMENT;
       }
       if (transaction.card_holder_user_id && !userIds.has(transaction.card_holder_user_id)) {
-        console.log(`Transaction ${transaction.id}: skipping bad card_holder_user_id ${transaction.card_holder_user_id}`);
+        console.log(`Transaction ${transaction.id}: replacing bad card_holder_user_id ${transaction.card_holder_user_id}`);
         await recordViolation("Transaction", transaction.id, "User", transaction.card_holder_user_id);
-        // TODO - do a replacement with an UNKNOWN_USER_ID_REPLACEMENT
-        continue;
+        transaction.card_holder_user_id = UNKNOWN_USER_ID_REPLACEMENT;
       }
 
       await dbRamp.transaction.upsert({
@@ -489,10 +487,10 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
               const accountingFieldSelection
                 = createTransactionLineItemAccountingFieldSelection(
-                  rampAccountingFieldSelection,
-                  rampTransaction,
-                  index_line_item
-                );
+                rampAccountingFieldSelection,
+                rampTransaction,
+                index_line_item
+              );
 
               await dbRamp.transactionLineItemAccountingFieldSelection.upsert({
                 where: {
