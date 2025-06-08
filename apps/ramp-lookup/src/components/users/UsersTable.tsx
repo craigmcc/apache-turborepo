@@ -12,10 +12,12 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -23,10 +25,9 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { useSelectedDepartmentContext } from "@/contexts/SelectedDepartmentContext";
-import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
 import { DepartmentPlus, UserPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ} from "lucide-react";
 
 // Public Objects ------------------------------------------------------------
 
@@ -40,55 +41,41 @@ export type UsersTableProps = {
 export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
   const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
-  const [nameFilter, setNameFilter] = useState<string>("");
+  const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-  const {selectedDepartment, changeSelectedDepartment} = useSelectedDepartmentContext();
-  const {selectedUser, changeSelectedUser} = useSelectedUserContext();
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "user_name", desc: false },
+  ]);
+  const [userNameFilter, setUserNameFilter] = useState<string>("");
 
-  // Whenever the selected department or name filter changes, reapply filters
+  // Save the departments for name formatting
+  departments = allDepartments;
+
+  // Apply selection filters whenever they change
   useEffect(() => {
-//    console.log(`filteringUsers: departmentFilter='${selectedDepartment?.name || "All"'} nameFilter='${nameFilter}'`);
+
     let matchingUsers: UserPlus[] = allUsers;
-    // Filter by selected department (if any)
-    if (selectedDepartment) {
-      matchingUsers = matchingUsers.filter(user => user.department?.id === selectedDepartment.id);
-    }
-    // Filter by name (if any)
-    if (nameFilter.length > 0) {
-      const filterValue = nameFilter.toLowerCase();
+
+    if (departmentNameFilter.length > 0) {
       matchingUsers = matchingUsers.filter(user => {
-        const fullName = `${user.last_name}, ${user.first_name}`.toLowerCase();
-        return fullName.includes(filterValue);
+        const departmentName = formatDepartmentName(user);
+        return departmentName.toLowerCase().includes(departmentNameFilter);
       });
     }
-    // Set the current filtered users
-    setFilteredUsers(matchingUsers);
-  }, [allUsers, nameFilter, selectedDepartment]);
 
-  function handleNameFilter(event: ChangeEvent<HTMLInputElement>) {
-    const filterValue = event.target.value.toLowerCase();
-    setNameFilter(filterValue);
-  }
-
-  function handleSelectDepartment(event: ChangeEvent<HTMLSelectElement>) : void {
-    const departmentId = event.target.value;
-    const department = allDepartments.find(d => d.id === departmentId);
-    changeSelectedDepartment(department || null);
-  }
-
-  function handleSelectUser(cellId: string, user: UserPlus) {
-//    console.log(`handleSelectUser cellId=${cellId} user=${user.last_name}, ${user.first_name}`);
-    if (cellId.endsWith("_name")) {
-      if (user.id === selectedUser?.id) {
-        changeSelectedUser(null);
-      } else {
-        changeSelectedUser(user);
-      }
+    if (userNameFilter.length > 0) {
+      matchingUsers = matchingUsers.filter(user => {
+        const userName = formatUserName(user);
+        return userName.toLowerCase().includes(userNameFilter);
+      });
     }
-  }
+
+    setFilteredUsers(matchingUsers);
+
+  }, [allUsers, departmentNameFilter, userNameFilter]);
 
   // Overall table instance
   const table = useReactTable<UserPlus>({
@@ -96,9 +83,12 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
     data: filteredUsers,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
       pagination,
+      sorting,
     },
   });
 
@@ -112,34 +102,26 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId="departmentSelect">
-            <span>Filter by Department:</span>
-            <Form.Select
-              onChange={handleSelectDepartment}
-              value={selectedDepartment?.id || ""}
-            >
-              <option value="">(All Departments)</option>
-              {allDepartments.map(department => (
-                <option key={department.id} value={department.id}>
-                  {department.name}
-                </option>
-              ))}
-            </Form.Select>
+          <Form.Group controlId="departmentFilter">
+            <span>Filter by Department Name:</span>
+            <Form.Control
+              onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={departmentNameFilter}
+            />
           </Form.Group>
         </Col>
         <Col>
           <Form.Group controlId="nameFilter">
-            <span>Filter by Name:</span>
+            <span>Filter by User Name:</span>
             <Form.Control
-              onChange={handleNameFilter}
+              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
               type="text"
-              value={nameFilter}
+              value={userNameFilter}
             />
           </Form.Group>
-        </Col>
-        <Col className="text-center">
-          Click on a name to select or deselect that User.
         </Col>
       </Row>
 
@@ -151,6 +133,24 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                    <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
+                      )}
+                    </span>
+                    </>
+                  ) :
+                  null
+                }
               </th>
             ))}
           </tr>
@@ -159,15 +159,9 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
         <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr
-            className={selectedUser?.id === row.original.id ? "table-primary" : ""}
-            key={row.id}
-          >
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td
-                key={cell.id}
-                onClick={() => handleSelectUser(cell.id, row.original)}
-              >
+              <td key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}
@@ -196,31 +190,32 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
  */
 const columnHelper = createColumnHelper<UserPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor(row => formatDepartmentName(row), {
     cell: info => {
-      const name = `${info.row.original.last_name}, ${info.row.original.first_name}`;
-      return <span>{name}</span>;
+      return <span>{formatDepartmentName(info.row.original)}</span>
     },
-    header: "Name",
-    id: "name",
+    header: "Department Name",
+    id: "department_name",
+  }),
+  columnHelper.accessor(row => formatUserName(row), {
+    cell: info => {
+      return <span>{formatUserName(info.row.original)}</span>;
+    },
+    header: "User Name",
+    id: "user_name",
   }),
   columnHelper.display({
-    cell: info => info.row.original.email || "N/A",
-    header: "Email",
-    id: "email",
+    cell: info => info.row.original.email,
+    header: "User Email",
+    id: "email_address",
   }),
   columnHelper.display({
-    cell: info => info.row.original.department?.name || "N/A",
-    header: "Department",
-    id: "department",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.role?.split("_")[1] || "N/A",
+    cell: info => info.row.original.role?.split("_")[1] || "n/a",
     header: "Role",
     id: "role",
   }),
   columnHelper.display({
-    cell: info => info.row.original.status?.split("_")[1] || "N/A",
+    cell: info => info.row.original.status?.split("_")[1] || "n/a",
     header: "Status",
     id: "status",
   }),
@@ -235,3 +230,25 @@ const columns = [
     id: "limitsCount",
   }),
 ];
+
+/**
+ * Save the department list for name formatting.
+ */
+let departments: DepartmentPlus[] = [];
+
+/**
+ * Format the department name for a user.
+ */
+function formatDepartmentName(user: UserPlus): string {
+  if (!user.department_id) return "n/a";
+  const department = departments.find(department => department.id === user.department_id);
+  return department?.name || "n/a";
+}
+
+
+/**
+ * Format the user name for a user.
+ */
+function formatUserName(user: UserPlus): string {
+  return `${user.last_name}, ${user.first_name}`;
+}

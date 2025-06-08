@@ -112,10 +112,10 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
           <Form.Group controlId={departmentNameFilter}>
             <span>Filter by Department Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={departmentNameFilter}
               onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={departmentNameFilter}
             />
           </Form.Group>
         </Col>
@@ -123,10 +123,10 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
           <Form.Group controlId={userNameFilter}>
             <span>Filter by User Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={userNameFilter}
               onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={userNameFilter}
             />
           </Form.Group>
         </Col>
@@ -134,10 +134,10 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
           <Form.Group controlId={cardNameFilter}>
             <span>Filter by Card Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={cardNameFilter}
               onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={cardNameFilter}
             />
           </Form.Group>
         </Col>
@@ -281,8 +281,6 @@ const columns = [
     id: "suspended",
   }),
 ];
-
-// Private Objects -----------------------------------------------------------
 
 /**
  * Save the department list for name formatting.

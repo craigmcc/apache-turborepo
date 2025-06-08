@@ -121,13 +121,13 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: false,
+    onPaginationChange: setPagination,
     onSortingChange: setSorting,
     pageCount: Math.ceil(filteredTransactions.length / pagination.pageSize),
     state: {
       pagination,
       sorting,
     },
-    onPaginationChange: setPagination,
   });
   return (
     <Container className="p-2 mb-4 bg-light rounded-3" fluid>
@@ -142,10 +142,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={fromDateFilter}>
             <span>Filter by From Date:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter YYYYMMDD"
-              value={fromDateFilter}
               onChange={e => setFromDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
+              type="text"
+              value={fromDateFilter}
             />
           </Form.Group>
         </Col>
@@ -153,10 +153,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={toDateFilter}>
             <span>Filter by To Date:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter YYYYMMDD"
-              value={toDateFilter}
               onChange={e => setToDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
+              type="text"
+              value={toDateFilter}
             />
           </Form.Group>
         </Col>
@@ -164,10 +164,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={userNameFilter}>
             <span>Filter by User Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={userNameFilter}
               onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={userNameFilter}
             />
           </Form.Group>
         </Col>
@@ -175,10 +175,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={cardNameFilter}>
             <span>Filter by Card Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={cardNameFilter}
               onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={cardNameFilter}
             />
           </Form.Group>
         </Col>
@@ -186,10 +186,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={merchantFilter}>
             <span>Filter by Merchant Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of a name to filter"
-              value={merchantFilter}
               onChange={e => setMerchantFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={merchantFilter}
             />
           </Form.Group>
         </Col>
@@ -197,10 +197,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           <Form.Group controlId={glAccountFilter}>
             <span>Filter by GL Account or Name:</span>
             <Form.Control
-              type="text"
-              placeholder="Enter part of GL account or name"
-              value={glAccountFilter}
               onChange={e => setGlAccountFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of GL account or name"
+              type="text"
+              value={glAccountFilter}
             />
           </Form.Group>
         </Col>
