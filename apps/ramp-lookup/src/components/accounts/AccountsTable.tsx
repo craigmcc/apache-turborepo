@@ -56,44 +56,6 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     setFilteredAccounts(matchingAccounts);
   }, [allAccounts, nameFilter, typeFilter]);
 
-  // Column definitions
-  const columnHelper = createColumnHelper<AccountingGLAccountPlus>();
-  const columns = [
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.code}</span>;
-      },
-      header: "GL Account",
-      id: "code",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.classification}</span>;
-      },
-      header: "Account Type",
-      id: "classification",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.name}</span>;
-      },
-      header: "Account Name",
-      id: "name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const is_active = info.row.original.is_active;
-        if (is_active) {
-          return <span className="text-success">Yes</span>;
-        } else {
-          return <span className="text-danger">No</span>;
-        }
-      },
-      header: "Active?",
-      id: "active",
-    }),
-  ];
-
   // Overall table instance
   const table = useReactTable<AccountingGLAccountPlus>({
     columns,
@@ -191,4 +153,44 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
 const ACCOUNT_TYPES = [
   "ANY", "ASSET", "CREDCARD", "EQUITY", "EXPENSE",
   "LIABILITY", "REVENUE", "UNKNOWN",
+];
+
+/**
+ * Column definitions for the table.
+ */
+const columnHelper = createColumnHelper<AccountingGLAccountPlus>();
+const columns = [
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.code}</span>;
+    },
+    header: "GL Account",
+    id: "code",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.classification}</span>;
+    },
+    header: "Account Type",
+    id: "classification",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.name}</span>;
+    },
+    header: "Account Name",
+    id: "name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      const is_active = info.row.original.is_active;
+      if (is_active) {
+        return <span className="text-success">Yes</span>;
+      } else {
+        return <span className="text-danger">No</span>;
+      }
+    },
+    header: "Active?",
+    id: "active",
+  }),
 ];

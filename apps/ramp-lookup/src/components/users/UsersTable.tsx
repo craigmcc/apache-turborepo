@@ -90,49 +90,6 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
     }
   }
 
-  // Column definitions
-  const columnHelper = createColumnHelper<UserPlus>();
-  const columns = [
-    columnHelper.display({
-      cell: info => {
-        const name = `${info.row.original.last_name}, ${info.row.original.first_name}`;
-        return <span>{name}</span>;
-      },
-      header: "Name",
-      id: "name",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.email || "N/A",
-      header: "Email",
-      id: "email",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.department?.name || "N/A",
-      header: "Department",
-      id: "department",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.role?.split("_")[1] || "N/A",
-      header: "Role",
-      id: "role",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.status?.split("_")[1] || "N/A",
-      header: "Status",
-      id: "status",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.cards?.length || 0,
-      header: "#Cards",
-      id: "cardsCount",
-    }),
-    columnHelper.display({
-      cell: info => info.row.original.limit_users?.length || 0,
-      header: "#Limits",
-      id: "limitsCount",
-    }),
-  ];
-
   // Overall table instance
   const table = useReactTable<UserPlus>({
     columns,
@@ -231,3 +188,50 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
     </Container>
   );
 }
+
+// Private Objects -----------------------------------------------------------
+
+/**
+ * Column definitions for the table.
+ */
+const columnHelper = createColumnHelper<UserPlus>();
+const columns = [
+  columnHelper.display({
+    cell: info => {
+      const name = `${info.row.original.last_name}, ${info.row.original.first_name}`;
+      return <span>{name}</span>;
+    },
+    header: "Name",
+    id: "name",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.email || "N/A",
+    header: "Email",
+    id: "email",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.department?.name || "N/A",
+    header: "Department",
+    id: "department",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.role?.split("_")[1] || "N/A",
+    header: "Role",
+    id: "role",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.status?.split("_")[1] || "N/A",
+    header: "Status",
+    id: "status",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.cards?.length || 0,
+    header: "#Cards",
+    id: "cardsCount",
+  }),
+  columnHelper.display({
+    cell: info => info.row.original.limit_users?.length || 0,
+    header: "#Limits",
+    id: "limitsCount",
+  }),
+];

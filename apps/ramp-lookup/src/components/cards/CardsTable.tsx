@@ -54,12 +54,6 @@ export function CardsTable({ allCards }: CardsTableProps) {
     }
   }, [selectedUser, allCards]);
 
-  // Format an amount as a string with a currency symbol and two decimal places
-  function formatAmount(amount: number | null | undefined): string {
-    if (!amount) return "n/a";
-    return `$${amount.toFixed(2)}`;
-  }
-
   function handleSelectCard(cellId: string, card: CardPlus) {
     if (cellId.endsWith("_name")) {
       if (card.id === selectedCard?.id) {
@@ -79,73 +73,6 @@ export function CardsTable({ allCards }: CardsTableProps) {
       changeSelectedUser(null);
     }
   }
-
-  // Column definitions
-  const columnHelper = createColumnHelper<CardPlus>();
-  const columns = [
-    columnHelper.display({
-      cell: info => {
-        const user_name = `${info.row.original.cardholder?.last_name}, ${info.row.original.cardholder?.first_name}`;
-        return <span>{user_name}</span>
-      },
-      header: "User Name",
-      id: "user_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.display_name}</span>;
-      },
-      header: "Card Name",
-      id: "card_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.is_physical ? "Yes" : "No"}</span>;
-      },
-      header: "Physical?",
-      id: "is_physical",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.state}</span>;
-      },
-      header: "State",
-      id: "state",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAmount(info.row.original.spending_restrictions?.amount)}</span>;
-      },
-      header: "Interval Limit",
-      id: "amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.spending_restrictions?.interval}</span>;
-      },
-      header: "Interval",
-      id: "interval",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAmount(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
-      },
-      header: "Transaction Limit",
-      id: "transaction_amount_limit",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const suspended = info.row.original.spending_restrictions?.suspended;
-        if (suspended) {
-          return <span className="text-danger">Yes</span>;
-        } else {
-          return <span className="text-success">No</span>;
-        }
-      },
-      header: "Suspended?",
-      id: "suspended",
-    }),
-  ];
 
   // Overall table instance
   const table = useReactTable<CardPlus>({
@@ -223,4 +150,83 @@ export function CardsTable({ allCards }: CardsTableProps) {
     </Container>
   )
 
+}
+
+// Private Objects -----------------------------------------------------------
+
+/**
+ * Column definitions for the table.
+ */
+const columnHelper = createColumnHelper<CardPlus>();
+const columns = [
+  columnHelper.display({
+    cell: info => {
+      const user_name = `${info.row.original.cardholder?.last_name}, ${info.row.original.cardholder?.first_name}`;
+      return <span>{user_name}</span>
+    },
+    header: "User Name",
+    id: "user_name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.display_name}</span>;
+    },
+    header: "Card Name",
+    id: "card_name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.is_physical ? "Yes" : "No"}</span>;
+    },
+    header: "Physical?",
+    id: "is_physical",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.state}</span>;
+    },
+    header: "State",
+    id: "state",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatAmount(info.row.original.spending_restrictions?.amount)}</span>;
+    },
+    header: "Interval Limit",
+    id: "amount",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.spending_restrictions?.interval}</span>;
+    },
+    header: "Interval",
+    id: "interval",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatAmount(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
+    },
+    header: "Transaction Limit",
+    id: "transaction_amount_limit",
+  }),
+  columnHelper.display({
+    cell: info => {
+      const suspended = info.row.original.spending_restrictions?.suspended;
+      if (suspended) {
+        return <span className="text-danger">Yes</span>;
+      } else {
+        return <span className="text-success">No</span>;
+      }
+    },
+    header: "Suspended?",
+    id: "suspended",
+  }),
+];
+
+/**
+ * Format an amount as a string with two decimal places.
+ */
+function formatAmount(amount: number | null | undefined): string {
+  if (!amount) return "n/a";
+  return `$${amount.toFixed(2)}`;
 }

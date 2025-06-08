@@ -106,72 +106,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
   }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
 
-  // Column definitions
-  const columnHelper = createColumnHelper<TransactionPlus>();
-  const columns = [
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAccountingDate(info.row.original)}</span>
-      },
-      header: () => <span>Accounting Date-Time</span>,
-      id: "accounting_date",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatUserName(info.row.original)}</span>
-      },
-      header: () => <span>User Name</span>,
-      id: "user_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatCardName(info.row.original)}</span>;
-      },
-      header: () => <span>Card Name</span>,
-      id: "card_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const amount =
-          formatAmount(info.row.original.original_transaction_amount_amt,
-            info.row.original.original_transaction_amount_cc);
-        return <span>{amount}</span>;
-      },
-      header: () => <span>Original Amount</span>,
-      id: "original_amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const amount =
-          formatAmount(info.row.original.amount_amt, info.row.original.amount_cc)
-        return <span>{amount}</span>;
-      },
-      header: () => <span>Settled Amount</span>,
-      id: "settled_amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatMerchantName(info.row.original)}</span>;
-      },
-      header: () => <span>Merchant</span>,
-      id: "merchant_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatGlAccount(info.row.original)}</span>;
-      },
-      header: () => <span>GL Account</span>,
-      id: "gl_account",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.state}</span>;
-      },
-      header: () => <span>State</span>,
-      id: "state",
-    }),
-  ];
-
   // Overall table instance
   const table = useReactTable({
     columns,
@@ -310,6 +244,74 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 }
 
 // Private Objects -----------------------------------------------------------
+
+/**
+ * Column definitions for the table.
+ */
+const columnHelper = createColumnHelper<TransactionPlus>();
+const columns = [
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatAccountingDate(info.row.original)}</span>
+    },
+    header: () => <span>Accounting Date-Time</span>,
+    id: "accounting_date",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatUserName(info.row.original)}</span>
+    },
+    header: () => <span>User Name</span>,
+    id: "user_name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatCardName(info.row.original)}</span>;
+    },
+    header: () => <span>Card Name</span>,
+    id: "card_name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      const amount =
+        formatAmount(info.row.original.original_transaction_amount_amt,
+          info.row.original.original_transaction_amount_cc);
+      return <span>{amount}</span>;
+    },
+    header: () => <span>Original Amount</span>,
+    id: "original_amount",
+  }),
+  columnHelper.display({
+    cell: info => {
+      const amount =
+        formatAmount(info.row.original.amount_amt, info.row.original.amount_cc)
+      return <span>{amount}</span>;
+    },
+    header: () => <span>Settled Amount</span>,
+    id: "settled_amount",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatMerchantName(info.row.original)}</span>;
+    },
+    header: () => <span>Merchant</span>,
+    id: "merchant_name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{formatGlAccount(info.row.original)}</span>;
+    },
+    header: () => <span>GL Account</span>,
+    id: "gl_account",
+  }),
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.state}</span>;
+    },
+    header: () => <span>State</span>,
+    id: "state",
+  }),
+];
 
 /**
  * Format the accounting date for a transaction.

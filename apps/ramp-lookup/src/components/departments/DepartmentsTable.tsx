@@ -45,26 +45,6 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
     }
   }
 
-  // Column definitions
-  const columnHelper = createColumnHelper<DepartmentPlus>();
-  const columns = [
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.name}</span>;
-      },
-      header: "Name",
-      id: "name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const usersCount = info.row.original.users?.length || 0;
-        return <span>{usersCount}</span>
-      },
-      header: "#Users",
-      id: "usersCount",
-    }),
-  ];
-
   // Overall table instance
   const table = useReactTable<DepartmentPlus>({
     columns,
@@ -113,3 +93,27 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
     </Container>
   );
 }
+
+// Private Objects -----------------------------------------------------------
+
+/**
+ * Column definitions for the table.
+ */
+const columnHelper = createColumnHelper<DepartmentPlus>();
+const columns = [
+  columnHelper.display({
+    cell: info => {
+      return <span>{info.row.original.name}</span>;
+    },
+    header: "Name",
+    id: "name",
+  }),
+  columnHelper.display({
+    cell: info => {
+      const usersCount = info.row.original.users?.length || 0;
+      return <span>{usersCount}</span>
+    },
+    header: "#Users",
+    id: "usersCount",
+  }),
+];
