@@ -42,10 +42,13 @@ import {
   createSpendProgram,
   createTransaction,
   createTransactionAccountingFieldSelection,
-  createTransactionLineItem, createTransactionLineItemAccountingFieldSelection,
+  createTransactionLineItem,
+  createTransactionLineItemAccountingFieldSelection,
   createUser,
 } from "@/lib/Creators"
 
+// These are IDs that are in Ramp (so they get downloaded) but will replace
+// bad references to cards or users that have been deleted.
 const UNKNOWN_CARD_ID_REPLACEMENT = "3523fed1-69c6-497b-ab76-973349753801";
 const UNKNOWN_USER_ID_REPLACEMENT = "01974b9c-a5b3-7445-a39e-cd0925288a50";
 

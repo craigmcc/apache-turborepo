@@ -47,17 +47,6 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
     }, [allLimits]);
   */
 
-  /**
-   * Format an amount as a string with a currency and two decimal places.
-   */
-  function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
-    let formatted = cc ? `${cc} ` : "";
-    if (amt) {
-      formatted += `${(amt/100).toFixed(2)}`;
-    }
-    return formatted;
-  }
-
   // Create column helper for defining table columns
   const columnHelper = createColumnHelper<LimitPlus>();
 
@@ -99,7 +88,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
         }
       },
       header: "Shareable",
-      id: "state",
+      id: "shareable",
     }),
     columnHelper.display({
       cell: info => {
@@ -205,11 +194,6 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
         <tfoot>
         <tr>
           <th colSpan={table.getCenterLeafColumns().length}>
-            <div className="divider"/>
-          </th>
-        </tr>
-        <tr>
-          <th colSpan={table.getCenterLeafColumns().length}>
             <PaginationFooter table={table}/>
           </th>
         </tr>
@@ -221,3 +205,17 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   );
 
 }
+
+// Private Objects -----------------------------------------------------------
+
+/**
+ * Format an amount as a string with a currency and two decimal places.
+ */
+function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
+  let formatted = cc ? `${cc} ` : "";
+  if (amt) {
+    formatted += `${(amt/100).toFixed(2)}`;
+  }
+  return formatted;
+}
+

@@ -221,11 +221,6 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
         <tfoot>
         <tr>
           <th colSpan={table.getCenterLeafColumns().length}>
-            <div className="divider"/>
-          </th>
-        </tr>
-        <tr>
-          <th colSpan={table.getCenterLeafColumns().length}>
             <PaginationFooter table={table}/>
           </th>
         </tr>

@@ -47,7 +47,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     let matchingAccounts: AccountingGLAccountPlus[] = allAccounts;
     if (nameFilter.length > 0) {
       matchingAccounts = matchingAccounts.filter(account =>
-        account.name.toLowerCase().includes(nameFilter.toLowerCase())
+        account.name.toLowerCase().includes(nameFilter)
       );
     }
     if (typeFilter.length > 0) {
@@ -119,7 +119,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
           <Form.Group controlId="typeFilter">
             <span>Filter by Account Type:</span>
             <Form.Select
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={(e) => setTypeFilter(e.target.value.toLowerCase())}
               value={typeFilter}
             >
               <option key="" value="">(All Types)</option>
@@ -135,7 +135,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
           <Form.Group controlId="nameFilter">
             <span>Filter by Name:</span>
             <Form.Control
-              onChange={(e) => setNameFilter(e.target.value)}
+              onChange={(e) => setNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
               type="text"
               value={nameFilter}
@@ -170,20 +170,15 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
         ))}
         </tbody>
 
-      </table>
+        <tfoot>
+        <tr>
+          <th colSpan={table.getCenterLeafColumns().length}>
+            <PaginationFooter table={table}/>
+          </th>
+        </tr>
+        </tfoot>
 
-      <tfoot>
-      <tr>
-        <th colSpan={table.getCenterLeafColumns().length}>
-          <div className="divider"/>
-        </th>
-      </tr>
-      <tr>
-        <th colSpan={table.getCenterLeafColumns().length}>
-          <PaginationFooter table={table}/>
-        </th>
-      </tr>
-      </tfoot>
+      </table>
 
     </Container>
   );

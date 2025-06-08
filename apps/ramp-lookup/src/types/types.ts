@@ -80,8 +80,8 @@ export type TransactionPlus = Transaction & {
   accounting_field_selections?: TransactionAccountingFieldSelectionPlus[] | null;
   card?: Card | null;
   card_holder_user?: User | null;
-  line_items?: TransactionLineItemPlus[] | null;
-  line_item_accounting_field_selections?: TransactionLineItemAccountingFieldSelectionPlus[] | null;
+  line_items?: TransactionLineItem[] | null;
+  line_item_accounting_field_selections?: TransactionLineItemAccountingFieldSelection[] | null;
 }
 
 export type TransactionAccountingFieldSelectionPlus = TransactionAccountingFieldSelection & {
