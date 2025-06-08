@@ -36,7 +36,9 @@ export type TransactionsTableProps = {
 export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
   const [filteredTransactions, setFilteredTransactions] = useState<TransactionPlus[]>(allTransactions);
+  const [glAccountFilter, setGlAccountFilter] = useState<string>("");
   const [fromDateFilter, setFromDateFilter] = useState<string>(""); // YYYYMMDD
+  const [merchantFilter, setMerchantFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -50,33 +52,43 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     if (cardNameFilter.length > 0) {
       matchingTransactions = matchingTransactions.filter(transaction => {
-        const cardName = transaction.card
-          ? transaction.card.display_name
-          : "Unknown Card";
-        cardName.toLowerCase().includes(cardNameFilter);
+        const cardName = formatCardName(transaction);
+        return cardName.toLowerCase().includes(cardNameFilter);
       });
     }
 
     if (fromDateFilter.length >= 8) {
       const fromDateCompare = fromDateFilter.substring(0, 8) + "-000000";
       matchingTransactions = matchingTransactions.filter(transaction => {
-        if (transaction.accounting_date) {
-          const accountingDate = new Date(transaction.accounting_date!);
-          const accountingLocal = Timestamps.local(accountingDate);
-          return accountingLocal >= fromDateCompare;
+        const accountingDate = formatAccountingDate(transaction);
+        if (accountingDate && (accountingDate !== "n/a")) {
+          return accountingDate >= fromDateCompare;
         } else {
           return true;
         }
       });
     }
 
+    if (glAccountFilter.length > 0) {
+      matchingTransactions = matchingTransactions.filter(transaction => {
+        const glAccount = formatGlAccount(transaction);
+        return glAccount.toLowerCase().includes(glAccountFilter);
+      });
+    }
+
+    if (merchantFilter.length > 0) {
+      matchingTransactions = matchingTransactions.filter(transaction => {
+        const merchantName = formatMerchantName(transaction);
+        return merchantName.toLowerCase().includes(merchantFilter);
+      });
+    }
+
     if (toDateFilter.length >= 8) {
       const toDateCompare = toDateFilter.substring(0, 8) + "-235959";
       matchingTransactions = matchingTransactions.filter(transaction => {
-        if (transaction.accounting_date) {
-          const accountingDate = new Date(transaction.accounting_date!);
-          const accountingLocal = Timestamps.local(accountingDate);
-          return accountingLocal <= toDateCompare;
+        const accountingDate = formatAccountingDate(transaction);
+        if (accountingDate && (accountingDate !== "n/a")) {
+          return accountingDate <= toDateCompare;
         } else {
           return true;
         }
@@ -85,49 +97,35 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     if (userNameFilter.length > 0) {
       matchingTransactions = matchingTransactions.filter(transaction => {
-        const userName = transaction.card_holder_user
-          ? `${transaction.card_holder_user.last_name}, ${transaction.card_holder_user.first_name}`
-          : "Person, Unknown";
-        userName.toLowerCase().includes(userNameFilter);
+        const userName = formatUserName(transaction);
+        return userName.toLowerCase().includes(userNameFilter);
       });
     }
 
     setFilteredTransactions(matchingTransactions);
 
-  }, [allTransactions, cardNameFilter, fromDateFilter, toDateFilter, userNameFilter]);
+  }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
 
   // Column definitions
   const columnHelper = createColumnHelper<TransactionPlus>();
   const columns = [
     columnHelper.display({
       cell: info => {
-        if (info.row.original.accounting_date) {
-          const accountingDate = new Date(info.row.original.accounting_date!);
-          const accountingLocal = Timestamps.local(accountingDate);
-          return <span>{accountingLocal}</span>;
-        } else {
-          return <span>Unknown</span>;
-        }
+        return <span>{formatAccountingDate(info.row.original)}</span>
       },
       header: () => <span>Accounting Date</span>,
       id: "accounting_date",
     }),
     columnHelper.display({
       cell: info => {
-        const userName = info.row.original.card_holder_user
-          ? `${info.row.original.card_holder_user.last_name}, ${info.row.original.card_holder_user.first_name}`
-          : "Person, Unknown";
-        return <span>{userName}</span>;
+        return <span>{formatUserName(info.row.original)}</span>
       },
       header: () => <span>User Name</span>,
       id: "user_name",
     }),
     columnHelper.display({
       cell: info => {
-        const cardName = info.row.original.card
-          ? `${info.row.original.card.display_name}`
-          : "Person, Unknown";
-        return <span>{cardName}</span>;
+        return <span>{formatCardName(info.row.original)}</span>;
       },
       header: () => <span>Card Name</span>,
       id: "card_name",
@@ -144,11 +142,26 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     }),
     columnHelper.display({
       cell: info => {
-        const amount = formatAmount(info.row.original.amount_amt, info.row.original.amount_cc);
+        const amount =
+          formatAmount(info.row.original.amount_amt, info.row.original.amount_cc)
         return <span>{amount}</span>;
       },
       header: () => <span>Settled Amount</span>,
       id: "settled_amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatMerchantName(info.row.original)}</span>;
+      },
+      header: () => <span>Merchant</span>,
+      id: "merchant_name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatGlAccount(info.row.original)}</span>;
+      },
+      header: () => <span>GL Account</span>,
+      id: "gl_account",
     }),
     columnHelper.display({
       cell: info => {
@@ -183,7 +196,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       <Row className="mb-2">
         <Col>
           <Form.Group controlId={fromDateFilter}>
-            <span>Filter by From Date</span>
+            <span>Filter by From Date:</span>
             <Form.Control
               type="text"
               placeholder="Enter YYYYMMDD"
@@ -194,7 +207,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={toDateFilter}>
-            <span>Filter by To Date</span>
+            <span>Filter by To Date:</span>
             <Form.Control
               type="text"
               placeholder="Enter YYYYMMDD"
@@ -205,7 +218,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={userNameFilter}>
-            <span>Filter by User Name</span>
+            <span>Filter by User Name:</span>
             <Form.Control
               type="text"
               placeholder="Enter part of a name to filter"
@@ -216,12 +229,34 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={cardNameFilter}>
-            <span>Filter by Card Name</span>
+            <span>Filter by Card Name:</span>
             <Form.Control
               type="text"
               placeholder="Enter part of a name to filter"
               value={cardNameFilter}
               onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={merchantFilter}>
+            <span>Filter by Merchant Name:</span>
+            <Form.Control
+              type="text"
+              placeholder="Enter part of a name to filter"
+              value={merchantFilter}
+              onChange={e => setMerchantFilter(e.target.value.toLowerCase())}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={glAccountFilter}>
+            <span>Filter by GL Account/Name:</span>
+            <Form.Control
+              type="text"
+              placeholder="Enter part of a account or name to filter"
+              value={glAccountFilter}
+              onChange={e => setGlAccountFilter(e.target.value.toLowerCase())}
             />
           </Form.Group>
         </Col>
@@ -277,13 +312,67 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
+ * Format the accounting date for a transaction.
+ */
+function formatAccountingDate(transaction: TransactionPlus): string {
+  if (transaction.accounting_date) {
+    const accountingDate = new Date(transaction.accounting_date!);
+    return Timestamps.local(accountingDate);
+  } else {
+    return "n/a";
+  }
+}
+
+/**
  * Format an amount as a string with a currency and two decimal places.
  */
 function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
   let formatted = cc ? `${cc} ` : "";
   if (amt) {
     formatted += `${(amt/100).toFixed(2)}`;
+  } else {
+    formatted += "n/a";
   }
   return formatted;
 }
 
+/**
+ * Format the card name for a transaction.
+ */
+function formatCardName(transaction: TransactionPlus): string {
+  return transaction.card ? transaction.card.display_name : "n/a";
+}
+
+/**
+ * Format the GL Account Number and Name for a transaction.
+ */
+function formatGlAccount(transaction: TransactionPlus): string {
+  // IMPLEMENTATION NOTES:
+  //   * This assumes that the first accounting field selection is always the GL_ACCOUNT type.
+  //   * It assumes that no other line items will be paid attention to.
+  //   * With our current Ramp setup, the data matches these assumptions.
+  const tliafs = transaction.line_item_accounting_field_selections;
+  if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
+    return `${tliafs[0].external_code} - ${tliafs[0].name}`;
+  } else {
+    return "n/a";
+  }
+}
+
+/**
+ * Format the merchant name for a transaction.
+ */
+function formatMerchantName(transaction: TransactionPlus): string {
+  return transaction.merchant_name || "n/a";
+}
+
+/**
+ * Format the user name for a transaction.
+ */
+function formatUserName(transaction: TransactionPlus): string {
+  if (transaction.card_holder_user) {
+    return `${transaction.card_holder_user.last_name}, ${transaction.card_holder_user.first_name}`;
+  } else {
+    return "n/a";
+  }
+}

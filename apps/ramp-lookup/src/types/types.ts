@@ -85,17 +85,17 @@ export type TransactionPlus = Transaction & {
 }
 
 export type TransactionAccountingFieldSelectionPlus = TransactionAccountingFieldSelection & {
-  transaction?: TransactionPlus | null;
+  transaction?: Transaction | null;
 }
 
 export type TransactionLineItemPlus = TransactionLineItem & {
   accounting_field_selections?: TransactionLineItemAccountingFieldSelectionPlus[] | null;
-  transaction?: TransactionPlus | null;
+  transaction?: Transaction | null;
 }
 
 export type TransactionLineItemAccountingFieldSelectionPlus = TransactionLineItemAccountingFieldSelection & {
-  transaction: TransactionPlus | null;
-  transaction_line_item?: TransactionLineItemPlus | null;
+  transaction: Transaction | null;
+  transaction_line_item?: TransactionLineItem | null;
 }
 
 export type UserPlus = User & {
