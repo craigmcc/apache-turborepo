@@ -12,9 +12,12 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -43,6 +46,7 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
   // Save the departments for name formatting
@@ -84,9 +88,19 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
     data: filteredCards,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        { id: "department_id", desc: false },
+        { id: "cardholder_name", desc: false },
+        { id: "display_name", desc: false },
+      ]
+    },
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
       pagination,
+      sorting,
     },
   });
 
@@ -142,6 +156,24 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                  <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}>None</ArrowDownUp>
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  null
+                )}
               </th>
             ))}
           </tr>
@@ -186,18 +218,21 @@ const columns = [
     cell: info => {
       return <span>{formatDepartmentName(info.row.original)}</span>;
     },
+    enableSorting: true,
     header: "Department Name",
   }),
   columnHelper.accessor("cardholder_name", {
     cell: info => {
       return <span>{formatUserName(info.row.original)}</span>;
     },
+    enableSorting: true,
     header: "User Name",
   }),
   columnHelper.accessor("display_name", {
     cell: info => {
       return <span>{formatCardName(info.row.original)}</span>;
     },
+    enableSorting: true,
     header: "Card Name",
   }),
   columnHelper.display({
