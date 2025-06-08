@@ -11,7 +11,9 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
@@ -25,6 +27,7 @@ import Row from "react-bootstrap/Row";
 import { Timestamps } from "@repo/shared-utils/Timestamps";
 import { TransactionPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ} from "lucide-react";
 
 // Public Objects ------------------------------------------------------------
 
@@ -43,6 +46,9 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "accounting_date", desc: false },
+  ]);
   const [toDateFilter, setToDateFilter] = useState<string>(""); // YYYYMMDD
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
@@ -113,10 +119,13 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     data: filteredTransactions,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     manualPagination: false,
+    onSortingChange: setSorting,
     pageCount: Math.ceil(filteredTransactions.length / pagination.pageSize),
     state: {
       pagination,
+      sorting,
     },
     onPaginationChange: setPagination,
   });
@@ -205,6 +214,24 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                    <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
+                      )}
+                    </span>
+                    </>
+                  ) :
+                  null
+                }
               </th>
             ))}
           </tr>
@@ -245,24 +272,27 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
  */
 const columnHelper = createColumnHelper<TransactionPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor(row => formatAccountingDate(row), {
     cell: info => {
       return <span>{formatAccountingDate(info.row.original)}</span>
     },
+    enableSorting: true,
     header: () => <span>Accounting Date-Time</span>,
     id: "accounting_date",
   }),
-  columnHelper.display({
+  columnHelper.accessor(row => formatUserName(row), {
     cell: info => {
       return <span>{formatUserName(info.row.original)}</span>
     },
+    enableSorting: true,
     header: () => <span>User Name</span>,
     id: "user_name",
   }),
-  columnHelper.display({
+  columnHelper.accessor(row => formatCardName(row), {
     cell: info => {
       return <span>{formatCardName(info.row.original)}</span>;
     },
+    enableSorting: true,
     header: () => <span>Card Name</span>,
     id: "card_name",
   }),
@@ -285,10 +315,11 @@ const columns = [
     header: () => <span>Settled Amount</span>,
     id: "settled_amount",
   }),
-  columnHelper.display({
+  columnHelper.accessor(row => formatMerchantName(row), {
     cell: info => {
       return <span>{formatMerchantName(info.row.original)}</span>;
     },
+    enableSorting: true,
     header: () => <span>Merchant</span>,
     id: "merchant_name",
   }),
