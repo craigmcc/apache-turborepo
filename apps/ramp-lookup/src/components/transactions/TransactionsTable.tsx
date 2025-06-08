@@ -113,7 +113,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       cell: info => {
         return <span>{formatAccountingDate(info.row.original)}</span>
       },
-      header: () => <span>Accounting Date</span>,
+      header: () => <span>Accounting Date-Time</span>,
       id: "accounting_date",
     }),
     columnHelper.display({
@@ -251,10 +251,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={glAccountFilter}>
-            <span>Filter by GL Account/Name:</span>
+            <span>Filter by GL Account or Name:</span>
             <Form.Control
               type="text"
-              placeholder="Enter part of a account or name to filter"
+              placeholder="Enter part of GL account or name"
               value={glAccountFilter}
               onChange={e => setGlAccountFilter(e.target.value.toLowerCase())}
             />
