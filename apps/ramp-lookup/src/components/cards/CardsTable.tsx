@@ -24,24 +24,29 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
-import { CardPlus } from "@/types/types";
+import { CardPlus, DepartmentPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 export type CardsTableProps = {
   // All cards to display in the table
   allCards: CardPlus[];
+  allDepartments: DepartmentPlus[];
 }
 
-export function CardsTable({ allCards }: CardsTableProps) {
+export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
+  const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [filteredCards, setFilteredCards] = useState<CardPlus[]>(allCards);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
   const [userNameFilter, setUserNameFilter] = useState<string>("");
+
+  // Save the departments for name formatting
+  departments = allDepartments;
 
   // Apply selection filters whenever they change
   useEffect(() => {
@@ -55,6 +60,13 @@ export function CardsTable({ allCards }: CardsTableProps) {
       });
     }
 
+    if (departmentNameFilter.length > 0) {
+      matchingCards = matchingCards.filter(card => {
+        const departmentName = formatDepartmentName(card);
+        return departmentName.toLowerCase().includes(departmentNameFilter);
+      });
+    }
+
     if (userNameFilter.length > 0) {
       matchingCards = matchingCards.filter(card => {
         const userName = formatUserName(card);
@@ -64,7 +76,7 @@ export function CardsTable({ allCards }: CardsTableProps) {
 
     setFilteredCards(matchingCards);
 
-  }, [allCards, cardNameFilter, userNameFilter]);
+  }, [allCards, cardNameFilter, departmentNameFilter, userNameFilter]);
 
   // Overall table instance
   const table = useReactTable<CardPlus>({
@@ -87,6 +99,17 @@ export function CardsTable({ allCards }: CardsTableProps) {
         </h1>
       </Row>
       <Row className="mb-2">
+        <Col>
+          <Form.Group controlId={departmentNameFilter}>
+            <span>Filter by Department Name:</span>
+            <Form.Control
+              type="text"
+              placeholder="Enter part of a name to filter"
+              value={departmentNameFilter}
+              onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
+            />
+          </Form.Group>
+        </Col>
         <Col>
           <Form.Group controlId={userNameFilter}>
             <span>Filter by User Name:</span>
@@ -159,19 +182,23 @@ export function CardsTable({ allCards }: CardsTableProps) {
  */
 const columnHelper = createColumnHelper<CardPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor("cardholder.department_id", {
     cell: info => {
-      return <span>{formatUserName(info.row.original)}</span>
+      return <span>{formatDepartmentName(info.row.original)}</span>;
+    },
+    header: "Department Name",
+  }),
+  columnHelper.accessor("cardholder_name", {
+    cell: info => {
+      return <span>{formatUserName(info.row.original)}</span>;
     },
     header: "User Name",
-    id: "user_name",
   }),
-  columnHelper.display({
+  columnHelper.accessor("display_name", {
     cell: info => {
       return <span>{formatCardName(info.row.original)}</span>;
     },
     header: "Card Name",
-    id: "card_name",
   }),
   columnHelper.display({
     cell: info => {
@@ -225,6 +252,11 @@ const columns = [
 // Private Objects -----------------------------------------------------------
 
 /**
+ * Save the department list for name formatting.
+ */
+let departments: DepartmentPlus[] = [];
+
+/**
  * Format an amount as a string with two decimal places.
  */
 function formatAmount(amount: number | null | undefined): string {
@@ -237,6 +269,15 @@ function formatAmount(amount: number | null | undefined): string {
  */
 function formatCardName(card: CardPlus): string {
   return card.display_name || "n/a";
+}
+
+/**
+ * Format the department name for a card.
+ */
+function formatDepartmentName(card: CardPlus): string {
+  if (!card.cardholder?.department_id) return "n/a";
+  const department = departments.find(department => department.id === card.cardholder?.department_id);
+  return department?.name || "n/a";
 }
 
 /**

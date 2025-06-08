@@ -25,8 +25,16 @@ export default async function CardsPage() {
     ],
   });
 
+  const allDepartments = await dbRamp.department.findMany({
+    include: {
+      users: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
   return (
-    <CardsTable allCards={allCards}/>
+    <CardsTable allCards={allCards} allDepartments={allDepartments}/>
   );
 
 }
