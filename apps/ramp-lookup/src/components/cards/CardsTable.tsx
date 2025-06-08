@@ -46,7 +46,9 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "user_name", desc: false },
+  ]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
   // Save the departments for name formatting
@@ -207,26 +209,29 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
  */
 const columnHelper = createColumnHelper<CardPlus>();
 const columns = [
-  columnHelper.accessor("cardholder.department_id", {
+  columnHelper.accessor(row => formatDepartmentName(row), {
     cell: info => {
       return <span>{formatDepartmentName(info.row.original)}</span>;
     },
     enableSorting: true,
     header: "Department Name",
+    id: "department_name",
   }),
-  columnHelper.accessor("cardholder_name", {
+  columnHelper.accessor(row => formatUserName(row), {
     cell: info => {
       return <span>{formatUserName(info.row.original)}</span>;
     },
     enableSorting: true,
     header: "User Name",
+    id: "user_name",
   }),
-  columnHelper.accessor("display_name", {
+  columnHelper.accessor(row => formatCardName(row), {
     cell: info => {
       return <span>{formatCardName(info.row.original)}</span>;
     },
     enableSorting: true,
     header: "Card Name",
+    id: "card_name",
   }),
   columnHelper.display({
     cell: info => {
