@@ -46,6 +46,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   const [toDateFilter, setToDateFilter] = useState<string>(""); // YYYYMMDD
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
+  // Apply selection filters whenever they change
   useEffect(() => {
 
     let matchingTransactions: TransactionPlus[] = allTransactions;
@@ -212,15 +213,9 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
         <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr
-            //            className={selectedUser?.id === row.original.id ? "table-primary" : ""}
-            key={row.id}
-          >
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td
-                key={cell.id}
-                //                onClick={() => handleSelectUser(cell.id, row.original)}
-              >
+              <td key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}

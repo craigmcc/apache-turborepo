@@ -18,14 +18,13 @@ import {
 import { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { useSelectedCardContext } from "@/contexts/SelectedCardContext";
-import { useSelectedUserContext } from "@/contexts/SelectedUserContext";
-import { CardPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { CardPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -36,43 +35,36 @@ export type CardsTableProps = {
 
 export function CardsTable({ allCards }: CardsTableProps) {
 
+  const [cardNameFilter, setCardNameFilter] = useState<string>("");
   const [filteredCards, setFilteredCards] = useState<CardPlus[]>(allCards);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-  const { selectedCard, changeSelectedCard } = useSelectedCardContext();
-  const { selectedUser, changeSelectedUser } = useSelectedUserContext();
+  const [userNameFilter, setUserNameFilter] = useState<string>("");
 
+  // Apply selection filters whenever they change
   useEffect(() => {
-    // Whenever the selected user changes, filter the cards
-    if (selectedUser) {
-      const matchingCards = allCards.filter(card => card.cardholder?.id === selectedUser.id);
-      setFilteredCards(matchingCards);
-    } else {
-      setFilteredCards(allCards);
-    }
-  }, [selectedUser, allCards]);
 
-  function handleSelectCard(cellId: string, card: CardPlus) {
-    if (cellId.endsWith("_name")) {
-      if (card.id === selectedCard?.id) {
-  //      console.log("Deselecting card", card.display_name);
-        changeSelectedCard(null);
-        changeSelectedUser(null);
-      } else {
-  //      console.log("Selecting card", card.display_name);
-        changeSelectedCard(card);
-        changeSelectedUser(card.cardholder || null);
-      }
+    let matchingCards: CardPlus[] = allCards;
+
+    if (cardNameFilter.length > 0) {
+      matchingCards = matchingCards.filter(card => {
+        const cardName = formatCardName(card);
+        return cardName.toLowerCase().includes(cardNameFilter);
+      });
     }
-    // If the user is selected, also update the selected user
-    if (card.cardholder) {
-      changeSelectedUser(card.cardholder);
-    } else {
-      changeSelectedUser(null);
+
+    if (userNameFilter.length > 0) {
+      matchingCards = matchingCards.filter(card => {
+        const userName = formatUserName(card);
+        return userName.toLowerCase().includes(userNameFilter);
+      });
     }
-  }
+
+    setFilteredCards(matchingCards);
+
+  }, [allCards, cardNameFilter, userNameFilter]);
 
   // Overall table instance
   const table = useReactTable<CardPlus>({
@@ -95,13 +87,27 @@ export function CardsTable({ allCards }: CardsTableProps) {
         </h1>
       </Row>
       <Row className="mb-2">
-        <Col className="text-center">
-          <span>Selected User:&nbsp;</span>
-          {selectedUser ? (
-            <span>{selectedUser.last_name}, {selectedUser.first_name}</span>
-          ) : (
-            <span>None</span>
-          )}
+        <Col>
+          <Form.Group controlId={userNameFilter}>
+            <span>Filter by User Name:</span>
+            <Form.Control
+              type="text"
+              placeholder="Enter part of a name to filter"
+              value={userNameFilter}
+              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={cardNameFilter}>
+            <span>Filter by Card Name:</span>
+            <Form.Control
+              type="text"
+              placeholder="Enter part of a name to filter"
+              value={cardNameFilter}
+              onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
+            />
+          </Form.Group>
         </Col>
       </Row>
 
@@ -121,15 +127,9 @@ export function CardsTable({ allCards }: CardsTableProps) {
 
         <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr
-            className={selectedCard?.id === row.original.id ? "table-primary" : ""}
-            key={row.id}
-          >
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td
-                key={cell.id}
-                onClick={() => handleSelectCard(cell.id, row.original)}
-              >
+              <td key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}
@@ -161,15 +161,14 @@ const columnHelper = createColumnHelper<CardPlus>();
 const columns = [
   columnHelper.display({
     cell: info => {
-      const user_name = `${info.row.original.cardholder?.last_name}, ${info.row.original.cardholder?.first_name}`;
-      return <span>{user_name}</span>
+      return <span>{formatUserName(info.row.original)}</span>
     },
     header: "User Name",
     id: "user_name",
   }),
   columnHelper.display({
     cell: info => {
-      return <span>{info.row.original.display_name}</span>;
+      return <span>{formatCardName(info.row.original)}</span>;
     },
     header: "Card Name",
     id: "card_name",
@@ -183,7 +182,7 @@ const columns = [
   }),
   columnHelper.display({
     cell: info => {
-      return <span>{info.row.original.state}</span>;
+      return <span>{formatState(info.row.original)}</span>;
     },
     header: "State",
     id: "state",
@@ -197,7 +196,7 @@ const columns = [
   }),
   columnHelper.display({
     cell: info => {
-      return <span>{info.row.original.spending_restrictions?.interval}</span>;
+      return <span>{formatInterval(info.row.original)}</span>;
     },
     header: "Interval",
     id: "interval",
@@ -223,10 +222,44 @@ const columns = [
   }),
 ];
 
+// Private Objects -----------------------------------------------------------
+
 /**
  * Format an amount as a string with two decimal places.
  */
 function formatAmount(amount: number | null | undefined): string {
   if (!amount) return "n/a";
   return `$${amount.toFixed(2)}`;
+}
+
+/**
+ * Format the card name for a card.
+ */
+function formatCardName(card: CardPlus): string {
+  return card.display_name || "n/a";
+}
+
+/**
+ * Format the interval for a card.
+ */
+function formatInterval(card: CardPlus): string {
+  return card.spending_restrictions?.interval || "n/a";
+}
+
+/**
+ * Format the state for a card.
+ */
+function formatState(card: CardPlus): string {
+  return card.state || "n/a";
+}
+
+/**
+ * Format the user name for a card.
+ */
+function formatUserName(card: CardPlus): string {
+  if (card.cardholder) {
+    return `${card.cardholder.last_name}, ${card.cardholder.first_name}`;
+  } else {
+    return "n/a";
+  }
 }
