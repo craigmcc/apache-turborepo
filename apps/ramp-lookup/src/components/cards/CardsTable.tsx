@@ -198,7 +198,7 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
       </table>
 
     </Container>
-  )
+  );
 
 }
 

@@ -11,15 +11,20 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-//  getPaginationRowModel,
-//  PaginationState,
+  getPaginationRowModel,
+  getSortedRowModel,
+  PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { useState } from "react";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import {useSelectedDepartmentContext} from "@/contexts/SelectedDepartmentContext";
+import {PaginationFooter} from "@/components/tables/PaginationFooter";
 import { DepartmentPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -31,65 +36,93 @@ export type DepartmentsTableProps = {
 
 export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
 
-  const { selectedDepartment, changeSelectedDepartment } = useSelectedDepartmentContext();
-
-  function handleSelectDepartment(cellId: string, department: DepartmentPlus) {
-    if (cellId.endsWith("_name")) {
-      if (department.id === selectedDepartment?.id) {
-//      console.log("Unselecting department", department.name);
-        changeSelectedDepartment(null);
-      } else {
-//      console.log("Selecting department", department.name);
-        changeSelectedDepartment(department);
-      }
-    }
-  }
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "department_name", desc: false },
+  ]);
 
   // Overall table instance
   const table = useReactTable<DepartmentPlus>({
     columns,
     data: allDepartments,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    state: {
+      pagination,
+      sorting,
+    },
   });
 
   return (
     <Container className="p-2 mb-4 bg-light rounded-3" fluid>
-      <h1 className="header text-center">
-        Departments Table
-      </h1>
-      <div className="text-center">
-        Click on a name to select or deselect that Department.
-      </div>
+
+      <Row>
+        <h1 className="header text-center">
+          Departments Table
+        </h1>
+      </Row>
+
       <table className="table table-bordered table-striped">
+
         <thead>
         {table.getHeaderGroups().map(headerGroup => (
           <tr key={headerGroup.id}>
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                    <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
+                      )}
+                    </span>
+                    </>
+                  ) :
+                  null
+                }
               </th>
             ))}
           </tr>
         ))}
         </thead>
+
         <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr
-            className={selectedDepartment?.id === row.original.id ? "table-primary" : ""}
-            key={row.id}
-          >
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td
-                key={cell.id}
-                onClick={() => handleSelectDepartment(cell.id, row.original)}
-              >
+              <td key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}
           </tr>
         ))}
         </tbody>
+
+        <tfoot>
+        <tr>
+          <th colSpan={table.getCenterLeafColumns().length}>
+            <PaginationFooter table={table}/>
+          </th>
+        </tr>
+        </tfoot>
+
+
       </table>
+
     </Container>
   );
 }
@@ -101,12 +134,12 @@ export function DepartmentsTable({ allDepartments }: DepartmentsTableProps) {
  */
 const columnHelper = createColumnHelper<DepartmentPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor(row => formatDepartmentName(row), {
     cell: info => {
-      return <span>{info.row.original.name}</span>;
+      return <span>{formatDepartmentName(info.row.original)}</span>;
     },
-    header: "Name",
-    id: "name",
+    header: "Department Name",
+    id: "department_name",
   }),
   columnHelper.display({
     cell: info => {
@@ -117,3 +150,10 @@ const columns = [
     id: "usersCount",
   }),
 ];
+
+/**
+ * Format the department name for a department
+ */
+function formatDepartmentName(department: DepartmentPlus): string {
+  return department.name;
+}
