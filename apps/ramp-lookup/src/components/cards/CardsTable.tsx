@@ -89,13 +89,6 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    initialState: {
-      sorting: [
-        { id: "department_id", desc: false },
-        { id: "cardholder_name", desc: false },
-        { id: "display_name", desc: false },
-      ]
-    },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
@@ -167,13 +160,13 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
                       ) : header.column.getIsSorted() === "desc" ? (
                         <ArrowDownAZ className="ms-2 text-info" size={24}/>
                       ) : (
-                        <ArrowDownUp className="ms-2 text-info" size={24}>None</ArrowDownUp>
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
                       )}
                     </span>
                   </>
-                ) : (
+                ) :
                   null
-                )}
+                }
               </th>
             ))}
           </tr>
