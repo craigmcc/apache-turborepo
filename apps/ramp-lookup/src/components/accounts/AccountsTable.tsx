@@ -12,9 +12,12 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -23,8 +26,8 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { AccountingGLAccountPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { AccountingGLAccountPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -41,19 +44,30 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "gl_account", desc: false },
+  ]);
   const [typeFilter, setTypeFilter] = useState<string>("");
 
+  // Apply selection filters whenever they change
   useEffect(() => {
+
     let matchingAccounts: AccountingGLAccountPlus[] = allAccounts;
+
     if (nameFilter.length > 0) {
       matchingAccounts = matchingAccounts.filter(account =>
         account.name.toLowerCase().includes(nameFilter)
       );
     }
+
     if (typeFilter.length > 0) {
-      matchingAccounts = matchingAccounts.filter(account => account.classification === typeFilter);
+      matchingAccounts = matchingAccounts.filter(account =>
+        account.classification === typeFilter
+      );
     }
+
     setFilteredAccounts(matchingAccounts);
+
   }, [allAccounts, nameFilter, typeFilter]);
 
   // Overall table instance
@@ -62,9 +76,12 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     data: filteredAccounts,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     state: {
       pagination,
+      sorting,
     },
   });
 
@@ -81,7 +98,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
           <Form.Group controlId="typeFilter">
             <span>Filter by Account Type:</span>
             <Form.Select
-              onChange={(e) => setTypeFilter(e.target.value.toLowerCase())}
+              onChange={(e) => setTypeFilter(e.target.value)} // Values are upper case
               value={typeFilter}
             >
               <option key="" value="">(All Types)</option>
@@ -95,7 +112,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId="nameFilter">
-            <span>Filter by Name:</span>
+            <span>Filter by Account Name:</span>
             <Form.Control
               onChange={(e) => setNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
@@ -114,6 +131,24 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                    <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
+                      )}
+                    </span>
+                    </>
+                  ) :
+                  null
+                }
               </th>
             ))}
           </tr>
@@ -160,26 +195,29 @@ const ACCOUNT_TYPES = [
  */
 const columnHelper = createColumnHelper<AccountingGLAccountPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor(row => row.code, {
     cell: info => {
       return <span>{info.row.original.code}</span>;
     },
+    enableSorting: true,
     header: "GL Account",
-    id: "code",
+    id: "gl_account",
   }),
-  columnHelper.display({
+  columnHelper.accessor(row => row.classification, {
     cell: info => {
       return <span>{info.row.original.classification}</span>;
     },
+    enableSorting: true,
     header: "Account Type",
-    id: "classification",
+    id: "account_type",
   }),
-  columnHelper.display({
+  columnHelper.accessor(row => row.name, {
     cell: info => {
       return <span>{info.row.original.name}</span>;
     },
+    enableSorting: true,
     header: "Account Name",
-    id: "name",
+    id: "account_name",
   }),
   columnHelper.display({
     cell: info => {
