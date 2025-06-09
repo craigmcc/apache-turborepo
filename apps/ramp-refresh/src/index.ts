@@ -7,52 +7,40 @@
 
 // External Modules ----------------------------------------------------------
 
+import { exit } from "node:process";
+
 // Internal Modules -----------------------------------------------------------
 
 import {
   eraseViolations,
   refreshAccessToken,
+  refreshAccountingGLAccounts,
   refreshCards,
   refreshDepartments,
   refreshLimits,
   refreshSpendPrograms,
   refreshTransactions,
   refreshUsers,
-} from "./Refreshers.js";
+} from "./Refreshers";
 
 // Private Objects ------------------------------------------------------------
 
-const LIMITS_READ_SCOPE = "limits:read";
-const SPEND_PROGRAMS_READ_SCOPE = "spend_programs:read";
-const TRANSACTIONS_READ_SCOPE = "transactions:read";
-
-async function main() {
+export async function main() {
 
   console.log("Ramp Refresh started at ", new Date().toLocaleString());
   const result = await refreshAccessToken();
   const accessToken = result.access_token;
   console.log("Requested Scopes: ", process.env.RAMP_PROD_API_SCOPE);
   console.log("Returned Scopes:  ", result.scope);
-  const scopes = result.scope.split(" ");
+//  const scopes = result.scope.split(" ");
   await eraseViolations();
+  await refreshAccountingGLAccounts(accessToken);
   await refreshDepartments(accessToken);
   await refreshUsers(accessToken);
   await refreshCards(accessToken);
-  if (scopes.includes(SPEND_PROGRAMS_READ_SCOPE)) {
-    await refreshSpendPrograms(accessToken);
-  } else {
-    console.log(`Fetching spend programs...skipped, scope '${SPEND_PROGRAMS_READ_SCOPE}' not found`);
-  }
-  if (scopes.includes(LIMITS_READ_SCOPE)) {
-    await refreshLimits(accessToken);
-  } else {
-    console.log(`Fetching spend programs...skipped, scope '${LIMITS_READ_SCOPE}' not found`);
-  }
-  if (scopes.includes(TRANSACTIONS_READ_SCOPE)) {
-    await refreshTransactions(accessToken);
-  } else {
-    console.log(`Fetching transactions...skipped, scope '${TRANSACTIONS_READ_SCOPE}' not found`);
-  }
+  await refreshSpendPrograms(accessToken);
+  await refreshLimits(accessToken);
+  await refreshTransactions(accessToken);
   console.log("Done with refreshing data")
 
 }
@@ -62,7 +50,9 @@ async function main() {
 main()
   .then(() => {
     console.log("Ramp Refresh finished at ", new Date().toLocaleString());
+    exit(0);
   })
   .catch((error) => {
     console.error("Error in Ramp Refresh:", JSON.stringify(error, null, 2));
+    exit(1);
   });

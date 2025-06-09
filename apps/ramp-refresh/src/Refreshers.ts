@@ -8,6 +8,7 @@
 // Internal Modules -----------------------------------------------------------
 
 import { fetchAccessToken } from "@repo/ramp-api/AuthActions";
+import { fetchAccountingGLAccounts } from "@repo/ramp-api/AccountingGLAccountActions";
 import { fetchCards } from "@repo/ramp-api/CardActions";
 import { fetchDepartments } from "@repo/ramp-api/DepartmentActions";
 import { fetchLimits } from "@repo/ramp-api/LimitActions";
@@ -16,20 +17,40 @@ import { fetchTransactions } from "@repo/ramp-api/TransactionActions";
 import { fetchUsers } from "@repo/ramp-api/UserActions";
 import {
   dbRamp,
+  AccountingGLAccount,
   Card,
   CardSpendingRestrictions,
   Department,
   Limit,
   LimitCard,
   LimitSpendingRestrictions,
-  LimitUser,
   SpendProgram,
   Transaction,
+  TransactionLineItem,
   User,
-  Violation
-} from "@repo/ramp-db/dist";
+  Violation,
+} from "@repo/ramp-db/index.js";
+import {
+  createAccountingGLAccount,
+  createCard,
+  createCardSpendingRestrictions,
+  createDepartment,
+  createLimit,
+  createLimitCard,
+  createLimitSpendingRestrictions,
+  createLimitUser,
+  createSpendProgram,
+  createTransaction,
+  createTransactionAccountingFieldSelection,
+  createTransactionLineItem,
+  createTransactionLineItemAccountingFieldSelection,
+  createUser,
+} from "./Creators"
 
-const UNKNOWN_CARD_ID_REPLACEMENT = "f6d3437d-a174-4e76-8340-4c7f0a9def0d";
+// These are IDs that are in Ramp (so they get downloaded) but will replace
+// bad references to cards or users that have been deleted.
+const UNKNOWN_CARD_ID_REPLACEMENT = "3523fed1-69c6-497b-ab76-973349753801";
+const UNKNOWN_USER_ID_REPLACEMENT = "01974b9c-a5b3-7445-a39e-cd0925288a50";
 
 // Public Objects ------------------------------------------------------------
 
@@ -55,6 +76,53 @@ export async function refreshAccessToken(): Promise<refreshAccessTokenResult> {
   };
 }
 
+export async function refreshAccountingGLAccounts(accessToken: string): Promise<void> {
+
+  console.log("Fetching Accounting GL accounts...");
+  let count = 0;
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+
+    const result = await fetchAccountingGLAccounts(
+      accessToken,
+      {
+        is_active: true,
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+
+    for (const rampAccount of result.model!.data) {
+
+      if (!rampAccount.code) {
+        console.log(`Accounting GL Account ${rampAccount.id} has no code, skipping`);
+        continue; // Skip accounts without a code
+      }
+
+      const account: AccountingGLAccount = createAccountingGLAccount(rampAccount);
+
+      await dbRamp.accountingGLAccount.upsert({
+        where: {id: account.id},
+        update: account,
+        create: account,
+      });
+
+      count++;
+
+    }
+
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
+
+  }
+
+  console.log("Accounting GL Accounts refreshed:", count);
+
+}
+
 export async function refreshCards(accessToken: string): Promise<void> {
 
   console.log("Fetching cards...");
@@ -71,30 +139,14 @@ export async function refreshCards(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-//    console.log("fetchCards result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampCard of result.model!.data) {
 
-      //      console.log("Processing Card", JSON.stringify(rampCard, null, 2));
+      const card: Card = createCard(rampCard);
 
-      const card: Card = {
-        id: rampCard.id,
-        cardholder_name: rampCard.cardholder_name,
-        card_program_id: rampCard.card_program_id,
-        created_at: rampCard.created_at,
-        display_name: rampCard.display_name,
-        expiration: rampCard.expiration,
-        has_program_overridden: rampCard.has_program_overridden,
-        is_physical: rampCard.is_physical,
-        last_four: rampCard.last_four,
-        state: rampCard.state,
-        entity_id: rampCard.entity_id,
-        cardholder_id: rampCard.cardholder_id,
-      }
-//      console.log(`Upserting Card ${count+1}`, JSON.stringify(card, null, 2));
       await dbRamp.card.upsert({
         where: {id: card.id},
         update: card,
@@ -102,25 +154,21 @@ export async function refreshCards(accessToken: string): Promise<void> {
       });
 
       if (rampCard.spending_restrictions) {
-        const cardSpendingRestrictions: CardSpendingRestrictions = {
-          card_id: rampCard.id,
-          amount: rampCard.spending_restrictions.amount || null,
-          auto_lock_date: rampCard.spending_restrictions.auto_lock_date || null,
-          blocked_categories: rampCard.spending_restrictions.blocked_categories?.join(",") || null,
-          categories: rampCard.spending_restrictions.categories?.join(",") || null,
-          interval: rampCard.spending_restrictions.interval || null,
-          suspended: rampCard.spending_restrictions.suspended || null,
-          transaction_amount_limit: rampCard.spending_restrictions.transaction_amount_limit || null,
-        }
-//        console.log(`Upserting CardSpendingRestrictions ${count+1}`, JSON.stringify(cardSpendingRestrictions, null, 2));
+
+        const cardSpendingRestrictions: CardSpendingRestrictions
+          = createCardSpendingRestrictions(rampCard);
+
         await dbRamp.cardSpendingRestrictions.upsert({
           where: {card_id: cardSpendingRestrictions.card_id},
           update: cardSpendingRestrictions,
           create: cardSpendingRestrictions,
         });
+
       } else {
+
         await dbRamp.cardSpendingRestrictions.deleteMany({
           where: {card_id: card.id}
+
         });
 
       }
@@ -152,21 +200,14 @@ export async function refreshDepartments(accessToken: string): Promise<void> {
         start: nextStart && nextStart.length > 0 ? nextStart : undefined
       }
     );
-//    console.log("fetchDepartments result:", JSON.stringify(result, null, 2));
     if (result.error) {
       throw result.error;
     }
 
     for (const rampDepartment of result.model!.data) {
 
-      //      console.log(`Department ${rampDepartment.id}: ${rampDepartment.name}`);
+      const department: Department = createDepartment(rampDepartment);
 
-      const department: Department = {
-        // id: rampDepartment.id,
-        // name: rampDepartment.name,
-        ...rampDepartment
-      }
-//      console.log(`Upserting Department ${count+1}`, JSON.stringify(department, null, 2));
       await dbRamp.department.upsert({
         where: {id: department.id},
         update: department,
@@ -207,45 +248,28 @@ export async function refreshLimits(accessToken: string): Promise<void> {
 
     for (const rampLimit of result.model!.data) {
 
-      const limit: Limit = {
-        id: rampLimit.id,
-        balance_cleared_amt: rampLimit.balance?.cleared?.amount || null,
-        balance_cleared_cc: rampLimit.balance?.cleared?.currency_code || null,
-        balance_pending_amt: rampLimit.balance?.pending?.amount || null,
-        balance_pending_cc: rampLimit.balance?.pending?.currency_code || null,
-        balance_total_amt: rampLimit.balance?.total?.amount || null,
-        balance_total_cc: rampLimit.balance?.total?.currency_code || null,
-        created_at: rampLimit.created_at,
-        display_name: rampLimit.display_name,
-        entity_id: rampLimit.entity_id,
-        has_program_overridden: rampLimit.has_program_overridden,
-        is_shareable: rampLimit.is_shareable,
-        permitted_primary_card_enabled: rampLimit.permitted_spend_types?.primary_card_enabled || null,
-        permitted_reimbursements_enabled: rampLimit.permitted_spend_types?.reimbursements_enabled || null,
-        spend_program_id: rampLimit.spend_program_id,
-        state: rampLimit.state,
-        suspension_acting_user_id: rampLimit.suspension?.acting_user_id || null,
-        suspension_inserted_at: rampLimit.suspension?.inserted_at || null,
-        suspension_suspended_by_ramp: rampLimit?.suspension?.suspended_by_ramp || null,
-      }
-//      console.log(`Upserting Limit ${count+1}, JSON.stringify(limit, null, 2));
+//      console.log("Processing Limit", JSON.stringify(rampLimit, null, 2));
+      const limit: Limit = createLimit(rampLimit);
+
+//      console.log("Upserting Limit", JSON.stringify(limit, null, 2));
       await dbRamp.limit.upsert({
         where: {id: limit.id},
         update: limit,
         create: limit,
       });
 
+      await dbRamp.limitCard.deleteMany({
+        where: {limit_id: limit.id}
+      });
+
       if (rampLimit.cards) {
+
         for (const rampLimitCard of rampLimit.cards) {
-          const limitCard: LimitCard = {
-            expiration: rampLimitCard.expiration,
-            is_ap_card: rampLimitCard.is_ap_card,
-            last_four: rampLimitCard.last_four,
-            via_new_product_or_service: rampLimitCard.via_new_product_or_service,
-            card_id: rampLimitCard.card_id,
-            limit_id: rampLimit.id,
-          }
-//          console.log(`Upserting LimitCard ${count+1}`, JSON.stringify(limitCard, null, 2));
+
+//          console.log("Processing LimitCard", JSON.stringify(rampLimitCard, null, 2));
+          const limitCard: LimitCard = createLimitCard(rampLimitCard, rampLimit);
+
+//          console.log("Upserting LimitCard", JSON.stringify(limitCard, null, 2));
           await dbRamp.limitCard.upsert({
             where: {
               limit_id_card_id: {limit_id: rampLimit.id, card_id: rampLimitCard.card_id }
@@ -254,67 +278,59 @@ export async function refreshLimits(accessToken: string): Promise<void> {
             create: limitCard,
           });
         }
-      } else {
-        await dbRamp.limitCard.deleteMany({
-          where: {limit_id: limit.id}
-        });
+
       }
 
+      await dbRamp.limitSpendingRestrictions.deleteMany({
+        where: {limit_id: limit.id}
+      });
+
       if (rampLimit.restrictions) {
-        const limitSpendingRestrictions: LimitSpendingRestrictions = {
-          limit_id: rampLimit.id,
-          allowed_categories: rampLimit.restrictions.allowed_categories?.join(",") || null,
-          allowed_vendors: rampLimit.restrictions.allowed_vendors?.join("|") || null,
-          auto_lock_date: rampLimit.restrictions.auto_lock_date || null,
-          blocked_categories: rampLimit.restrictions.blocked_categories?.join(",") || null,
-          blocked_vendors: rampLimit.restrictions.blocked_vendors?.join("|") || null,
-          interval: rampLimit.restrictions.interval || null,
-          limit_amt: rampLimit.restrictions.limit?.amount,
-          limit_cc: rampLimit.restrictions.limit?.currency_code,
-          next_interval_reset: rampLimit.restrictions.next_interval_reset || null,
-          start_of_interval: rampLimit.restrictions.start_of_interval || null,
-          temporary_limit_amt: rampLimit.restrictions.temporary_limit?.amount || null,
-          temporary_limit_cc: rampLimit.restrictions.temporary_limit?.currency_code || null,
-          transaction_amount_limit_amt: rampLimit.restrictions.transaction_amount_limit?.amount || null,
-          transaction_amount_limit_cc: rampLimit.restrictions.transaction_amount_limit?.currency_code || null,
-          suspended: rampLimit.state === "SUSPENDED",
-        };
-//        console.log(`Upserting LimitSpendingRestrictions ${count+1}`, JSON.stringify(limitSpendingRestrictions, null, 2));
+
+//        console.log("Processing LimitSpendingRestrictions", JSON.stringify(rampLimit.restrictions, null, 2));
+        const limitSpendingRestrictions: LimitSpendingRestrictions = createLimitSpendingRestrictions(rampLimit.restrictions, rampLimit);
+
+//        console.log("Upserting LimitSpendingRestrictions", JSON.stringify(limitSpendingRestrictions, null, 2));
         await dbRamp.limitSpendingRestrictions.upsert({
           where: {limit_id: limitSpendingRestrictions.limit_id},
           update: limitSpendingRestrictions,
           create: limitSpendingRestrictions,
         });
-      } else {
-        await dbRamp.limitSpendingRestrictions.deleteMany({
-          where: {limit_id: limit.id}
-        });
+
       }
 
+      await dbRamp.limitUser.deleteMany({
+        where: {limit_id: limit.id}
+      });
+
       if (rampLimit.users) {
-        for (const rampUserCard of rampLimit.users) {
-          if (rampUserCard.user_id && !userIds.has(rampUserCard.user_id)) {
-            console.log(`Limit ${rampLimit.id}: ${rampLimit.display_name!.padEnd(30)}: skipping bad user_id ${rampUserCard.user_id}`);
-            await recordViolation("Limit", rampLimit.id, "User", rampUserCard.user_id);
-          } else {
-            const limitUser: LimitUser = {
-              limit_id: rampLimit.id,
-              user_id: rampUserCard.user_id,
-            }
-//            console.log(`Upserting LimitUser ${count+1}`, JSON.stringify(limitUser, null, 2));
-            await dbRamp.limitUser.upsert({
-              where: {
-                limit_id_user_id: {limit_id: rampLimit.id, user_id: rampUserCard.user_id }
-              },
-              update: limitUser,
-              create: limitUser,
-            });
+
+        for (const rampLimitUser of rampLimit.users) {
+
+          if (rampLimitUser.user_id && !userIds.has(rampLimitUser.user_id)) {
+            console.log(`Limit ${rampLimit.id} replacing bad user_id ${rampLimitUser.user_id}`);
+            await recordViolation("Limit", rampLimit.id, "User", rampLimitUser.user_id);
+            rampLimitUser.user_id = UNKNOWN_USER_ID_REPLACEMENT;
           }
+
+//          console.log("Processing LimitUser", JSON.stringify(rampLimitUser, null, 2));
+          const limitUser = createLimitUser(rampLimitUser, rampLimit);
+
+//            console.log("Upserting LimitUser", JSON.stringify(limitUser, null, 2));
+          await dbRamp.limitUser.upsert({
+            where: {
+              limit_id_user_id: {
+                limit_id: rampLimit.id,
+                user_id: rampLimitUser.user_id
+              }
+            },
+            update: limitUser,
+            create: limitUser,
+          });
+
+
         }
-      } else {
-        await dbRamp.limitUser.deleteMany({
-          where: {limit_id: limit.id}
-        });
+
       }
 
       count++;
@@ -350,29 +366,8 @@ export async function refreshSpendPrograms(accessToken: string): Promise<void> {
 
     for (const rampSpendProgram of result.model!.data) {
 
-      const spendProgram: SpendProgram = {
-        id: rampSpendProgram.id,
-        description: rampSpendProgram.description,
-        display_name: rampSpendProgram.display_name,
-        is_shareable: rampSpendProgram.is_shareable,
-        issue_physical_card_if_needed: rampSpendProgram.issue_physical_card_if_needed,
-        permitted_primary_card_enabled: rampSpendProgram.permitted_spend_types?.primary_card_enabled || null,
-        permitted_reimbursements_enabled: rampSpendProgram.permitted_spend_types?.reimbursements_enabled || null,
-        restrictions_allowed_categories: rampSpendProgram.restrictions?.allowed_categories?.join(",")  || null,
-        restrictions_auto_lock_date: rampSpendProgram.restrictions?.auto_lock_date || null,
-        restrictions_blocked_categories: rampSpendProgram.restrictions?.blocked_categories?.join(",") || null,
-        restrictions_interval: rampSpendProgram.restrictions?.interval || null,
-        restrictions_limit_amt: rampSpendProgram.restrictions?.limit?.amount || null,
-        restrictions_limit_cc: rampSpendProgram.restrictions?.limit?.currency_code || null,
-        restrictions_next_interval_reset: rampSpendProgram.restrictions?.next_interval_reset || null,
-        restrictions_start_of_interval: rampSpendProgram.restrictions?.start_of_interval || null,
-        restrictions_temporary_limit_amt: rampSpendProgram.restrictions?.temporary_limit?.amount || null,
-        restrictions_temporary_limit_cc: rampSpendProgram.restrictions?.temporary_limit?.currency_code || null,
-        restrictions_transaction_amount_limit_amt: rampSpendProgram.restrictions?.transaction_amount_limit?.amount || null,
-        restrictions_transaction_amount_limit_cc: rampSpendProgram.restrictions?.transaction_amount_limit?.currency_code || null,
-      }
+      const spendProgram: SpendProgram = createSpendProgram(rampSpendProgram);
 
-      console.log(`Upserting SpendProgram ${count + 1}`, JSON.stringify(spendProgram, null, 2));
       await dbRamp.limit.upsert({
         where: {id: spendProgram.id},
         update: spendProgram,
@@ -394,13 +389,13 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
   console.log("Fetching transactions...");
   const cardIds = await fetchCardIds(accessToken);
+//  const limitIds = await fetchLimitIds(accessToken);
   const userIds = await fetchUserIds(accessToken);
   let count = 0;
   let nextStart: string | null = "";
 
   while (nextStart !== null) {
 
-    console.log("Next Start:", nextStart);
     const result = await fetchTransactions(
       accessToken,
       {
@@ -415,58 +410,112 @@ export async function refreshTransactions(accessToken: string): Promise<void> {
 
     for (const rampTransaction of result.model!.data) {
 
-      const transaction: Transaction = {
-        id: rampTransaction.id,
-        accounting_date: rampTransaction.accounting_date,
-        amount_amt: rampTransaction.amount ? rampTransaction.amount * 100 : null,
-        amount_cc: rampTransaction.currency_code,
-        card_id: rampTransaction.card_id,
-        card_holder_user_id: rampTransaction.card_holder?.user_id
-          ? rampTransaction.card_holder.user_id
-          : null,
-        card_present: rampTransaction.card_present,
-        entity_id: rampTransaction.entity_id,
-        limit_id: rampTransaction.limit_id,
-        memo: rampTransaction.memo,
-        merchant_category_code: rampTransaction.merchant_category_code,
-        merchant_category_description: rampTransaction.merchant_category_code_description,
-        merchant_id: rampTransaction.merchant_id,
-        merchant_name: rampTransaction.merchant_name,
-        original_transaction_amount_amt: rampTransaction.original_transaction_amount?.amount
-          ? rampTransaction.original_transaction_amount.amount
-          : null,
-        original_transaction_amount_cc: rampTransaction.original_transaction_amount?.currency_code
-          ? rampTransaction.original_transaction_amount.currency_code
-          : null,
-        settlement_date: rampTransaction.settlement_date,
-        sk_category_id: rampTransaction.sk_category_id?.toString() || null, // TODO - type???
-        sk_category_name: rampTransaction.sk_category_name,
-        spend_program_id: rampTransaction.spend_program_id,
-        state: rampTransaction.state,
-        statement_id: rampTransaction.statement_id,
-        sync_status: rampTransaction.sync_status || "NOT_SYNC_READY", // TODO
-        synced_at: rampTransaction.synced_at,
-        trip_id: rampTransaction.trip_id,
-        trip_name: rampTransaction.trip_name,
-        user_transaction_time: rampTransaction.user_transaction_time,
-      }
+      const transaction: Transaction = createTransaction(rampTransaction);
       if (transaction.card_id && !cardIds.has(transaction.card_id)) {
         console.log(`Transaction ${transaction.id}: replacing bad card_id ${transaction.card_id}`);
         await recordViolation("Transaction", transaction.id, "Card", transaction.card_id);
         transaction.card_id = UNKNOWN_CARD_ID_REPLACEMENT;
       }
       if (transaction.card_holder_user_id && !userIds.has(transaction.card_holder_user_id)) {
-        console.log(`Transaction ${transaction.id}: skipping bad card_holder_user_id ${transaction.card_holder_user_id}`);
+        console.log(`Transaction ${transaction.id}: replacing bad card_holder_user_id ${transaction.card_holder_user_id}`);
         await recordViolation("Transaction", transaction.id, "User", transaction.card_holder_user_id);
-        continue;
+        transaction.card_holder_user_id = UNKNOWN_USER_ID_REPLACEMENT;
       }
 
-//      console.log(`Upserting Transaction ${count + 1}`, JSON.stringify(transaction, null, 2));
       await dbRamp.transaction.upsert({
         where: {id: transaction.id},
         update: transaction,
         create: transaction,
       });
+
+      await dbRamp.transactionAccountingFieldSelection.deleteMany({
+        where: {transaction_id: transaction.id}
+      });
+
+      if (rampTransaction.accounting_field_selections) {
+
+        for (const rampAccountingFieldSelection of rampTransaction.accounting_field_selections) {
+
+          const accountingFieldSelection =
+            createTransactionAccountingFieldSelection(rampAccountingFieldSelection, rampTransaction);
+
+          await dbRamp.transactionAccountingFieldSelection.upsert({
+            where: {
+              transaction_id_ramp_id: {
+                transaction_id: rampTransaction.id,
+                ramp_id: accountingFieldSelection.ramp_id
+              },
+            },
+            update: accountingFieldSelection,
+            create: accountingFieldSelection,
+          });
+
+        }
+
+      }
+
+      await dbRamp.transactionLineItem.deleteMany({
+        where: {transaction_id: transaction.id}
+      });
+
+      if (rampTransaction.line_items) {
+
+        let index_line_item = 0;
+        for (const rampTransactionLineItem of rampTransaction.line_items) {
+
+          const transactionLineItem: TransactionLineItem =
+            createTransactionLineItem(rampTransactionLineItem, rampTransaction, index_line_item);
+
+          await dbRamp.transactionLineItem.upsert({
+            where: {
+              transaction_id_index_line_item: {
+                transaction_id: transaction.id,
+                index_line_item: index_line_item
+              },
+            },
+            update: transactionLineItem,
+            create: transactionLineItem,
+          });
+
+          await dbRamp.transactionLineItemAccountingFieldSelection.deleteMany({
+            where: {
+              transaction_id: transaction.id,
+              index_line_item: index_line_item
+            }
+          });
+
+          if (rampTransactionLineItem.accounting_field_selections) {
+
+            for (const rampAccountingFieldSelection of rampTransactionLineItem.accounting_field_selections) {
+
+              const accountingFieldSelection
+                = createTransactionLineItemAccountingFieldSelection(
+                rampAccountingFieldSelection,
+                rampTransaction,
+                index_line_item
+              );
+
+              await dbRamp.transactionLineItemAccountingFieldSelection.upsert({
+                where: {
+                  transaction_id_index_line_item_ramp_id: {
+                    transaction_id: rampTransaction.id,
+                    index_line_item: index_line_item,
+                    ramp_id: accountingFieldSelection.ramp_id
+                  }
+                },
+                update: accountingFieldSelection,
+                create: accountingFieldSelection,
+              });
+
+            }
+
+          }
+
+          index_line_item++;
+
+        }
+
+      }
 
       count++;
 
@@ -502,23 +551,8 @@ export async function refreshUsers(accessToken: string): Promise<void> {
 
     for (const rampUser of result.model!.data) {
 
-      const user: User = {
-        id: rampUser.id,
-        email: rampUser.email,
-        employee_id: rampUser.employee_id,
-        first_name: rampUser.first_name,
-        is_manager: rampUser.is_manager,
-        last_name: rampUser.last_name,
-        phone: rampUser.phone,
-        entity_id: rampUser.entity_id,
-        location_id: rampUser.location_id,
-        manager_id: rampUser.manager_id,
-        role: rampUser.role,
-        status: rampUser.status,
-        department_id: rampUser.department_id,
-      }
+      const user: User = createUser(rampUser);
 
-//       console.log(`Upserting User ${count + 1}`, JSON.stringify(user, null, 2));
       await dbRamp.user.upsert({
         where: {id: user.id},
         update: user,
@@ -577,7 +611,35 @@ async function fetchCardIds(accessToken: string): Promise<Set<string>> {
   }
 
   return cardIds;
+
 }
+
+/*
+async function fetchLimitIds(accessToken: string): Promise<Set<string>> {
+
+  const limitIds: Set<string> = new Set();
+  let nextStart: string | null = "";
+
+  while (nextStart !== null) {
+    const result = await fetchLimits(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+    for (const rampLimit of result.model!.data) {
+      limitIds.add(rampLimit.id);
+    }
+    nextStart = result.model!.page?.next || null;
+  }
+
+  return limitIds;
+}
+*/
 
 async function fetchUserIds(accessToken: string): Promise<Set<string>> {
 
@@ -602,6 +664,7 @@ async function fetchUserIds(accessToken: string): Promise<Set<string>> {
   }
 
   return userIds;
+
 }
 
 async function recordViolation(
@@ -617,6 +680,7 @@ async function recordViolation(
     to_model: to_model,
     to_id: to_id,
   }
+
   await dbRamp.violation.upsert({
     where: {
       from_model_from_id_to_model_to_id: {
@@ -629,5 +693,6 @@ async function recordViolation(
     update: violation,
     create: violation,
   });
+
 }
 

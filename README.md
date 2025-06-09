@@ -7,12 +7,12 @@ and packages that are interdependent) managed by [Turborepo](https://turborepo.c
 
 The relevant applications (in the *apps* directory) are:
 
-| Application | Description                                                                                                                  |
-| ----------- |------------------------------------------------------------------------------------------------------------------------------|
-| ramp-download | Application for downloading contet from the Ramp API and storing it in a local database.                                     |
-| ramp-info | **OBSOLETE** Application originally intended to display information directly from the Ramp APIs.  Superceded by ramp-lookup. |
-| ramp-lookup | Application for looking up information about Ramp content, using the local database.                                         |
-| ramp-refresh | **OBSOLETE** Node-based Application originally intended to download content from the Ramp API and storing it in a local databse.  Superceded by ramp-download. |
+| Application | Description                                                                                                                                       |
+| ----------- |---------------------------------------------------------------------------------------------------------------------------------------------------|
+| ramp-download | **UNNEEDED** NextJS based application for downloading contet from the Ramp API and storing it in a local database when ramp-refresh did not work. |
+| ramp-info | **OBSOLETE** Application originally intended to display information directly from the Ramp APIs.  Superceded by ramp-lookup.                      |
+| ramp-lookup | Application for looking up information about Ramp content, using the local database.                                                              |
+| ramp-refresh | Node-based Application originally intended to download content from the Ramp API and storing it in a local database.                              |
 
 The relevant packages (in the *packages* directory) are:
 
@@ -113,9 +113,9 @@ most recently pulled the repository from Github.
 
 ### Populate the Local Database with Content
 
-Next, we are going to use the `ramp-download` application to download information
+Next, we are going to use the `ramp-refresh` application to download information
 from Ramp, and populate the local database with that content.  Before you can do this,
-however, you must first configure a `.env` file in the `apps/ramp-download/` directory,
+however, you must first configure a `.env` file in the `apps/ramp-refresh/` directory,
 with the following environment variables:
 
 | Variable Name | Description                                                                              |
@@ -131,19 +131,20 @@ downloading.  The following scopes are required for the tables that we currently
 
 `accounting:read cards:read departments:read limits:read spend_programs:read transactions:read users:read`
 
-Now, you can run the `ramp-download` application to download the content from Ramp and
+Now, you can run the `ramp-refresh` application to download the content from Ramp and
 load it into the local database.  This is done by running:
 
 ```bash
-cd apps/ramp-download
+cd apps/ramp-refresh
 turbo run build
 pnpm run start
+cd ../..
 ```
 
-This app does not have any browser API - it shows its progress in the terminal
-window (all output is logged with console.log() statements).
-
-When the download is finished, you will need to cancel the application (Ctrl-C).
+This is a Node-based application that outputs its progress to the terminal window,
+and then exits when it is finished.  It is suitable to be run periodically to update
+the local database with the latest content from Ramp, and it can be run as often
+as you like, or even run it periodically with a cron job.
 
 Now, if you use any of the various SQLite database browsers, you will be able to
 see that all of the tables have been populated with the current content from Ramp,
@@ -196,7 +197,7 @@ information from Ramp.  This will be something you will want to do if there have
 code changes (such as supporting for new tables or updated schema definitions):
 
 ```bash
-cd apps/ramp-download
+cd apps/ramp-refresh
 turbo run build
 pnpm run start
 ```
@@ -254,14 +255,14 @@ navigating to it's root directory, and running one of the following commands:
 ### Is there a GitHub Action workflow in this repository?
 
 Yes, defined in the file `.github/workflows/ci.yml`.  This workflow is triggered
-and performs the following steps:
-- Checks out the code from the repository.
-- Sets up `pnpm`.
-- Sets up `NodeJS`.
-- Installs the dependencies for the monorepo.
-- Generates the Prisma client and types for the local database.
-- Builds the entire monorepo.
-- Runs the tests in each package and application via `turbo run test:ci`.
+when a push happens to the main branch, and performs the following steps:
+- Check out the code from the repository.
+- Set up `pnpm`.
+- Set up `NodeJS`.
+- Install the dependencies for the monorepo.
+- Generate the Prisma client and types for the local database.
+- Build the entire monorepo.
+- Runs the tests in each package and application via `pnpm run test:ci`.
 
 Results of these workflow runs can be seen in the "Actions" tab of the repository
 on GitHub.
@@ -269,18 +270,19 @@ on GitHub.
 To avoid causing inadvertent CI failures, it is recommended that you run the
 following commands (from the root of the monorepo) before pushing any changes:
 
+```bash
+turbo run lint
+turbo run build
+turbo run test:ci
+```
+
 ### Is there Dependabot support in this repository?
 
 While it is configured (`.github/dependabot.yml`), GitHub does not currently
 seem to support Dependabot for monorepos.  This means that Dependabot will not
 create pull requests to update the dependencies in the monorepo, and you will
-need to manually update the dependencies in the `pnpm-workspace.yaml` file.
-
-```bash
-turbo run build
-turbo run lint
-turbo run test:ci
-```
+need to manually update the dependencies in the `pnpm-workspace.yaml` file
+before rebuilding everything.
 
 ## Underlying Technologies In Use
 

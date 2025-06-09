@@ -40,6 +40,8 @@ catalogs:
     react-dom: "^19.1.0"
   tanstack:
     "@tanstack/react-table": "^8.21.3"
+  tsx:
+    tsx: "^4.19.4"
   typescript5:
     typescript: "^5.8.3"
   uidotdev:
