@@ -12,18 +12,22 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   PaginationState,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { /*useEffect,*/ useState } from "react";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
+import { useEffect, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { LimitPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { LimitPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -34,27 +38,45 @@ export type LimitsTableProps = {
 
 export function LimitsTable({ allLimits }: LimitsTableProps) {
 
-//  const [filteredLimits, setFilteredLimits] = useState<LimitPlus[]>(allLimits);
+  const [filteredLimits, setFilteredLimits] = useState<LimitPlus[]>(allLimits);
+  const [limitNameFilter, setLimitNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "limit_name", desc: false },
+  ]);
 
-  // Whenever the limits change, update the filtered list
-  /*
+  // Apply selection filters whenever they change
     useEffect(() => {
-      setFilteredLimits(allLimits);
-    }, [allLimits]);
-  */
+
+      let matchingLimits: LimitPlus[] = allLimits;
+
+      if (limitNameFilter.length > 0) {
+        matchingLimits = matchingLimits.filter(limit => {
+          const limitName = formatLimitName(limit);
+          return limitName.toLowerCase().includes(limitNameFilter);
+        });
+      }
+
+      setFilteredLimits(matchingLimits);
+
+    }, [allLimits, filteredLimits, limitNameFilter]);
 
   // Create the table instance
   const table = useReactTable({
-    data: allLimits,
     columns,
+    data: filteredLimits,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: {pagination},
+    getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    state: {
+      pagination,
+      sorting,
+    },
   });
 
   return (
@@ -67,7 +89,15 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col className="text-center">
-          TODO: Click handlers.
+          <Form.Group controlId={limitNameFilter}>
+            <span>Filter by Limit Name:</span>
+            <Form.Control
+              onChange={e => setLimitNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={limitNameFilter}
+            />
+          </Form.Group>
         </Col>
       </Row>
 
@@ -79,6 +109,24 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
             {headerGroup.headers.map(header => (
               <th key={header.id} colSpan={header.colSpan}>
                 {flexRender(header.column.columnDef.header, header.getContext())}
+                { header.column.getCanSort() ? (
+                    <>
+                    <span
+                      onClick={header.column.getToggleSortingHandler()}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
+                      ) : (
+                        <ArrowDownUp className="ms-2 text-info" size={24}/>
+                      )}
+                    </span>
+                    </>
+                  ) :
+                  null
+                }
               </th>
             ))}
           </tr>
@@ -87,15 +135,9 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 
         <tbody>
         {table.getRowModel().rows.map(row => (
-          <tr
-//            className={selectedUser?.id === row.original.id ? "table-primary" : ""}
-            key={row.id}
-          >
+          <tr key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <td
-                key={cell.id}
-//                onClick={() => handleSelectUser(cell.id, row.original)}
-              >
+              <td key={cell.id}>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}
@@ -121,17 +163,16 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
- *
+ * Column definitions for the table.
  */
 const columnHelper = createColumnHelper<LimitPlus>();
 const columns = [
-  columnHelper.display({
+  columnHelper.accessor(row => formatLimitName(row), {
     cell: info => {
-      const display_name = info.row.original.display_name;
-      return <span>{display_name}</span>
+      return <span>{formatLimitName(info.row.original)}</span>
     },
-    header: "Display Name",
-    id: "display_name",
+    header: "Limit Name",
+    id: "limit_name",
   }),
   columnHelper.display({
     cell: info => {
@@ -217,4 +258,11 @@ function formatAmount(amt: number | null | undefined, cc: string | null | undefi
     formatted += `${(amt/100).toFixed(2)}`;
   }
   return formatted;
+}
+
+/**
+ * Format the limit name for a limit.
+ */
+function formatLimitName(limit: LimitPlus): string {
+  return limit.display_name || "n/a";
 }

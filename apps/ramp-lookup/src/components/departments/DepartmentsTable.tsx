@@ -17,8 +17,8 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
 import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
+import { useState } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
