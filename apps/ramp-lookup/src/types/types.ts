@@ -101,5 +101,5 @@ export type TransactionLineItemAccountingFieldSelectionPlus = TransactionLineIte
 export type UserPlus = User & {
   cards?: Card[] | null;
   department?: Department | null;
-  limit_users?: LimitUser[] | null;
+  limit_users?: LimitUserPlus[] | null;
 };

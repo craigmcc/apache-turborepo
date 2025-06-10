@@ -17,7 +17,8 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ, BookUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -25,9 +26,9 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DepartmentPlus, UserPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
-import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ} from "lucide-react";
+import { UserMoreInfo } from "@/components/users/UserMoreInfo";
+import { DepartmentPlus, UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -40,12 +41,14 @@ export type UsersTableProps = {
 
 export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
+  const [currentUser, setCurrentUser] = useState<UserPlus>(placeholderUser);
   const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "user_name", desc: false },
   ]);
@@ -76,6 +79,78 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
     setFilteredUsers(matchingUsers);
 
   }, [allUsers, departmentNameFilter, userNameFilter]);
+
+  // Handle the "More Info" modal close
+  function handleMoreInfoClose() {
+    console.log("Closing More Info modal for user:", formatUserName(currentUser));
+    setCurrentUser(placeholderUser);
+    setShowMoreInfo(false);
+  }
+
+  // Handle the "More Info" modal open
+  function handleMoreInfoOpen(user: UserPlus) {
+    console.log("Showing More Info for user:", formatUserName(user));
+    setCurrentUser(user);
+    setShowMoreInfo(true);
+  }
+
+  // Column definitions for the Users table
+  const columns = useMemo(() => [
+    columnHelper.accessor(row => formatDepartmentName(row), {
+      cell: info => {
+        return <span>{formatDepartmentName(info.row.original)}</span>
+      },
+      header: "Department Name",
+      id: "department_name",
+    }),
+    columnHelper.accessor(row => formatUserName(row), {
+      cell: info => {
+        return <span>{formatUserName(info.row.original)}</span>;
+      },
+      header: "User Name",
+      id: "user_name",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.email,
+      header: "User Email",
+      id: "email_address",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.role?.split("_")[1] || "n/a",
+      header: "Role",
+      id: "role",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.status?.split("_")[1] || "n/a",
+      header: "Status",
+      id: "status",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.cards?.length || 0,
+      header: "#Cards",
+      id: "cardsCount",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.limit_users?.length || 0,
+      header: "#Limits",
+      id: "limitsCount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return (
+          // TODO - add a tooltip
+          <span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
+        );
+      },
+      header: "Info",
+      id: "moreInfo",
+    }),
+  ], []);
 
   // Overall table instance
   const table = useReactTable<UserPlus>({
@@ -179,6 +254,12 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
       </table>
 
+      <UserMoreInfo
+        hide={handleMoreInfoClose}
+        show={showMoreInfo}
+        user={currentUser}
+      />
+
     </Container>
   );
 }
@@ -186,50 +267,9 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
- * Column definitions for the table.
+ * Helper for creating columns in the Users table.
  */
 const columnHelper = createColumnHelper<UserPlus>();
-const columns = [
-  columnHelper.accessor(row => formatDepartmentName(row), {
-    cell: info => {
-      return <span>{formatDepartmentName(info.row.original)}</span>
-    },
-    header: "Department Name",
-    id: "department_name",
-  }),
-  columnHelper.accessor(row => formatUserName(row), {
-    cell: info => {
-      return <span>{formatUserName(info.row.original)}</span>;
-    },
-    header: "User Name",
-    id: "user_name",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.email,
-    header: "User Email",
-    id: "email_address",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.role?.split("_")[1] || "n/a",
-    header: "Role",
-    id: "role",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.status?.split("_")[1] || "n/a",
-    header: "Status",
-    id: "status",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.cards?.length || 0,
-    header: "#Cards",
-    id: "cardsCount",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.limit_users?.length || 0,
-    header: "#Limits",
-    id: "limitsCount",
-  }),
-];
 
 /**
  * Save the department list for name formatting.
@@ -245,10 +285,34 @@ function formatDepartmentName(user: UserPlus): string {
   return department?.name || "n/a";
 }
 
-
 /**
  * Format the user name for a user.
  */
 function formatUserName(user: UserPlus): string {
   return `${user.last_name}, ${user.first_name}`;
+}
+
+/**
+ * Placeholder for the UserMoreInfo component.
+ */
+const placeholderUser: UserPlus = {
+  // Scalar fields
+  id: "",
+  email: "",
+  employee_id: null,
+  first_name: null,
+  is_manager: null,
+  last_name: null,
+  phone: null,
+  role: null,
+  status: "USER_INACTIVE",
+  // Potential relationships
+  entity_id: null,
+  location_id: null,
+  manager_id: null,
+  // Actual relationships
+  cards: null,
+  department_id: null,
+  department: null,
+  limit_users: null,
 }
