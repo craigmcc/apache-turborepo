@@ -13,19 +13,17 @@ import { dbRamp } from "@repo/ramp-db/dist";
 
 export default async function UsersPage() {
 
-  const allDepartments = await dbRamp.department.findMany({
-    orderBy: {
-      name: "asc",
-    },
-  });
-
   const allUsers = await dbRamp.user.findMany({
     include: {
       cards: true,
       department: true,
       limit_users: {
         include: {
-          limit: true,
+          limit: {
+            include: {
+              spending_restrictions: true,
+            },
+          },
         },
       },
     },
@@ -37,7 +35,6 @@ export default async function UsersPage() {
 
   return (
     <UsersTable
-      allDepartments={allDepartments}
       allUsers={allUsers}
     />
   );

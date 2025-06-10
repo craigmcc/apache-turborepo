@@ -68,7 +68,7 @@ export type LimitCardPlus = LimitCard & {
 }
 
 export type LimitUserPlus = LimitUser & {
-  limit?: Limit | null;
+  limit?: LimitPlus | null;
   user?: User | null;
 }
 

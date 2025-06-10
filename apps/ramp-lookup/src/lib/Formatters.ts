@@ -2,13 +2,50 @@
  * Formatters for RAMP amounts that include both the value and the currency.
  */
 
+// Internal Imports ----------------------------------------------------------
+
+import { DepartmentPlus, UserPlus } from "@/types/types";
+
 // Public Objects ------------------------------------------------------------
 
-/*
-export function formatRampAmount(amount: number, currency: string): string {
-  return `${amount.toFixed(2)} ${currency}`;
+/**
+ * Format a RAMP amount with its currency code.
+ *
+ * @param amt Amount in lowest denomination (e.g., cents for USD)
+ * @param cc  Currency code (e.g., "USD")
+ */
+export function formatAmount(amt: number | undefined, cc: string | undefined): string {
+  let formatted = cc ? `${cc} ` : "";
+  // TODO - make this sensitive to the currency's decimal places
+  if (amt) {
+    formatted += `${(amt/100).toFixed(2)}`;
+  } else {
+    formatted += "n/a";
+  }
+  return formatted;
 }
-*/
+
+/**
+ * Format a RAMP department name.
+ *
+ * @param department Department object
+ */
+export function formatDepartmentName(department: DepartmentPlus | null | undefined): string {
+  return department?.name || "n/a";
+}
+
+/**
+ * Format a RAMP user name.
+ *
+ * @param user User object
+ */
+export function formatUserName(user: UserPlus | null | undefined): string {
+  if (user && user.first_name && user.last_name) {;
+    return `${user.last_name}, ${user.last_name}`;
+  } else {
+    return "n/a";
+  }
+}
 
 // Private Objects -----------------------------------------------------------
 
@@ -17,19 +54,19 @@ export function formatRampAmount(amount: number, currency: string): string {
  * TODO: THIS NEEDS TO BE VERIFIED WITH RAMP!
  * Current values based on https://github.com/datasets/currency-codes/blob/main/data/codes-all.csv
  */
-const currencyDecimalPlaces: Record<string, number> = {
-  AUD: 2, // Australian Dollar
-  BRL: 2, // Brazilian Real
-  CAD: 2, // Canadian Dollar
-  CNY: 2, // Chinese Yuan Renminbi
-  DKK: 2, // Danish Krone
-  EUR: 2, // European Union Euro
-  GPB: 2, // British Pound Sterling
-  INR: 1, // Indian Rupee
-  JPY: 0, // Japanese Yen
-  USD: 2, // United States Dollar
-  SEK: 2, // Swedish Króna
-  TRY: 2, // Turkish Lira
-  TWD: 2, // New Taiwan Dollar
-  ZAR: 2, // South African Rand
-};
+  const currencyDecimalPlaces: Record<string, number> = {
+    AUD: 2, // Australian Dollar
+    BRL: 2, // Brazilian Real
+    CAD: 2, // Canadian Dollar
+    CNY: 2, // Chinese Yuan Renminbi
+    DKK: 2, // Danish Krone
+    EUR: 2, // European Union Euro
+    GPB: 2, // British Pound Sterling
+    INR: 1, // Indian Rupee
+    JPY: 0, // Japanese Yen
+    USD: 2, // United States Dollar
+    SEK: 2, // Swedish Króna
+    TRY: 2, // Turkish Lira
+    TWD: 2, // New Taiwan Dollar
+    ZAR: 2, // South African Rand
+  };

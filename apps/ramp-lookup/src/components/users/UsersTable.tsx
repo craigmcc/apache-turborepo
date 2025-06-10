@@ -28,18 +28,17 @@ import Row from "react-bootstrap/Row";
 
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import { UserMoreInfo } from "@/components/users/UserMoreInfo";
-import { DepartmentPlus, UserPlus } from "@/types/types";
+import { formatDepartmentName, formatUserName } from "@/lib/Formatters";
+import {  UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 export type UsersTableProps = {
-  // All Departments for the selection filter
-  allDepartments: DepartmentPlus[];
   // All Users to display in the table
   allUsers: UserPlus[];
 }
 
-export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
+export function UsersTable({ allUsers }: UsersTableProps) {
 
   const [currentUser, setCurrentUser] = useState<UserPlus>(placeholderUser);
   const [filteredUsers, setFilteredUsers] = useState<UserPlus[]>(allUsers);
@@ -54,9 +53,6 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
   ]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
-  // Save the departments for name formatting
-  departments = allDepartments;
-
   // Apply selection filters whenever they change
   useEffect(() => {
 
@@ -64,7 +60,7 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
     if (departmentNameFilter.length > 0) {
       matchingUsers = matchingUsers.filter(user => {
-        const departmentName = formatDepartmentName(user);
+        const departmentName = formatDepartmentName(user.department);
         return departmentName.toLowerCase().includes(departmentNameFilter);
       });
     }
@@ -82,23 +78,23 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-    console.log("Closing More Info modal for user:", formatUserName(currentUser));
+//    console.log("Closing More Info modal for user:", formatUserName(currentUser));
     setCurrentUser(placeholderUser);
     setShowMoreInfo(false);
   }
 
   // Handle the "More Info" modal open
   function handleMoreInfoOpen(user: UserPlus) {
-    console.log("Showing More Info for user:", formatUserName(user));
+//    console.log("Showing More Info for user:", formatUserName(user));
     setCurrentUser(user);
     setShowMoreInfo(true);
   }
 
   // Column definitions for the Users table
   const columns = useMemo(() => [
-    columnHelper.accessor(row => formatDepartmentName(row), {
+    columnHelper.accessor(row => formatDepartmentName(row.department), {
       cell: info => {
-        return <span>{formatDepartmentName(info.row.original)}</span>
+        return <span>{formatDepartmentName(info.row.original.department)}</span>
       },
       header: "Department Name",
       id: "department_name",
@@ -270,27 +266,6 @@ export function UsersTable({ allDepartments, allUsers }: UsersTableProps) {
  * Helper for creating columns in the Users table.
  */
 const columnHelper = createColumnHelper<UserPlus>();
-
-/**
- * Save the department list for name formatting.
- */
-let departments: DepartmentPlus[] = [];
-
-/**
- * Format the department name for a user.
- */
-function formatDepartmentName(user: UserPlus): string {
-  if (!user.department_id) return "n/a";
-  const department = departments.find(department => department.id === user.department_id);
-  return department?.name || "n/a";
-}
-
-/**
- * Format the user name for a user.
- */
-function formatUserName(user: UserPlus): string {
-  return `${user.last_name}, ${user.first_name}`;
-}
 
 /**
  * Placeholder for the UserMoreInfo component.

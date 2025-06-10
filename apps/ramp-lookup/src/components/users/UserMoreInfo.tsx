@@ -14,6 +14,7 @@ import Table from "react-bootstrap/Table";
 
 // Internal Imports ----------------------------------------------------------
 
+import { formatAmount } from "@/lib/Formatters";
 import { UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -32,12 +33,14 @@ export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
   return (
     <Modal
       centered
+      dialogClassName="modal-90w"
       onHide={hide}
+      scrollable
       show={show}
       size="xl"
     >
       <Modal.Header closeButton>
-        <Modal.Title>User <b>{user.id}</b> Info</Modal.Title>
+        <Modal.Title>User Information</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
@@ -48,6 +51,10 @@ export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
               <h5 className="text-center bg-primary-subtle">User Information</h5>
               <Table size="sm" bordered>
                 <tbody>
+                <tr>
+                  <td>id</td>
+                  <td>{user.id}</td>
+                </tr>
                   <tr>
                     <td>email</td>
                     <td>{user.email}</td>
@@ -140,6 +147,8 @@ export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
                     <th>limit_id</th>
                     <th>limit.display_name</th>
                     <th>limit.state</th>
+                    <th>limit.limit</th>
+                    <th>limit.interval</th>
                   </tr>
                   </thead>
                   <tbody>
@@ -148,6 +157,8 @@ export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
                       <td>{limit_user.limit_id}</td>
                       <td>{limit_user.limit?.display_name || "n/a"}</td>
                       <td>{limit_user.limit?.state || "n/a"}</td>
+                      <td>{formatAmount(limit_user.limit?.spending_restrictions?.limit_amt, limit_user.limit?.spending_restrictions?.limit_cc)}</td>
+                      <td>{limit_user.limit?.spending_restrictions?.interval}</td>
                     </tr>
                   ))}
                   </tbody>
