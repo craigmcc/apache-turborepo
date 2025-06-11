@@ -18,7 +18,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -27,6 +27,7 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { formatAmount, formatLimitName } from "@/lib/Formatters";
 import { LimitPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -63,6 +64,86 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
       setFilteredLimits(matchingLimits);
 
     }, [allLimits, filteredLimits, limitNameFilter]);
+
+  // Column definitions for the Limits table
+  const columns = useMemo(() =>   [
+    columnHelper.accessor(row => formatLimitName(row), {
+      cell: info => {
+        return <span>{formatLimitName(info.row.original)}</span>
+      },
+      header: "Limit Name",
+      id: "limit_name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const state = info.row.original.state;
+        if (state === "ACTIVE") {
+          return <span className="text-success">Active</span>;
+        } else if (state === "SUSPENDED") {
+          return <span className="text-warning">Suspended</span>;
+        } else if (state === "TERMINATED") {
+          return <span className="text-danger">Terminated</span>;
+        } else {
+          return <span>Unknown</span>;
+        }
+      },
+      header: "State",
+      id: "state",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const is_shareable = info.row.original.is_shareable;
+        if (is_shareable) {
+          return <span className="text-success">Yes</span>;
+        } else if (!is_shareable) {
+          return <span className="text-info">No</span>;
+        } else {
+          return <span>Unknown</span>;
+        }
+      },
+      header: "Shareable",
+      id: "shareable",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const balance_total = formatAmount(info.row.original.balance_total_amt, info.row.original.balance_total_cc);
+        return <span>{balance_total}</span>
+      },
+      header: "Total Balance",
+      id: "balance_total",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.cards?.length || 0,
+      header: "#Cards",
+      id: "cardsCount",
+    }),
+    columnHelper.display({
+      cell: info => info.row.original.users?.length || 0,
+      header: "#Users",
+      id: "usersCount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmount(info.row.original.spending_restrictions?.limit_amt, info.row.original.spending_restrictions?.limit_cc)}</span>;
+      },
+      header: "Interval Limit",
+      id: "amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.spending_restrictions?.interval}</span>;
+      },
+      header: "Interval",
+      id: "interval",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmount(info.row.original.spending_restrictions?.transaction_amount_limit_amt, info.row.original.spending_restrictions?.transaction_amount_limit_cc)}</span>;
+      },
+      header: "Transaction Limit",
+      id: "transaction_amount_limit",
+    }),
+  ], []);
 
   // Create the table instance
   const table = useReactTable({
@@ -163,106 +244,6 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
- * Column definitions for the table.
+ * Helper for creating columns in the Limits table.
  */
 const columnHelper = createColumnHelper<LimitPlus>();
-const columns = [
-  columnHelper.accessor(row => formatLimitName(row), {
-    cell: info => {
-      return <span>{formatLimitName(info.row.original)}</span>
-    },
-    header: "Limit Name",
-    id: "limit_name",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const state = info.row.original.state;
-      if (state === "ACTIVE") {
-        return <span className="text-success">Active</span>;
-      } else if (state === "SUSPENDED") {
-        return <span className="text-warning">Suspended</span>;
-      } else if (state === "TERMINATED") {
-        return <span className="text-danger">Terminated</span>;
-      } else {
-        return <span>Unknown</span>;
-      }
-    },
-    header: "State",
-    id: "state",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const is_shareable = info.row.original.is_shareable;
-      if (is_shareable) {
-        return <span className="text-success">Yes</span>;
-      } else if (!is_shareable) {
-        return <span className="text-info">No</span>;
-      } else {
-        return <span>Unknown</span>;
-      }
-    },
-    header: "Shareable",
-    id: "shareable",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const balance_total = formatAmount(info.row.original.balance_total_amt, info.row.original.balance_total_cc);
-      return <span>{balance_total}</span>
-    },
-    header: "Total Balance",
-    id: "balance_total",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.cards?.length || 0,
-    header: "#Cards",
-    id: "cardsCount",
-  }),
-  columnHelper.display({
-    cell: info => info.row.original.users?.length || 0,
-    header: "#Users",
-    id: "usersCount",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const amt = info.row.original.spending_restrictions?.limit_amt;
-      const cc = info.row.original.spending_restrictions?.limit_cc;
-      return <span>{formatAmount(amt,cc)}</span>;
-    },
-    header: "Interval Limit",
-    id: "amount",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{info.row.original.spending_restrictions?.interval}</span>;
-    },
-    header: "Interval",
-    id: "interval",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const amt = info.row.original.spending_restrictions?.transaction_amount_limit_amt;
-      const cc = info.row.original.spending_restrictions?.transaction_amount_limit_cc;
-      return <span>{formatAmount(amt,cc)}</span>;
-    },
-    header: "Transaction Limit",
-    id: "transaction_amount_limit",
-  }),
-];
-
-/**
- * Format an amount as a string with a currency and two decimal places.
- */
-function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
-  let formatted = cc ? `${cc} ` : "";
-  if (amt) {
-    formatted += `${(amt/100).toFixed(2)}`;
-  }
-  return formatted;
-}
-
-/**
- * Format the limit name for a limit.
- */
-function formatLimitName(limit: LimitPlus): string {
-  return limit.display_name || "n/a";
-}

@@ -4,7 +4,7 @@
 
 // Internal Imports ----------------------------------------------------------
 
-import { CardPlus, DepartmentPlus, UserPlus } from "@/types/types";
+import { CardPlus, DepartmentPlus, LimitPlus, UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -62,6 +62,15 @@ export function formatDepartmentName(department: DepartmentPlus | null | undefin
 }
 
 /**
+ * Format a RAMP limit name.
+ *
+ * @param limit Limit object
+ */
+export function formatLimitName(limit: LimitPlus | null | undefined): string {
+  return limit?.display_name || "n/a";
+}
+
+/**
  * Format a RAMP user name.
  *
  * @param user User object
@@ -81,6 +90,7 @@ export function formatUserName(user: UserPlus | null | undefined): string {
  * TODO: THIS NEEDS TO BE VERIFIED WITH RAMP!
  * Current values based on https://github.com/datasets/currency-codes/blob/main/data/codes-all.csv
  */
+/*
   const currencyDecimalPlaces: Record<string, number> = {
     AUD: 2, // Australian Dollar
     BRL: 2, // Brazilian Real
@@ -97,3 +107,4 @@ export function formatUserName(user: UserPlus | null | undefined): string {
     TWD: 2, // New Taiwan Dollar
     ZAR: 2, // South African Rand
   };
+*/
