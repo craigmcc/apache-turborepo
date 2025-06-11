@@ -4,17 +4,17 @@
 
 // Internal Imports ----------------------------------------------------------
 
-import { DepartmentPlus, UserPlus } from "@/types/types";
+import { CardPlus, DepartmentPlus, UserPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 /**
  * Format a RAMP amount with its currency code.
  *
- * @param amt Amount in lowest denomination (e.g., cents for USD)
+ * @param amt Amount in the lowest denomination (e.g., cents for USD)
  * @param cc  Currency code (e.g., "USD")
  */
-export function formatAmount(amt: number | undefined, cc: string | undefined): string {
+export function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
   let formatted = cc ? `${cc} ` : "";
   // TODO - make this sensitive to the currency's decimal places
   if (amt) {
@@ -23,6 +23,33 @@ export function formatAmount(amt: number | undefined, cc: string | undefined): s
     formatted += "n/a";
   }
   return formatted;
+}
+
+/**
+ * Format a RAMP card name.
+ *
+ * @param card Card object
+ */
+export function formatCardName(card: CardPlus | null | undefined): string {
+  return card?.display_name || "n/a";
+}
+
+/**
+ * Format a RAMP card interval.
+ *
+ * @param card Card object
+ */
+export function formatCardInterval(card: CardPlus | null | undefined): string {
+  return card?.spending_restrictions?.interval || "n/a";
+}
+
+/**
+ * Format a RAMP card state.
+ *
+ * @param card Card object
+ */
+export function formatCardState(card: CardPlus | null | undefined): string {
+  return card?.state || "n/a";
 }
 
 /**
@@ -41,7 +68,7 @@ export function formatDepartmentName(department: DepartmentPlus | null | undefin
  */
 export function formatUserName(user: UserPlus | null | undefined): string {
   if (user && user.first_name && user.last_name) {;
-    return `${user.last_name}, ${user.last_name}`;
+    return `${user.last_name}, ${user.first_name}`;
   } else {
     return "n/a";
   }

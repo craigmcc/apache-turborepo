@@ -134,7 +134,6 @@ export function UsersTable({ allUsers }: UsersTableProps) {
     columnHelper.display({
       cell: info => {
         return (
-          // TODO - add a tooltip
           <span>
           <BookUp
             onClick={() => handleMoreInfoOpen(info.row.original)}

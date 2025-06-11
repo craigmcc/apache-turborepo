@@ -15,7 +15,20 @@ export default async function CardsPage() {
 
   const allCards = await dbRamp.card.findMany({
     include: {
-      cardholder: true,
+      cardholder: {
+        include: {
+          department: true,
+        },
+      },
+      limit_cards: {
+        include: {
+          limit: {
+            include: {
+              spending_restrictions: true,
+            },
+          },
+        },
+      },
       spending_restrictions: true,
     },
     orderBy: [
@@ -25,16 +38,8 @@ export default async function CardsPage() {
     ],
   });
 
-  const allDepartments = await dbRamp.department.findMany({
-    include: {
-      users: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
   return (
-    <CardsTable allCards={allCards} allDepartments={allDepartments}/>
+    <CardsTable allCards={allCards}/>
   );
 
 }

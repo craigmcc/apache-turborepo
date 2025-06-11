@@ -93,11 +93,11 @@ model Card {
   cardholder_id         String?
   cardholder            User?                     @relation(fields: [cardholder_id], references: [id], onDelete: Cascade)
   // The LimitCards associated with this Card
-  LimitCard             LimitCard[]
+  limit_cards           LimitCard[]
   /// Spending restrictions for this Card (1:1 relationship)
   spending_restrictions CardSpendingRestrictions?
   /// Transactions for this Card
-  Transaction           Transaction[]
+  transactions          Transaction[]
 
   @@map("cards")
 }

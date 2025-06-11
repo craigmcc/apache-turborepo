@@ -17,8 +17,8 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp, BookUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -26,33 +26,39 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
+import { CardMoreInfo } from "@/components/cards/CardMoreInfo";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
-import { CardPlus, DepartmentPlus } from "@/types/types";
+import {
+  formatCardInterval,
+  formatCardName,
+  formatCardState,
+  formatDepartmentName,
+  formatUserName
+} from "@/lib/Formatters";
+import {CardPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 export type CardsTableProps = {
   // All cards to display in the table
   allCards: CardPlus[];
-  allDepartments: DepartmentPlus[];
 }
 
-export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
+export function CardsTable({ allCards }: CardsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
+  const [currentCard, setCurrentCard] = useState<CardPlus>(placeholderCard);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [filteredCards, setFilteredCards] = useState<CardPlus[]>(allCards);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "user_name", desc: false },
   ]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
-
-  // Save the departments for name formatting
-  departments = allDepartments;
 
   // Apply selection filters whenever they change
   useEffect(() => {
@@ -68,14 +74,14 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
 
     if (departmentNameFilter.length > 0) {
       matchingCards = matchingCards.filter(card => {
-        const departmentName = formatDepartmentName(card);
+        const departmentName = formatDepartmentName(card.cardholder?.department);
         return departmentName.toLowerCase().includes(departmentNameFilter);
       });
     }
 
     if (userNameFilter.length > 0) {
       matchingCards = matchingCards.filter(card => {
-        const userName = formatUserName(card);
+        const userName = formatUserName(card.cardholder);
         return userName.toLowerCase().includes(userNameFilter);
       });
     }
@@ -83,6 +89,109 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
     setFilteredCards(matchingCards);
 
   }, [allCards, cardNameFilter, departmentNameFilter, userNameFilter]);
+
+  // Handle the "More Info" modal close
+  function handleMoreInfoClose() {
+//    console.log("Closing More Info modal for card:", formatCardName(currentCard));
+    setCurrentCard(placeholderCard);
+    setShowMoreInfo(false);
+  }
+
+  // Handle the "More Info" modal open
+  function handleMoreInfoOpen(card: CardPlus) {
+//    console.log("Showing More Info for card:", formatCardName(card));
+    setCurrentCard(card);
+    setShowMoreInfo(true);
+  }
+
+  // Column definitions for the Cards table
+  const columns = useMemo(() => [
+    columnHelper.accessor(row => formatDepartmentName(row.cardholder?.department), {
+      cell: info => {
+        return <span>{formatDepartmentName(info.row.original.cardholder?.department)}</span>;
+      },
+      enableSorting: true,
+      header: "Department Name",
+      id: "department_name",
+    }),
+    columnHelper.accessor(row => formatUserName(row.cardholder), {
+      cell: info => {
+        return <span>{formatUserName(info.row.original.cardholder)}</span>;
+      },
+      enableSorting: true,
+      header: "User Name",
+      id: "user_name",
+    }),
+    columnHelper.accessor(row => formatCardName(row), {
+      cell: info => {
+        return <span>{formatCardName(info.row.original)}</span>;
+      },
+      enableSorting: true,
+      header: "Card Name",
+      id: "card_name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.is_physical ? "Yes" : "No"}</span>;
+      },
+      header: "Physical?",
+      id: "is_physical",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatCardState(info.row.original)}</span>;
+      },
+      header: "State",
+      id: "state",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmountFunky(info.row.original.spending_restrictions?.amount)}</span>;
+      },
+      header: "Interval Limit",
+      id: "amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatCardInterval(info.row.original)}</span>;
+      },
+      header: "Interval",
+      id: "interval",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAmountFunky(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
+      },
+      header: "Transaction Limit",
+      id: "transaction_amount_limit",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const suspended = info.row.original.spending_restrictions?.suspended;
+        if (suspended) {
+          return <span className="text-danger">Yes</span>;
+        } else {
+          return <span className="text-success">No</span>;
+        }
+      },
+      header: "Suspended?",
+      id: "suspended",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return (
+          <span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
+        );
+      },
+      header: "Info",
+      id: "moreInfo",
+    }),
+  ], []);
 
   // Overall table instance
   const table = useReactTable<CardPlus>({
@@ -197,6 +306,12 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
 
       </table>
 
+      <CardMoreInfo
+        card={currentCard}
+        hide={handleMoreInfoClose}
+        show={showMoreInfo}
+      />
+
     </Container>
   );
 
@@ -205,133 +320,39 @@ export function CardsTable({ allCards, allDepartments }: CardsTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
- * Column definitions for the table.
+ * Helper for creating columns in the Cards table.
  */
 const columnHelper = createColumnHelper<CardPlus>();
-const columns = [
-  columnHelper.accessor(row => formatDepartmentName(row), {
-    cell: info => {
-      return <span>{formatDepartmentName(info.row.original)}</span>;
-    },
-    enableSorting: true,
-    header: "Department Name",
-    id: "department_name",
-  }),
-  columnHelper.accessor(row => formatUserName(row), {
-    cell: info => {
-      return <span>{formatUserName(info.row.original)}</span>;
-    },
-    enableSorting: true,
-    header: "User Name",
-    id: "user_name",
-  }),
-  columnHelper.accessor(row => formatCardName(row), {
-    cell: info => {
-      return <span>{formatCardName(info.row.original)}</span>;
-    },
-    enableSorting: true,
-    header: "Card Name",
-    id: "card_name",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{info.row.original.is_physical ? "Yes" : "No"}</span>;
-    },
-    header: "Physical?",
-    id: "is_physical",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{formatState(info.row.original)}</span>;
-    },
-    header: "State",
-    id: "state",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{formatAmount(info.row.original.spending_restrictions?.amount)}</span>;
-    },
-    header: "Interval Limit",
-    id: "amount",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{formatInterval(info.row.original)}</span>;
-    },
-    header: "Interval",
-    id: "interval",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{formatAmount(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
-    },
-    header: "Transaction Limit",
-    id: "transaction_amount_limit",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const suspended = info.row.original.spending_restrictions?.suspended;
-      if (suspended) {
-        return <span className="text-danger">Yes</span>;
-      } else {
-        return <span className="text-success">No</span>;
-      }
-    },
-    header: "Suspended?",
-    id: "suspended",
-  }),
-];
+
 
 /**
- * Save the department list for name formatting.
+ * Format an amount as a string with two decimal places.  Funky for old API things.
  */
-let departments: DepartmentPlus[] = [];
-
-/**
- * Format an amount as a string with two decimal places.
- */
-function formatAmount(amount: number | null | undefined): string {
+function formatAmountFunky(amount: number | null | undefined): string {
   if (!amount) return "n/a";
   return `$${amount.toFixed(2)}`;
 }
 
 /**
- * Format the card name for a card.
+ * Placeholder for the CardMoreInfo component.
  */
-function formatCardName(card: CardPlus): string {
-  return card.display_name || "n/a";
-}
-
-/**
- * Format the department name for a card.
- */
-function formatDepartmentName(card: CardPlus): string {
-  if (!card.cardholder?.department_id) return "n/a";
-  const department = departments.find(department => department.id === card.cardholder?.department_id);
-  return department?.name || "n/a";
-}
-
-/**
- * Format the interval for a card.
- */
-function formatInterval(card: CardPlus): string {
-  return card.spending_restrictions?.interval || "n/a";
-}
-
-/**
- * Format the state for a card.
- */
-function formatState(card: CardPlus): string {
-  return card.state || "n/a";
-}
-
-/**
- * Format the user name for a card.
- */
-function formatUserName(card: CardPlus): string {
-  if (card.cardholder) {
-    return `${card.cardholder.last_name}, ${card.cardholder.first_name}`;
-  } else {
-    return "n/a";
-  }
+const placeholderCard: CardPlus = {
+  // Scalar fields
+  id: "",
+  cardholder_name: null,
+  card_program_id: null,
+  created_at: null,
+  display_name: "",
+  expiration: "",
+  has_program_overridden: false,
+  is_physical: false,
+  last_four: "",
+  state: null,
+  // Potential relationships
+  entity_id: null,
+  // Actual relationships
+  cardholder_id: null,
+  cardholder: null,
+  limit_cards: null,
+  spending_restrictions: null,
 }

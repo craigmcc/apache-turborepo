@@ -48,7 +48,7 @@ export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
           <Row>
 
             <Col xs={12} md={6}>
-              <h5 className="text-center bg-primary-subtle">User Information</h5>
+              <h5 className="bg-primary-subtle">User Information</h5>
               <Table size="sm" bordered>
                 <tbody>
                 <tr>

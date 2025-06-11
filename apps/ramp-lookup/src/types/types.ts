@@ -40,11 +40,9 @@ export type AccountingGLAccountPlus = AccountingGLAccount & {
 }
 
 export type CardPlus = Card & {
-  cardholder?: User | null;
-  department?: Department | null;
-  limit_cards?: LimitCard[] | null;
+  cardholder?: UserPlus | null;
+  limit_cards?: LimitCardPlus[] | null;
   spending_restrictions?: CardSpendingRestrictions | null;
-  users?: User[] | null;
 }
 
 export type CardSpendingRestrictionsPlus = CardSpendingRestrictions & {
@@ -64,7 +62,7 @@ export type LimitPlus = Limit & {
 
 export type LimitCardPlus = LimitCard & {
   card?: Card | null;
-  limit?: Limit | null;
+  limit?: LimitPlus | null;
 }
 
 export type LimitUserPlus = LimitUser & {
