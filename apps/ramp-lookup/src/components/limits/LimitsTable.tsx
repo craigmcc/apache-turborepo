@@ -17,7 +17,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
+import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp, BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -26,6 +26,7 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
+import { LimitMoreInfo } from "@/components/limits/LimitMoreInfo";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import { formatAmount, formatLimitName } from "@/lib/Formatters";
 import { LimitPlus } from "@/types/types";
@@ -39,31 +40,47 @@ export type LimitsTableProps = {
 
 export function LimitsTable({ allLimits }: LimitsTableProps) {
 
+  const [currentLimit, setCurrentLimit] = useState<LimitPlus>(placeholderLimit);
   const [filteredLimits, setFilteredLimits] = useState<LimitPlus[]>(allLimits);
   const [limitNameFilter, setLimitNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "limit_name", desc: false },
   ]);
 
   // Apply selection filters whenever they change
-    useEffect(() => {
+  useEffect(() => {
 
-      let matchingLimits: LimitPlus[] = allLimits;
+    let matchingLimits: LimitPlus[] = allLimits;
 
-      if (limitNameFilter.length > 0) {
-        matchingLimits = matchingLimits.filter(limit => {
-          const limitName = formatLimitName(limit);
-          return limitName.toLowerCase().includes(limitNameFilter);
-        });
-      }
+    if (limitNameFilter.length > 0) {
+      matchingLimits = matchingLimits.filter(limit => {
+        const limitName = formatLimitName(limit);
+        return limitName.toLowerCase().includes(limitNameFilter);
+      });
+    }
 
-      setFilteredLimits(matchingLimits);
+    setFilteredLimits(matchingLimits);
 
-    }, [allLimits, filteredLimits, limitNameFilter]);
+  }, [allLimits, filteredLimits, limitNameFilter]);
+
+  // Handle the "More Info" modal close
+  function handleMoreInfoClose() {
+//    console.log("Closing More Info modal for limit:", formatLimitName(currentLimit));
+    setCurrentLimit(placeholderLimit);
+    setShowMoreInfo(false);
+  }
+
+  // Handle the "More Info" modal open
+  function handleMoreInfoOpen(limit: LimitPlus) {
+//    console.log("Showing More Info for limit:", formatLimitName(limit));
+    setCurrentLimit(limit);
+    setShowMoreInfo(true);
+  }
 
   // Column definitions for the Limits table
   const columns = useMemo(() =>   [
@@ -142,6 +159,20 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
       },
       header: "Transaction Limit",
       id: "transaction_amount_limit",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return (
+          <span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
+        );
+      },
+      header: "Info",
+      id: "moreInfo",
     }),
   ], []);
 
@@ -236,6 +267,12 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 
       </table>
 
+      <LimitMoreInfo
+        hide={handleMoreInfoClose}
+        limit={currentLimit}
+        show={showMoreInfo}
+      />
+
     </Container>
   );
 
@@ -247,3 +284,35 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
  * Helper for creating columns in the Limits table.
  */
 const columnHelper = createColumnHelper<LimitPlus>();
+
+/**
+ * Placeholder for the LimitMoreInfo component.
+ * This is used to ensure the component always has a valid limit to display.
+ */
+const placeholderLimit: LimitPlus =  {
+  // Scalar fields
+  id: "",
+  balance_cleared_amt: null,
+  balance_cleared_cc: null,
+  balance_pending_amt: null,
+  balance_pending_cc: null,
+  balance_total_amt: null,
+  balance_total_cc: null,
+  created_at: null,
+  display_name: "",
+  has_program_overridden: null,
+  is_shareable: false,
+  permitted_primary_card_enabled: null,
+  permitted_reimbursements_enabled: null,
+  state: "ACTIVE",
+  suspension_acting_user_id: null,
+  suspension_inserted_at: null,
+  suspension_suspended_by_ramp: null,
+  // Potential relationships
+  entity_id: null,
+  // Actual relationships
+  cards: [],
+  spend_program_id: null,
+  spending_restrictions: null,
+  users: [],
+}

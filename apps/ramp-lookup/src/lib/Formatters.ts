@@ -71,12 +71,21 @@ export function formatLimitName(limit: LimitPlus | null | undefined): string {
 }
 
 /**
+ * Format a RAMP limit state.
+ *
+ * @param limit Limit object
+ */
+export function formatLimitState(limit: LimitPlus | null | undefined): string {
+  return limit?.state || "n/a";
+}
+
+/**
  * Format a RAMP user name.
  *
  * @param user User object
  */
 export function formatUserName(user: UserPlus | null | undefined): string {
-  if (user && user.first_name && user.last_name) {;
+  if (user && user.first_name && user.last_name) {
     return `${user.last_name}, ${user.first_name}`;
   } else {
     return "n/a";

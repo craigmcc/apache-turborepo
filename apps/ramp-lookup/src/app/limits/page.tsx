@@ -15,9 +15,17 @@ export default async function LimitsPage() {
 
   const allLimits = await dbRamp.limit.findMany({
     include: {
-      cards: true,
+      cards: {
+        include: {
+          card: true,
+        }
+      },
       spending_restrictions: true,
-      users: true,
+      users: {
+        include: {
+          user: true,
+        }
+      }
     },
     orderBy: {
       display_name: "asc",

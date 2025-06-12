@@ -54,20 +54,20 @@ export type DepartmentPlus = Department & {
 };
 
 export type LimitPlus = Limit & {
-  cards?: LimitCard[] | null;
+  cards?: LimitCardPlus[] | null;
   spend_program?: SpendProgram | null;
   spending_restrictions?: LimitSpendingRestrictions | null;
-  users?: LimitUser[] | null;
+  users?: LimitUserPlus[] | null;
 }
 
 export type LimitCardPlus = LimitCard & {
-  card?: Card | null;
+  card?: CardPlus | null;
   limit?: LimitPlus | null;
 }
 
 export type LimitUserPlus = LimitUser & {
   limit?: LimitPlus | null;
-  user?: User | null;
+  user?: UserPlus | null;
 }
 
 export type SpendProgramPlus = SpendProgram & {

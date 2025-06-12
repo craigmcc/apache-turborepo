@@ -344,7 +344,7 @@ model LimitUser {
   limit    Limit  @relation(fields: [limit_id], references: [id], onDelete: Cascade)
   /// Unique ID of the User that this LimitUser belongs to
   user_id  String
-  User     User?  @relation(fields: [user_id], references: [id])
+  user     User?  @relation(fields: [user_id], references: [id])
 
   @@id([limit_id, user_id])
   @@map("limits_users")
