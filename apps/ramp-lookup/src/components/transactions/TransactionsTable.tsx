@@ -16,7 +16,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -24,7 +24,14 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { Timestamps } from "@repo/shared-utils/Timestamps";
+import {
+  formatAccountingDate,
+  formatAmount,
+  formatCardName,
+  formatGlAccount,
+  formatMerchantName,
+  formatUserName
+} from "@/lib/Formatters";
 import { TransactionPlus } from "@/types/types";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ} from "lucide-react";
@@ -59,7 +66,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     if (cardNameFilter.length > 0) {
       matchingTransactions = matchingTransactions.filter(transaction => {
-        const cardName = formatCardName(transaction);
+        const cardName = formatCardName(transaction.card);
         return cardName.toLowerCase().includes(cardNameFilter);
       });
     }
@@ -104,7 +111,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     if (userNameFilter.length > 0) {
       matchingTransactions = matchingTransactions.filter(transaction => {
-        const userName = formatUserName(transaction);
+        const userName = formatUserName(transaction.card_holder_user);
         return userName.toLowerCase().includes(userNameFilter);
       });
     }
@@ -112,6 +119,75 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     setFilteredTransactions(matchingTransactions);
 
   }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
+
+  // Column definitions for the Transactions table
+  const columns = useMemo(() => [
+    columnHelper.accessor(row => formatAccountingDate(row), {
+      cell: info => {
+        return <span>{formatAccountingDate(info.row.original)}</span>
+      },
+      enableSorting: true,
+      header: () => <span>Accounting Date-Time</span>,
+      id: "accounting_date",
+    }),
+    columnHelper.accessor(row => formatUserName(row.card_holder_user), {
+      cell: info => {
+        return <span>{formatUserName(info.row.original.card_holder_user)}</span>
+      },
+      enableSorting: true,
+      header: () => <span>User Name</span>,
+      id: "user_name",
+    }),
+    columnHelper.accessor(row => formatCardName(row.card), {
+      cell: info => {
+        return <span>{formatCardName(info.row.original.card)}</span>;
+      },
+      enableSorting: true,
+      header: () => <span>Card Name</span>,
+      id: "card_name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const amount =
+          formatAmount(info.row.original.original_transaction_amount_amt,
+            info.row.original.original_transaction_amount_cc);
+        return <span>{amount}</span>;
+      },
+      header: () => <span>Original Amount</span>,
+      id: "original_amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        const amount =
+          formatAmount(info.row.original.amount_amt, info.row.original.amount_cc)
+        return <span>{amount}</span>;
+      },
+      header: () => <span>Settled Amount</span>,
+      id: "settled_amount",
+    }),
+    columnHelper.accessor(row => formatMerchantName(row), {
+      cell: info => {
+        return <span>{formatMerchantName(info.row.original)}</span>;
+      },
+      enableSorting: true,
+      header: () => <span>Merchant</span>,
+      id: "merchant_name",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatGlAccount(info.row.original)}</span>;
+      },
+      header: () => <span>GL Account</span>,
+      id: "gl_account",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.state}</span>;
+      },
+      header: () => <span>State</span>,
+      id: "state",
+    }),
+  ], []);
 
   // Overall table instance
   const table = useReactTable({
@@ -268,139 +344,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 // Private Objects -----------------------------------------------------------
 
 /**
- * Column definitions for the table.
+ * Helper for creating columns in the Transactions table.
  */
 const columnHelper = createColumnHelper<TransactionPlus>();
-const columns = [
-  columnHelper.accessor(row => formatAccountingDate(row), {
-    cell: info => {
-      return <span>{formatAccountingDate(info.row.original)}</span>
-    },
-    enableSorting: true,
-    header: () => <span>Accounting Date-Time</span>,
-    id: "accounting_date",
-  }),
-  columnHelper.accessor(row => formatUserName(row), {
-    cell: info => {
-      return <span>{formatUserName(info.row.original)}</span>
-    },
-    enableSorting: true,
-    header: () => <span>User Name</span>,
-    id: "user_name",
-  }),
-  columnHelper.accessor(row => formatCardName(row), {
-    cell: info => {
-      return <span>{formatCardName(info.row.original)}</span>;
-    },
-    enableSorting: true,
-    header: () => <span>Card Name</span>,
-    id: "card_name",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const amount =
-        formatAmount(info.row.original.original_transaction_amount_amt,
-          info.row.original.original_transaction_amount_cc);
-      return <span>{amount}</span>;
-    },
-    header: () => <span>Original Amount</span>,
-    id: "original_amount",
-  }),
-  columnHelper.display({
-    cell: info => {
-      const amount =
-        formatAmount(info.row.original.amount_amt, info.row.original.amount_cc)
-      return <span>{amount}</span>;
-    },
-    header: () => <span>Settled Amount</span>,
-    id: "settled_amount",
-  }),
-  columnHelper.accessor(row => formatMerchantName(row), {
-    cell: info => {
-      return <span>{formatMerchantName(info.row.original)}</span>;
-    },
-    enableSorting: true,
-    header: () => <span>Merchant</span>,
-    id: "merchant_name",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{formatGlAccount(info.row.original)}</span>;
-    },
-    header: () => <span>GL Account</span>,
-    id: "gl_account",
-  }),
-  columnHelper.display({
-    cell: info => {
-      return <span>{info.row.original.state}</span>;
-    },
-    header: () => <span>State</span>,
-    id: "state",
-  }),
-];
-
-/**
- * Format the accounting date for a transaction.
- */
-function formatAccountingDate(transaction: TransactionPlus): string {
-  if (transaction.accounting_date) {
-    const accountingDate = new Date(transaction.accounting_date!);
-    return Timestamps.local(accountingDate);
-  } else {
-    return "n/a";
-  }
-}
-
-/**
- * Format an amount as a string with a currency and two decimal places.
- */
-function formatAmount(amt: number | null | undefined, cc: string | null | undefined): string {
-  let formatted = cc ? `${cc} ` : "";
-  if (amt) {
-    formatted += `${(amt/100).toFixed(2)}`;
-  } else {
-    formatted += "n/a";
-  }
-  return formatted;
-}
-
-/**
- * Format the card name for a transaction.
- */
-function formatCardName(transaction: TransactionPlus): string {
-  return transaction.card ? transaction.card.display_name : "n/a";
-}
-
-/**
- * Format the GL Account Number and Name for a transaction.
- */
-function formatGlAccount(transaction: TransactionPlus): string {
-  // IMPLEMENTATION NOTES:
-  //   * This assumes that the first accounting field selection is always the GL_ACCOUNT type.
-  //   * It assumes that no other line items will be paid attention to.
-  //   * With our current Ramp setup, the data matches these assumptions.
-  const tliafs = transaction.line_item_accounting_field_selections;
-  if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
-    return `${tliafs[0].external_code} - ${tliafs[0].name}`;
-  } else {
-    return "n/a";
-  }
-}
-
-/**
- * Format the merchant name for a transaction.
- */
-function formatMerchantName(transaction: TransactionPlus): string {
-  return transaction.merchant_name || "n/a";
-}
-
-/**
- * Format the user name for a transaction.
- */
-function formatUserName(transaction: TransactionPlus): string {
-  if (transaction.card_holder_user) {
-    return `${transaction.card_holder_user.last_name}, ${transaction.card_holder_user.first_name}`;
-  } else {
-    return "n/a";
-  }
-}

@@ -4,9 +4,30 @@
 
 // Internal Imports ----------------------------------------------------------
 
-import { CardPlus, DepartmentPlus, LimitPlus, UserPlus } from "@/types/types";
+import { Timestamps } from "@repo/shared-utils/Timestamps";
+import {
+  CardPlus,
+  DepartmentPlus,
+  LimitPlus,
+  TransactionPlus,
+  UserPlus
+} from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
+
+/**
+ * Format the accounting date for a transaction.
+ *
+ * @param transaction Transaction object
+ */
+export function formatAccountingDate(transaction: TransactionPlus): string {
+  if (transaction.accounting_date) {
+    const accountingDate = new Date(transaction.accounting_date!);
+    return Timestamps.local(accountingDate);
+  } else {
+    return "n/a";
+  }
+}
 
 /**
  * Format a RAMP amount with its currency code.
@@ -62,6 +83,24 @@ export function formatDepartmentName(department: DepartmentPlus | null | undefin
 }
 
 /**
+ * Format the GL Account Number and Name for a transaction.
+ *
+ * @param transaction Transaction object
+ */
+export function formatGlAccount(transaction: TransactionPlus): string {
+  // IMPLEMENTATION NOTES:
+  //   * This assumes that the first accounting field selection is always the GL_ACCOUNT type.
+  //   * It assumes that no other line items will be paid attention to.
+  //   * With our current Ramp setup, the data matches these assumptions.
+  const tliafs = transaction.line_item_accounting_field_selections;
+  if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
+    return `${tliafs[0].external_code} - ${tliafs[0].name}`;
+  } else {
+    return "n/a";
+  }
+}
+
+/**
  * Format a RAMP limit name.
  *
  * @param limit Limit object
@@ -77,6 +116,15 @@ export function formatLimitName(limit: LimitPlus | null | undefined): string {
  */
 export function formatLimitState(limit: LimitPlus | null | undefined): string {
   return limit?.state || "n/a";
+}
+
+/**
+ * Format the merchant name for a transaction.
+ *
+ * @param transaction Transaction object
+ */
+export function formatMerchantName(transaction: TransactionPlus): string {
+  return transaction.merchant_name || "n/a";
 }
 
 /**
