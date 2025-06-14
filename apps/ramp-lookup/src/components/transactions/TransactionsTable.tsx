@@ -16,6 +16,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { ArrowDownAZ, ArrowDownUp, ArrowUpAZ, BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -24,6 +25,8 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
+import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
 import {
   formatAccountingDate,
   formatAmount,
@@ -33,8 +36,6 @@ import {
   formatUserName
 } from "@/lib/Formatters";
 import { TransactionPlus } from "@/types/types";
-import { PaginationFooter } from "@/components/tables/PaginationFooter";
-import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ} from "lucide-react";
 
 // Public Objects ------------------------------------------------------------
 
@@ -44,7 +45,9 @@ export type TransactionsTableProps = {
 }
 
 export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
+
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
+  const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus>(placeholderTransaction);
   const [filteredTransactions, setFilteredTransactions] = useState<TransactionPlus[]>(allTransactions);
   const [glAccountFilter, setGlAccountFilter] = useState<string>("");
   const [fromDateFilter, setFromDateFilter] = useState<string>(""); // YYYYMMDD
@@ -53,6 +56,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "accounting_date", desc: false },
   ]);
@@ -120,6 +124,18 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
   }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
 
+  // Handle the "More Info" modal close
+  function handleMoreInfoClose() {
+    setCurrentTransaction(placeholderTransaction);
+    setShowMoreInfo(false);
+  }
+
+  // Handle the "More Info" modal open
+  function handleMoreInfoOpen(transaction: TransactionPlus) {
+    setCurrentTransaction(transaction);
+    setShowMoreInfo(true);
+  }
+
   // Column definitions for the Transactions table
   const columns = useMemo(() => [
     columnHelper.accessor(row => formatAccountingDate(row), {
@@ -186,6 +202,20 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       },
       header: () => <span>State</span>,
       id: "state",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return (
+          <span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
+        );
+      },
+      header: "Info",
+      id: "moreInfo",
     }),
   ], []);
 
@@ -336,6 +366,11 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
       </table>
 
+      <TransactionMoreInfo
+        hide={handleMoreInfoClose}
+        show={showMoreInfo}
+        transaction={currentTransaction}/>
+
     </Container>
   );
 
@@ -347,3 +382,46 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
  * Helper for creating columns in the Transactions table.
  */
 const columnHelper = createColumnHelper<TransactionPlus>();
+
+/**
+ * Placeholder for the TransactionMoreInfo modal.
+ * This is used to ensure the component always has a valid transaction to display.
+ */
+
+const placeholderTransaction: TransactionPlus = {
+  // Scalar fields
+  id: "",
+  accounting_date: null,
+  amount_amt: null,
+  amount_cc: null,
+  card_present: null,
+  memo: null,
+  merchant_category_code: null,
+  merchant_category_description: null,
+  merchant_name: null,
+  original_transaction_amount_amt: null,
+  original_transaction_amount_cc: null,
+  settlement_date: null,
+  sk_category_id: null,
+  sk_category_name: null,
+  state: null,
+  sync_status: "SYNCED",
+  synced_at: null,
+  trip_name: null,
+  user_transaction_time: null,
+  // Potential relationships
+  entity_id: null,
+  limit_id: null,
+  merchant_id: null,
+  spend_program_id: null,
+  statement_id: null,
+  trip_id: null,
+  // Actual relationships
+  accounting_field_selections: [],
+  card_holder_user_id: null,
+  card_holder_user: null,
+  card_id: null,
+  card: null,
+  line_items: [],
+  line_item_accounting_field_selections: [],
+}

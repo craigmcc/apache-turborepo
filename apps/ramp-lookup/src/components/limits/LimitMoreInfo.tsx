@@ -102,6 +102,7 @@ export function LimitMoreInfo({ hide, show, limit }: LimitMoreInfoProps) {
           </Row>
 
           <Row className="mt-3">
+
             <Col xs={12}>
               <h5 className="text-center bg-primary-subtle">Limit_Cards Information</h5>
               {limit.cards && limit.cards.length > 0 ? (
@@ -137,6 +138,7 @@ export function LimitMoreInfo({ hide, show, limit }: LimitMoreInfoProps) {
                 <p className="text_center">No limit_cards assigned.</p>
               )}
             </Col>
+
           </Row>
 
           <Row className="mt-3">

@@ -681,17 +681,8 @@ async function recordViolation(
     to_id: to_id,
   }
 
-  await dbRamp.violation.upsert({
-    where: {
-      from_model_from_id_to_model_to_id: {
-        from_model: violation.from_model,
-        from_id: violation.from_id,
-        to_model: violation.to_model,
-        to_id: violation.to_id,
-      }
-    },
-    update: violation,
-    create: violation,
+  await dbRamp.violation.create({
+    data: violation,
   });
 
 }

@@ -86,15 +86,16 @@ export function formatDepartmentName(department: DepartmentPlus | null | undefin
  * Format the GL Account Number and Name for a transaction.
  *
  * @param transaction Transaction object
+ * @param index Index of the line item accounting field selection to use (default: 0)
  */
-export function formatGlAccount(transaction: TransactionPlus): string {
+export function formatGlAccount(transaction: TransactionPlus, index=0): string {
   // IMPLEMENTATION NOTES:
   //   * This assumes that the first accounting field selection is always the GL_ACCOUNT type.
   //   * It assumes that no other line items will be paid attention to.
   //   * With our current Ramp setup, the data matches these assumptions.
   const tliafs = transaction.line_item_accounting_field_selections;
-  if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
-    return `${tliafs[0].external_code} - ${tliafs[0].name}`;
+  if (tliafs && (tliafs.length > 0) && (tliafs[index].category_info_type === "GL_ACCOUNT")) {
+    return `${tliafs[index].external_code} - ${tliafs[index].name}`;
   } else {
     return "n/a";
   }
@@ -128,6 +129,15 @@ export function formatMerchantName(transaction: TransactionPlus): string {
 }
 
 /**
+ * Format a RAMP transaction state.
+ *
+ * @param transaction Transaction object
+ */
+export function formatTransactionState(transaction: TransactionPlus | null | undefined): string {
+  return transaction?.state || "n/a";
+}
+
+/**
  * Format a RAMP user name.
  *
  * @param user User object
@@ -138,6 +148,15 @@ export function formatUserName(user: UserPlus | null | undefined): string {
   } else {
     return "n/a";
   }
+}
+
+/**
+ * Format a RAMP user state.
+ *
+ * @param user User object
+ */
+export function formatUserStatus(user: UserPlus | null | undefined): string {
+  return user?.status || "n/a";
 }
 
 // Private Objects -----------------------------------------------------------
