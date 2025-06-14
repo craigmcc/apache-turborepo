@@ -117,7 +117,20 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       id: "role",
     }),
     columnHelper.display({
-      cell: info => info.row.original.status?.split("_")[1] || "n/a",
+      cell: info => {
+        const status = info.row.original.status;
+        if (status === "USER_ACTIVE") {
+          return <span className="text-success">Active</span>;
+        } else if (status === "USER_INACTIVE") {
+          return <span className="text-danger">Inactive</span>;
+        } else if (status === "USER_SUSPENDED") {
+          return <span className="text-warning">Suspended</span>;
+        } else if (status) {
+          return <span>{status}</span>;
+        } else {
+          return <span>n/a</span>;
+        }
+      },
       header: "Status",
       id: "status",
     }),
