@@ -100,7 +100,7 @@ export async function fetchAccountingGLAccounts(
 
   const url = new URL(`${RAMP_PROD_API_BASE_URL}/developer/v1/accounting/accounts`);
   Object.entries(params).forEach(([key, value]) => {
-    if (value) {
+    if (value || typeof value === "boolean") {
       url.searchParams.append(key, value.toString());
     }
   });

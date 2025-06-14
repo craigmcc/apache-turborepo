@@ -20,7 +20,6 @@ const RAMP_PROD_API_BASE_URL = process.env.RAMP_PROD_API_BASE_URL;
  * Query parameters for fetchSpendPrograms().
  */
 export type FetchSpendProgramsParams = {
-  // TODO - add the relevant filters
   // Number of results to return on each page (2-100). [20]
   page_size?: number;
   // The ID of the last entry on the previous page, for pagination

@@ -126,6 +126,7 @@ export async function refreshAccountingGLAccounts(accessToken: string): Promise<
 export async function refreshCards(accessToken: string): Promise<void> {
 
   console.log("Fetching cards...");
+  const userIds = await fetchUserIds(accessToken);
   let count = 0;
   let nextStart: string | null = "";
 
@@ -145,6 +146,11 @@ export async function refreshCards(accessToken: string): Promise<void> {
 
     for (const rampCard of result.model!.data) {
 
+      if (rampCard.cardholder_id && !userIds.has(rampCard.cardholder_id)) {
+        console.log(`Card ${rampCard.id} replacing bad cardholder_id ${rampCard.cardholder_id}`);
+        await recordViolation("Card", rampCard.id, "User", rampCard.cardholder_id);
+        rampCard.cardholder_id = UNKNOWN_USER_ID_REPLACEMENT;
+      }
       const card: Card = createCard(rampCard);
 
       await dbRamp.card.upsert({
@@ -607,7 +613,7 @@ async function fetchCardIds(accessToken: string): Promise<Set<string>> {
     for (const rampCard of result.model!.data) {
       cardIds.add(rampCard.id);
     }
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
   }
 
   return cardIds;
@@ -634,7 +640,7 @@ async function fetchLimitIds(accessToken: string): Promise<Set<string>> {
     for (const rampLimit of result.model!.data) {
       limitIds.add(rampLimit.id);
     }
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
   }
 
   return limitIds;
@@ -660,7 +666,7 @@ async function fetchUserIds(accessToken: string): Promise<Set<string>> {
     for (const rampUser of result.model!.data) {
       userIds.add(rampUser.id);
     }
-    nextStart = result.model!.page?.next || null;
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
   }
 
   return userIds;
