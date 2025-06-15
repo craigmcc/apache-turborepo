@@ -102,6 +102,15 @@ export function formatGlAccount(transaction: TransactionPlus, index=0): string {
 }
 
 /**
+ * Format a RAMP limit interval.
+ *
+ * @param limit Limit object
+ */
+export function formatLimitInterval(limit: LimitPlus | null | undefined): string {
+  return limit?.spending_restrictions?.interval || "n/a";
+}
+
+/**
  * Format a RAMP limit name.
  *
  * @param limit Limit object

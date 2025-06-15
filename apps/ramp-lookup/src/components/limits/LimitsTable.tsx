@@ -27,9 +27,11 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { LimitMoreInfo } from "@/components/limits/LimitMoreInfo";
+import { LimitsCsvExport } from "@/components/limits/LimitsCsvExport";
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import { formatAmount, formatLimitName } from "@/lib/Formatters";
 import { LimitPlus } from "@/types/types";
+import Button from "react-bootstrap/Button";
 
 // Public Objects ------------------------------------------------------------
 
@@ -47,6 +49,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "limit_name", desc: false },
@@ -66,7 +69,17 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 
     setFilteredLimits(matchingLimits);
 
-  }, [allLimits, filteredLimits, limitNameFilter]);
+  }, [allLimits, limitNameFilter]);
+
+  // Handle the "CSV Export" modal close
+  function handleCsvExportClose() {
+    setShowCsvExport(false);
+  }
+
+  // Handle the "CSV Export" modal open
+  function handleCsvExportOpen() {
+    setShowCsvExport(true);
+  }
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
@@ -196,7 +209,14 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          Limits Table
+          <span className="me-5">Limits Table</span>
+          <Button
+            className="bg-info"
+            onClick={handleCsvExportOpen}
+            size="lg"
+          >
+            Export CSV
+          </Button>
         </h1>
       </Row>
       <Row className="mb-2">
@@ -266,6 +286,12 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
         </tfoot>
 
       </table>
+
+      <LimitsCsvExport
+        hide={handleCsvExportClose}
+        limits={table.getSortedRowModel().flatRows.map(row => row.original)}
+        show={showCsvExport}
+      />
 
       <LimitMoreInfo
         hide={handleMoreInfoClose}
