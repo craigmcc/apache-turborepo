@@ -18,6 +18,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDownAZ, ArrowDownUp, ArrowUpAZ, BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -27,6 +28,7 @@ import Row from "react-bootstrap/Row";
 
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
+import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
 import {
   formatAccountingDate,
   formatAmount,
@@ -56,6 +58,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "accounting_date", desc: false },
@@ -123,6 +126,16 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     setFilteredTransactions(matchingTransactions);
 
   }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
+
+  // Handle the "CSV Export" modal close
+  function handleCsvExportClose() {
+    setShowCsvExport(false);
+  }
+
+  // Handle the "CSV Export" modal open
+  function handleCsvExportOpen() {
+    setShowCsvExport(true);
+  }
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
@@ -240,7 +253,14 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          Transactions Table
+          <span className="me-5">Transactions Table</span>
+          <Button
+            className="bg-info"
+            onClick={handleCsvExportOpen}
+            size="lg"
+          >
+            Export CSV
+          </Button>
         </h1>
       </Row>
       <Row className="mb-2">
@@ -365,6 +385,12 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </tfoot>
 
       </table>
+
+      <TransactionsCsvExport
+        hide={handleCsvExportClose}
+        show={showCsvExport}
+        transactions={table.getSortedRowModel().flatRows.map(row => row.original)}
+      />
 
       <TransactionMoreInfo
         hide={handleMoreInfoClose}

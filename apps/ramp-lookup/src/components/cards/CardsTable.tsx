@@ -93,12 +93,12 @@ export function CardsTable({ allCards }: CardsTableProps) {
 
   }, [allCards, cardNameFilter, departmentNameFilter, userNameFilter]);
 
-  // Handle the CSV Export modal close
+  // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
     setShowCsvExport(false);
   }
 
-  // Handle the CSV Export modal open
+  // Handle the "CSV Export" modal open
   function handleCsvExportOpen() {
     setShowCsvExport(true);
   }
