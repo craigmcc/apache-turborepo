@@ -7,8 +7,7 @@
 // External Imports ----------------------------------------------------------
 
 import {
-//  CellContext,
-  createColumnHelper,
+  ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
@@ -118,69 +117,85 @@ export function CardsTable({ allCards }: CardsTableProps) {
   }
 
   // Column definitions for the Cards table
-  const columns = useMemo(() => [
-    columnHelper.accessor(row => formatDepartmentName(row.cardholder?.department), {
-      cell: info => {
-        return <span>{formatDepartmentName(info.row.original.cardholder?.department)}</span>;
+  const columns : ColumnDef<CardPlus>[] = useMemo(() => [
+    {
+      accessorKey: "department_name",
+      cell: ({ row }) => {
+        return <span>{formatDepartmentName(row.original.cardholder?.department)}</span>;
       },
       enableSorting: true,
       header: "Department Name",
       id: "department_name",
-    }),
-    columnHelper.accessor(row => formatUserName(row.cardholder), {
-      cell: info => {
-        return <span>{formatUserName(info.row.original.cardholder)}</span>;
+    },
+    {
+      accessorKey: "user_name",
+      cell: ({ row }) => {
+        return <span>{formatUserName(row.original.cardholder)}</span>;
       },
       enableSorting: true,
       header: "User Name",
       id: "user_name",
-    }),
-    columnHelper.accessor(row => formatCardName(row), {
-      cell: info => {
-        return <span>{formatCardName(info.row.original)}</span>;
+    },
+    {
+      accessorKey: "card_name",
+      cell: ({ row }) => {
+        return <span>{formatCardName(row.original)}</span>;
       },
       enableSorting: true,
       header: "Card Name",
       id: "card_name",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.is_physical ? "Yes" : "No"}</span>;
+    },
+    {
+      cell: ({ row }) => {
+        return <span>{row.original.is_physical ? "Yes" : "No"}</span>;
       },
       header: "Physical?",
       id: "is_physical",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatCardState(info.row.original)}</span>;
+    },
+    {
+      cell: ({ row }) => {
+        const state = row.original.state;
+        if (!state) {
+          return <span className="text-danger">n/a</span>;
+        } else if (state === "ACTIVE") {
+          return <span className="text-success">{formatCardState(row.original)}</span>;
+        } else if (state === "CHIP_LOCKED") {
+          return <span className="text-warning">{formatCardState(row.original)}</span>;
+        } else if (state === "SUSPENDED") {
+          return <span className="text-warning">{formatCardState(row.original)}</span>;
+        } else if (state === "TERMINATED") {
+          return <span className="text-danger">{formatCardState(row.original)}</span>;
+        } else if (state === "UNACTIVATED") {
+          return <span className="text-warning">{formatCardState(row.original)}</span>;
+        }
       },
       header: "State",
       id: "state",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAmountFunky(info.row.original.spending_restrictions?.amount)}</span>;
+    },
+    {
+      cell: ({ row }) => {
+        return <span>{formatAmountFunky(row.original.spending_restrictions?.amount)}</span>;
       },
       header: "Interval Limit",
       id: "amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatCardInterval(info.row.original)}</span>;
+    },
+    {
+      cell: ({ row }) => {
+        return <span>{formatCardInterval(row.original)}</span>;
       },
       header: "Interval",
       id: "interval",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAmountFunky(info.row.original.spending_restrictions?.transaction_amount_limit)}</span>;
+    },
+    {
+      cell: ({ row }) => {
+        return <span>{formatAmountFunky(row.original.spending_restrictions?.transaction_amount_limit)}</span>;
       },
       header: "Transaction Limit",
       id: "transaction_amount_limit",
-    }),
-    columnHelper.display({
-      cell: info => {
-        const suspended = info.row.original.spending_restrictions?.suspended;
+    },
+    {
+      cell: ({ row }) => {
+        const suspended = row.original.spending_restrictions?.suspended;
         if (suspended) {
           return <span className="text-danger">Yes</span>;
         } else {
@@ -189,21 +204,21 @@ export function CardsTable({ allCards }: CardsTableProps) {
       },
       header: "Suspended?",
       id: "suspended",
-    }),
-    columnHelper.display({
-      cell: info => {
+    },
+    {
+      cell: ({ row }) => {
         return (
           <span>
-          <BookUp
-            onClick={() => handleMoreInfoOpen(info.row.original)}
-            style={{ cursor: "context-menu" }}
-          />
-        </span>
+            <BookUp
+              onClick={() => handleMoreInfoOpen(row.original)}
+              style={{ cursor: "context-menu" }}
+            />
+          </span>
         );
       },
       header: "Info",
       id: "moreInfo",
-    }),
+    }
   ], []);
 
   // Overall table instance
@@ -344,12 +359,6 @@ export function CardsTable({ allCards }: CardsTableProps) {
 }
 
 // Private Objects -----------------------------------------------------------
-
-/**
- * Helper for creating columns in the Cards table.
- */
-const columnHelper = createColumnHelper<CardPlus>();
-
 
 /**
  * Format an amount as a string with two decimal places.  Funky for old API things.
