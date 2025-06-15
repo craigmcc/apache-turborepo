@@ -327,7 +327,7 @@ export function CardsTable({ allCards }: CardsTableProps) {
       </table>
 
       <CardsCsvExport
-        cards={table.getRowModel().flatRows.map(row => row.original)}
+        cards={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
         show={showCsvExport}
       />

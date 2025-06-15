@@ -19,6 +19,7 @@ import {
 } from "@tanstack/react-table";
 import {ArrowDownAZ, ArrowDownUp, ArrowUpAZ, BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -27,6 +28,7 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { UsersCsvExport } from "@/components/users/UsersCsvExport";
 import { UserMoreInfo } from "@/components/users/UserMoreInfo";
 import { formatDepartmentName, formatUserName } from "@/lib/Formatters";
 import {  UserPlus } from "@/types/types";
@@ -47,6 +49,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
     pageIndex: 0,
     pageSize: 10,
   });
+  const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "user_name", desc: false },
@@ -75,6 +78,16 @@ export function UsersTable({ allUsers }: UsersTableProps) {
     setFilteredUsers(matchingUsers);
 
   }, [allUsers, departmentNameFilter, userNameFilter]);
+
+  // Handle the CSV Export modal close
+  function handleCsvExportClose() {
+    setShowCsvExport(false);
+  }
+
+  // Handle the CSV Export modal open
+  function handleCsvExportOpen() {
+    setShowCsvExport(true);
+  }
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
@@ -180,7 +193,14 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          Users Table
+          <span className="me-5">Users Table</span>
+          <Button
+            className="bg-info"
+            onClick={handleCsvExportOpen}
+            size="lg"
+          >
+            Export CSV
+          </Button>
         </h1>
       </Row>
       <Row className="mb-2">
@@ -261,6 +281,12 @@ export function UsersTable({ allUsers }: UsersTableProps) {
         </tfoot>
 
       </table>
+
+      <UsersCsvExport
+        hide={handleCsvExportClose}
+        show={showCsvExport}
+        users={table.getSortedRowModel().flatRows.map(row => row.original)}
+      />
 
       <UserMoreInfo
         hide={handleMoreInfoClose}
