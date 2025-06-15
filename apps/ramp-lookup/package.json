@@ -26,6 +26,7 @@
     "react": "catalog:react19",
     "react-bootstrap": "catalog:bootstrap5",
     "react-bootstrap-toasts": "^0.2.0",
+    "react-csv": "catalog:react-csv",
     "react-dom": "catalog:react19",
     "zod": "catalog:zod"
   },
@@ -36,6 +37,7 @@
     "@types/jest": "catalog:jest29",
     "@types/node": "catalog:node22",
     "@types/react": "catalog:react19",
+    "@types/react-csv": "catalog:react-csv",
     "@types/react-dom": "catalog:react19",
     "eslint": "catalog:eslint",
     "eslint-config-next": "catalog:eslint",

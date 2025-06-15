@@ -70,6 +70,13 @@ catalogs:
     prisma:
       specifier: ^6.8.2
       version: 6.8.2
+  react-csv:
+    '@types/react-csv':
+      specifier: ^1.1.10
+      version: 1.1.10
+    react-csv:
+      specifier: ^2.2.2
+      version: 2.2.2
   react19:
     '@types/react':
       specifier: ^19.1.5
@@ -339,6 +346,9 @@ importers:
       react-bootstrap-toasts:
         specifier: ^0.2.0
         version: 0.2.0(@popperjs/core@2.11.8)(react-bootstrap@2.10.10(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+      react-csv:
+        specifier: catalog:react-csv
+        version: 2.2.2
       react-dom:
         specifier: catalog:react19
         version: 19.1.0(react@19.1.0)
@@ -364,6 +374,9 @@ importers:
       '@types/react':
         specifier: catalog:react19
         version: 19.1.5
+      '@types/react-csv':
+        specifier: catalog:react-csv
+        version: 1.1.10
       '@types/react-dom':
         specifier: catalog:react19
         version: 19.1.5(@types/react@19.1.5)
@@ -1493,6 +1506,9 @@ packages:
 
   '@types/prop-types@15.7.14':
     resolution: {integrity: sha512-gNMvNH49DJ7OJYv+KAKn0Xp45p8PLl6zo2YnvDIbTd4J6MER2BmWN49TG7n9LvkyihINxeKW8+3bfS2yDC9dzQ==}
+
+  '@types/react-csv@1.1.10':
+    resolution: {integrity: sha512-PESAyASL7Nfi/IyBR3ufd8qZkyoS+7jOylKmJxRZUZLFASLo4NZaRsJ8rNP8pCcbIziADyWBbLPD1nPddhsL4g==}
 
   '@types/react-dom@19.1.1':
     resolution: {integrity: sha512-jFf/woGTVTjUJsl2O7hcopJ1r0upqoq/vIOoCj0yLh3RIXxWcljlpuZ+vEBRXsymD1jhfeJrlyTy/S1UW+4y1w==}
@@ -3593,6 +3609,9 @@ packages:
       '@types/react':
         optional: true
 
+  react-csv@2.2.2:
+    resolution: {integrity: sha512-RG5hOcZKZFigIGE8LxIEV/OgS1vigFQT4EkaHeKgyuCbUAu9Nbd/1RYq++bJcJJ9VOqO/n9TZRADsXNDR4VEpw==}
+
   react-dom@18.3.1:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
@@ -5246,6 +5265,10 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/prop-types@15.7.14': {}
+
+  '@types/react-csv@1.1.10':
+    dependencies:
+      '@types/react': 19.1.0
 
   '@types/react-dom@19.1.1(@types/react@19.1.0)':
     dependencies:
@@ -7918,6 +7941,8 @@ snapshots:
       warning: 4.0.3
     optionalDependencies:
       '@types/react': 19.1.5
+
+  react-csv@2.2.2: {}
 
   react-dom@18.3.1(react@18.3.1):
     dependencies:

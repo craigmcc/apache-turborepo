@@ -38,6 +38,9 @@ catalogs:
     "@types/react-dom": "^19.1.5"
     react: "^19.1.0"
     react-dom: "^19.1.0"
+  react-csv:
+    "react-csv": "^2.2.2"
+    "@types/react-csv": "^1.1.10"
   tanstack:
     "@tanstack/react-table": "^8.21.3"
   tsx:
