@@ -119,28 +119,31 @@ export function CardsTable({ allCards }: CardsTableProps) {
   // Column definitions for the Cards table
   const columns : ColumnDef<CardPlus>[] = useMemo(() => [
     {
-      accessorKey: "department_name",
+      accessorFn: row => formatDepartmentName(row.cardholder?.department),
       cell: ({ row }) => {
         return <span>{formatDepartmentName(row.original.cardholder?.department)}</span>;
       },
+      enableMultiSort: true,
       enableSorting: true,
       header: "Department Name",
       id: "department_name",
     },
     {
-      accessorKey: "user_name",
+      accessorFn: row => formatUserName(row.cardholder),
       cell: ({ row }) => {
         return <span>{formatUserName(row.original.cardholder)}</span>;
       },
+      enableMultiSort: true,
       enableSorting: true,
       header: "User Name",
       id: "user_name",
     },
     {
-      accessorKey: "card_name",
+      accessorFn: row => formatCardName(row),
       cell: ({ row }) => {
         return <span>{formatCardName(row.original)}</span>;
       },
+      enableMultiSort: true,
       enableSorting: true,
       header: "Card Name",
       id: "card_name",
@@ -153,6 +156,7 @@ export function CardsTable({ allCards }: CardsTableProps) {
       id: "is_physical",
     },
     {
+      accessorFn: row => row.state,
       cell: ({ row }) => {
         const state = row.original.state;
         if (!state) {
