@@ -1,23 +1,16 @@
 "use client";
 
 /**
- * Generic data table component, using TanStack Table.
+ * Generic data table rendering component, using TanStack Table.
  */
 
 // External Modules ----------------------------------------------------------
 
 import {
-  ColumnDef,
   flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  PaginationState,
-  SortingState,
-  useReactTable,
+  Table,
 } from "@tanstack/react-table";
 import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp } from "lucide-react";
-import React, { useState } from "react";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -27,47 +20,15 @@ import Button from "react-bootstrap/Button";
 
 // Public Objects ------------------------------------------------------------
 
-interface DataTableProps<TData, TValue> {
-  // Columns to display
-  columns: ColumnDef<TData, TValue>[];
-  // Data to display
-  data: TData[];
-  // Initial pagination state (if not present, no pagination)
-  paginationState?: PaginationState;
-  // Initial sorting state (if not present, no sorting)
-  sortingState?: SortingState;
+interface DataTableProps<TData> {
+  // Show pagination controls
+  showPagination?: boolean;
+  // The Tanstack Table we are displaying
+  table: Table<TData>,
 }
 
-export function DataTable<TData, TValue>({
-                                           columns,
-                                           data,
-                                           paginationState,
-                                           sortingState,
-                                         }: DataTableProps<TData, TValue>) {
+export function DataTable<TData>({ showPagination, table }: DataTableProps<TData>) {
 
-  const [pagination, setPagination] = useState<PaginationState>(
-    paginationState ? paginationState :
-      {
-        pageIndex: 0,
-        pageSize: 10,
-      });
-  const [sorting, setSorting] = useState<SortingState>(
-    sortingState ? sortingState : []
-  );
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onPaginationChange: paginationState ? setPagination : undefined,
-    onSortingChange: setSorting,
-    state: {
-      pagination: paginationState ? pagination : undefined,
-      sorting,
-    },
-  });
   const pageCount = table.getPageCount();
 
   return (
@@ -115,7 +76,7 @@ export function DataTable<TData, TValue>({
       ))}
       </tbody>
 
-      { paginationState ? (
+      { showPagination ? (
         <tfoot>
         <tr>
           <th colSpan={table.getCenterLeafColumns().length}>
@@ -160,9 +121,10 @@ export function DataTable<TData, TValue>({
                 </Button>
               </OverlayTrigger>
               <span className="p-1">
-        Page {table.getState().pagination.pageIndex + 1} of{" "}{pageCount > 0 ? pageCount : `1`}
-                {" "}| Total of {table.getRowCount().toLocaleString()} Rows
-      </span>
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {pageCount > 0 ? pageCount : `1`}{" "}| Total of{" "}
+                {table.getRowCount().toLocaleString()} Rows
+              </span>
             </div>
           </th>
         </tr>

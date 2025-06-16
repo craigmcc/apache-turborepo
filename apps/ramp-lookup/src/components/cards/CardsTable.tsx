@@ -289,10 +289,8 @@ export function CardsTable({ allCards }: CardsTableProps) {
       </Row>
 
       <DataTable
-        columns={columns}
-        data={filteredCards}
-        paginationState={pagination}
-        sortingState={sorting}
+        showPagination={true}
+        table={table}
       />
 
       <CardsCsvExport
@@ -320,28 +318,4 @@ export function CardsTable({ allCards }: CardsTableProps) {
 function formatAmountFunky(amount: number | null | undefined): string {
   if (!amount) return "n/a";
   return `$${amount.toFixed(2)}`;
-}
-
-/**
- * Placeholder for the CardMoreInfo component.
- */
-const placeholderCard: CardPlus = {
-  // Scalar fields
-  id: "",
-  cardholder_name: null,
-  card_program_id: null,
-  created_at: null,
-  display_name: "",
-  expiration: "",
-  has_program_overridden: false,
-  is_physical: false,
-  last_four: "",
-  state: null,
-  // Potential relationships
-  entity_id: null,
-  // Actual relationships
-  cardholder_id: null,
-  cardholder: null,
-  limit_cards: null,
-  spending_restrictions: null,
 }
