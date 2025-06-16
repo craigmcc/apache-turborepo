@@ -20,15 +20,19 @@ import { CardPlus } from "@/types/types";
 // Public Objects ------------------------------------------------------------
 
 export type CardMoreInfoProps = {
+  // Card to display more information about
+  card: CardPlus | null;
   // Function to close the modal
   hide: () => void;
   // Current "show" state of the modal
   show: boolean;
-  // Card to display more information about
-  card: CardPlus;
 }
 
-export function CardMoreInfo({ hide, show, card }: CardMoreInfoProps) {
+export function CardMoreInfo({ card, hide, show }: CardMoreInfoProps) {
+
+  if (!card) {
+    return null;
+  }
 
   return (
     <Modal

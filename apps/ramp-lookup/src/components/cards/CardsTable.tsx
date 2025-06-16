@@ -47,7 +47,7 @@ export type CardsTableProps = {
 export function CardsTable({ allCards }: CardsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
-  const [currentCard, setCurrentCard] = useState<CardPlus>(placeholderCard);
+  const [currentCard, setCurrentCard] = useState<CardPlus | null>(null);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [filteredCards, setFilteredCards] = useState<CardPlus[]>(allCards);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -103,14 +103,12 @@ export function CardsTable({ allCards }: CardsTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-//    console.log("Closing More Info modal for card:", formatCardName(currentCard));
-    setCurrentCard(placeholderCard);
+    setCurrentCard(null);
     setShowMoreInfo(false);
   }
 
   // Handle the "More Info" modal open
   function handleMoreInfoOpen(card: CardPlus) {
-//    console.log("Showing More Info for card:", formatCardName(card));
     setCurrentCard(card);
     setShowMoreInfo(true);
   }
