@@ -8,7 +8,9 @@
 
 import {
   ColumnDef,
+  ColumnFiltersState,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
@@ -48,8 +50,8 @@ export function CardsTable({ allCards }: CardsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
   const [currentCard, setCurrentCard] = useState<CardPlus | null>(null);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
-  const [filteredCards, setFilteredCards] = useState<CardPlus[]>(allCards);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -61,35 +63,35 @@ export function CardsTable({ allCards }: CardsTableProps) {
   ]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
-  // Apply selection filters whenever they change
+  // Trigger filter changes when a filter value is updated
   useEffect(() => {
 
-    let matchingCards: CardPlus[] = allCards;
+    const filters: ColumnFiltersState = [];
 
     if (cardNameFilter.length > 0) {
-      matchingCards = matchingCards.filter(card => {
-        const cardName = formatCardName(card);
-        return cardName.toLowerCase().includes(cardNameFilter);
+      filters.push({
+        id: "card_name",
+        value: cardNameFilter,
       });
     }
 
     if (departmentNameFilter.length > 0) {
-      matchingCards = matchingCards.filter(card => {
-        const departmentName = formatDepartmentName(card.cardholder?.department);
-        return departmentName.toLowerCase().includes(departmentNameFilter);
+      filters.push({
+        id: "department_name",
+        value: departmentNameFilter,
       });
     }
 
     if (userNameFilter.length > 0) {
-      matchingCards = matchingCards.filter(card => {
-        const userName = formatUserName(card.cardholder);
-        return userName.toLowerCase().includes(userNameFilter);
+      filters.push({
+        id: "user_name",
+        value: userNameFilter,
       });
     }
 
-    setFilteredCards(matchingCards);
+    setColumnFilters(filters);
 
-  }, [allCards, cardNameFilter, departmentNameFilter, userNameFilter]);
+  }, [cardNameFilter, departmentNameFilter, userNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -225,13 +227,16 @@ export function CardsTable({ allCards }: CardsTableProps) {
   // Overall table instance
   const table = useReactTable<CardPlus>({
     columns,
-    data: filteredCards,
+    data: allCards,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
+      columnFilters,
       pagination,
       sorting,
     },
