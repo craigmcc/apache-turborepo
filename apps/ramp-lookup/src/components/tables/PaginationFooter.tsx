@@ -4,6 +4,7 @@
 
 // External Modules ----------------------------------------------------------
 
+import { Table } from "@tanstack/react-table";
 import React from "react";
 import Button from "react-bootstrap/Button";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
@@ -13,8 +14,11 @@ import Tooltip from "react-bootstrap/Tooltip";
 
 // Public Objects ------------------------------------------------------------
 
-// @ts-expect-error "any" needed so we can use this with tables with different generic types
-export function PaginationFooter({ table }) {
+type PaginationFooterProps<TData> = {
+  table: Table<TData>,
+}
+
+export function PaginationFooter({ table }: PaginationFooterProps<any>) {
 
   const pageCount = table.getPageCount();
 

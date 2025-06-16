@@ -20,7 +20,7 @@ import Button from "react-bootstrap/Button";
 
 // Public Objects ------------------------------------------------------------
 
-interface DataTableProps<TData> {
+type DataTableProps<TData> = {
   // Show pagination controls
   showPagination?: boolean;
   // The Tanstack Table we are displaying
