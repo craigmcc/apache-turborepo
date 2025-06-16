@@ -8,7 +8,6 @@
 
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -16,7 +15,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp, BookUp } from "lucide-react";
+import {  BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -28,7 +27,7 @@ import Row from "react-bootstrap/Row";
 
 import { CardMoreInfo } from "@/components/cards/CardMoreInfo";
 import { CardsCsvExport } from "@/components/cards/CardsCsvExport";
-import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { DataTable } from "@/components/tables/DataTable";
 import {
   formatCardInterval,
   formatCardName,
@@ -291,59 +290,12 @@ export function CardsTable({ allCards }: CardsTableProps) {
         </Col>
       </Row>
 
-      <table className="table table-bordered table-striped">
-
-        <thead>
-        {table.getHeaderGroups().map(headerGroup => (
-          <tr key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
-              <th key={header.id} colSpan={header.colSpan}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-                { header.column.getCanSort() ? (
-                  <>
-                    <span
-                      onClick={header.column.getToggleSortingHandler()}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {header.column.getIsSorted() === "asc" ? (
-                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
-                      ) : header.column.getIsSorted() === "desc" ? (
-                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
-                      ) : (
-                        <ArrowDownUp className="ms-2 text-info" size={24}/>
-                      )}
-                    </span>
-                  </>
-                ) :
-                  null
-                }
-              </th>
-            ))}
-          </tr>
-        ))}
-        </thead>
-
-        <tbody>
-        {table.getRowModel().rows.map(row => (
-          <tr key={row.id}>
-            {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
-          </tr>
-        ))}
-        </tbody>
-
-        <tfoot>
-        <tr>
-          <th colSpan={table.getCenterLeafColumns().length}>
-            <PaginationFooter table={table}/>
-          </th>
-        </tr>
-        </tfoot>
-
-      </table>
+      <DataTable
+        columns={columns}
+        data={filteredCards}
+        paginationState={pagination}
+        sortingState={sorting}
+      />
 
       <CardsCsvExport
         cards={table.getSortedRowModel().flatRows.map(row => row.original)}
