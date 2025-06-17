@@ -34,12 +34,16 @@ export type TransactionMoreInfoProps = {
   hide: () => void;
   // Current "show" state of the modal
   show: boolean;
-  // Transaction to display more information about
-  transaction: TransactionPlus;
+  // Transaction to display more information about (if any)
+  transaction: TransactionPlus | null;
 }
 
 
 export function TransactionMoreInfo({ hide, show, transaction }: TransactionMoreInfoProps) {
+
+  if (!transaction) {
+    return null; // If no transaction is provided, do not render the modal
+  }
 
   return (
     <Modal

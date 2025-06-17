@@ -49,8 +49,8 @@ export type CardsTableProps = {
 export function CardsTable({ allCards }: CardsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
-  const [currentCard, setCurrentCard] = useState<CardPlus | null>(null);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [currentCard, setCurrentCard] = useState<CardPlus | null>(null);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,

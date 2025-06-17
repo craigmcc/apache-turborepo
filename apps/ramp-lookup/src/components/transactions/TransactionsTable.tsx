@@ -7,16 +7,17 @@
 // External Imports ----------------------------------------------------------
 
 import {
+  ColumnFiltersState,
   createColumnHelper,
-  flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDownAZ, ArrowDownUp, ArrowUpAZ, BookUp } from "lucide-react";
+import { BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
@@ -26,7 +27,7 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { PaginationFooter } from "@/components/tables/PaginationFooter";
+import { DataTable } from "@/components/tables/DataTable";
 import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
 import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
 import {
@@ -49,8 +50,8 @@ export type TransactionsTableProps = {
 export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
-  const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus>(placeholderTransaction);
-  const [filteredTransactions, setFilteredTransactions] = useState<TransactionPlus[]>(allTransactions);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus | null>(null);
   const [glAccountFilter, setGlAccountFilter] = useState<string>("");
   const [fromDateFilter, setFromDateFilter] = useState<string>(""); // YYYYMMDD
   const [merchantFilter, setMerchantFilter] = useState<string>("");
@@ -69,63 +70,53 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   // Apply selection filters whenever they change
   useEffect(() => {
 
-    let matchingTransactions: TransactionPlus[] = allTransactions;
+    const filters: ColumnFiltersState = [];
 
     if (cardNameFilter.length > 0) {
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const cardName = formatCardName(transaction.card);
-        return cardName.toLowerCase().includes(cardNameFilter);
+      filters.push({
+        id: "card_name",
+        value: cardNameFilter,
       });
     }
 
     if (fromDateFilter.length >= 8) {
-      const fromDateCompare = fromDateFilter.substring(0, 8) + "-000000";
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const accountingDate = formatAccountingDate(transaction);
-        if (accountingDate && (accountingDate !== "n/a")) {
-          return accountingDate >= fromDateCompare;
-        } else {
-          return true;
-        }
+      filters.push({
+        id: "accounting_date",
+        value: { operator: ">=", value: fromDateFilter.substring(0, 8) + "-000000" },
       });
     }
 
     if (glAccountFilter.length > 0) {
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const glAccount = formatGlAccount(transaction);
-        return glAccount.toLowerCase().includes(glAccountFilter);
+      filters.push({
+        id: "gl_account",
+        value: glAccountFilter,
       });
     }
 
     if (merchantFilter.length > 0) {
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const merchantName = formatMerchantName(transaction);
-        return merchantName.toLowerCase().includes(merchantFilter);
+      filters.push({
+        id: "merchant_name",
+        value: merchantFilter,
       });
     }
 
     if (toDateFilter.length >= 8) {
-      const toDateCompare = toDateFilter.substring(0, 8) + "-235959";
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const accountingDate = formatAccountingDate(transaction);
-        if (accountingDate && (accountingDate !== "n/a")) {
-          return accountingDate <= toDateCompare;
-        } else {
-          return true;
-        }
+      filters.push({
+        id: "accounting_date",
+        value: { operator: "<=", value: toDateFilter.substring(0, 8) + "-235959" },
       });
     }
 
     if (userNameFilter.length > 0) {
-      matchingTransactions = matchingTransactions.filter(transaction => {
-        const userName = formatUserName(transaction.card_holder_user);
-        return userName.toLowerCase().includes(userNameFilter);
+      filters.push({
+        id: "user_name",
+        value: userNameFilter,
       });
     }
 
-    setFilteredTransactions(matchingTransactions);
+    setColumnFilters(filters);
 
-  }, [allTransactions, cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
+  }, [cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -139,7 +130,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-    setCurrentTransaction(placeholderTransaction);
+    setCurrentTransaction(null);
     setShowMoreInfo(false);
   }
 
@@ -235,19 +226,21 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   // Overall table instance
   const table = useReactTable({
     columns,
-    data: filteredTransactions,
+    data: allTransactions,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    manualPagination: false,
+    onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    pageCount: Math.ceil(filteredTransactions.length / pagination.pageSize),
     state: {
+      columnFilters,
       pagination,
       sorting,
     },
   });
+
   return (
     <Container className="p-2 mb-4 bg-light rounded-3" fluid>
 
@@ -332,59 +325,10 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
       </Row>
 
-      <table className="table table-bordered table-striped">
-
-        <thead>
-        {table.getHeaderGroups().map(headerGroup => (
-          <tr key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
-              <th key={header.id} colSpan={header.colSpan}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-                { header.column.getCanSort() ? (
-                    <>
-                    <span
-                      onClick={header.column.getToggleSortingHandler()}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {header.column.getIsSorted() === "asc" ? (
-                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
-                      ) : header.column.getIsSorted() === "desc" ? (
-                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
-                      ) : (
-                        <ArrowDownUp className="ms-2 text-info" size={24}/>
-                      )}
-                    </span>
-                    </>
-                  ) :
-                  null
-                }
-              </th>
-            ))}
-          </tr>
-        ))}
-        </thead>
-
-        <tbody>
-        {table.getRowModel().rows.map(row => (
-          <tr key={row.id}>
-            {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
-          </tr>
-        ))}
-        </tbody>
-
-        <tfoot>
-        <tr>
-          <th colSpan={table.getCenterLeafColumns().length}>
-            <PaginationFooter table={table}/>
-          </th>
-        </tr>
-        </tfoot>
-
-      </table>
+      <DataTable
+        showPagination={true}
+        table={table}
+      />
 
       <TransactionsCsvExport
         hide={handleCsvExportClose}
@@ -408,46 +352,3 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
  * Helper for creating columns in the Transactions table.
  */
 const columnHelper = createColumnHelper<TransactionPlus>();
-
-/**
- * Placeholder for the TransactionMoreInfo modal.
- * This is used to ensure the component always has a valid transaction to display.
- */
-
-const placeholderTransaction: TransactionPlus = {
-  // Scalar fields
-  id: "",
-  accounting_date: null,
-  amount_amt: null,
-  amount_cc: null,
-  card_present: null,
-  memo: null,
-  merchant_category_code: null,
-  merchant_category_description: null,
-  merchant_name: null,
-  original_transaction_amount_amt: null,
-  original_transaction_amount_cc: null,
-  settlement_date: null,
-  sk_category_id: null,
-  sk_category_name: null,
-  state: null,
-  sync_status: "SYNCED",
-  synced_at: null,
-  trip_name: null,
-  user_transaction_time: null,
-  // Potential relationships
-  entity_id: null,
-  limit_id: null,
-  merchant_id: null,
-  spend_program_id: null,
-  statement_id: null,
-  trip_id: null,
-  // Actual relationships
-  accounting_field_selections: [],
-  card_holder_user_id: null,
-  card_holder_user: null,
-  card_id: null,
-  card: null,
-  line_items: [],
-  line_item_accounting_field_selections: [],
-}
