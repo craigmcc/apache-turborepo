@@ -34,6 +34,7 @@ import {
   formatAccountingDate,
   formatAmount,
   formatCardName,
+  formatDepartmentName,
   formatGlAccount,
   formatMerchantName,
   formatUserName
@@ -52,6 +53,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus | null>(null);
+  const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
   const [glAccountFilter, setGlAccountFilter] = useState<string>("");
   const [fromDateFilter, setFromDateFilter] = useState<string>(""); // YYYYMMDD
   const [merchantFilter, setMerchantFilter] = useState<string>("");
@@ -76,6 +78,13 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       filters.push({
         id: "card_name",
         value: cardNameFilter,
+      });
+    }
+
+    if (departmentNameFilter.length > 0) {
+      filters.push({
+        id: "department_name",
+        value: departmentNameFilter,
       });
     }
 
@@ -116,7 +125,8 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     setColumnFilters(filters);
 
-  }, [cardNameFilter, fromDateFilter, glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
+  }, [cardNameFilter, departmentNameFilter, fromDateFilter, glAccountFilter,
+      merchantFilter, toDateFilter, userNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -149,6 +159,14 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       enableSorting: true,
       header: () => <span>Accounting Date-Time</span>,
       id: "accounting_date",
+    }),
+    columnHelper.accessor(row => formatDepartmentName(row.card_holder_user?.department), {
+      cell: info => {
+        return <span>{formatDepartmentName(info.row.original.card_holder_user?.department)}</span>
+      },
+      enableSorting: true,
+      header: () => <span>Department Name</span>,
+      id: "department_name",
     }),
     columnHelper.accessor(row => formatUserName(row.card_holder_user), {
       cell: info => {
@@ -200,6 +218,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       header: () => <span>GL Account</span>,
       id: "gl_account",
     }),
+/*
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.state}</span>;
@@ -207,6 +226,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       header: () => <span>State</span>,
       id: "state",
     }),
+*/
     columnHelper.display({
       cell: info => {
         return (
@@ -281,6 +301,17 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={userNameFilter}>
+            <span>Filter by Department Name:</span>
+            <Form.Control
+              onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
+              type="text"
+              value={departmentNameFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={userNameFilter}>
             <span>Filter by User Name:</span>
             <Form.Control
               onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
@@ -314,7 +345,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         </Col>
         <Col>
           <Form.Group controlId={glAccountFilter}>
-            <span>Filter by GL Account or Name:</span>
+            <span>Filter by GL Acct/Name:</span>
             <Form.Control
               onChange={e => setGlAccountFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of GL account or name"

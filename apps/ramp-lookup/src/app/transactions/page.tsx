@@ -17,7 +17,11 @@ export default async function TransactionsPage() {
     include: {
       accounting_field_selections: true,
       card: true,
-      card_holder_user: true,
+      card_holder_user: {
+        include: {
+          department: true,
+        },
+      },
       line_items: true,
       line_item_accounting_field_selections: true,
     },

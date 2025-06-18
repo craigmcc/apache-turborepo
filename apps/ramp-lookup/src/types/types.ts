@@ -77,7 +77,7 @@ export type SpendProgramPlus = SpendProgram & {
 export type TransactionPlus = Transaction & {
   accounting_field_selections?: TransactionAccountingFieldSelectionPlus[] | null;
   card?: Card | null;
-  card_holder_user?: User | null;
+  card_holder_user?: UserPlus | null;
   line_items?: TransactionLineItem[] | null;
   line_item_accounting_field_selections?: TransactionLineItemAccountingFieldSelection[] | null;
 }
