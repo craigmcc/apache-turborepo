@@ -9,6 +9,7 @@
 import {
   ColumnFiltersState,
   createColumnHelper,
+  FilterFn,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -74,6 +75,14 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     const filters: ColumnFiltersState = [];
 
+    const accountingDateFilter = fromDateFilter + "|" + toDateFilter;
+    if (accountingDateFilter.length > 1) {
+      filters.push({
+        id: "accounting_date",
+        value: accountingDateFilter,
+      });
+    }
+
     if (cardNameFilter.length > 0) {
       filters.push({
         id: "card_name",
@@ -88,13 +97,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       });
     }
 
-    if (fromDateFilter.length >= 8) {
-      filters.push({
-        id: "accounting_date",
-        value: { operator: ">=", value: fromDateFilter.substring(0, 8) + "-000000" },
-      });
-    }
-
     if (glAccountFilter.length > 0) {
       filters.push({
         id: "gl_account",
@@ -106,13 +108,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       filters.push({
         id: "merchant_name",
         value: merchantFilter,
-      });
-    }
-
-    if (toDateFilter.length >= 8) {
-      filters.push({
-        id: "accounting_date",
-        value: { operator: "<=", value: toDateFilter.substring(0, 8) + "-235959" },
       });
     }
 
@@ -157,6 +152,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         return <span>{formatAccountingDate(info.row.original)}</span>
       },
       enableSorting: true,
+      filterFn: dateRangeFilter,
       header: () => <span>Accounting Date-Time</span>,
       id: "accounting_date",
     }),
@@ -211,7 +207,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       header: () => <span>Merchant</span>,
       id: "merchant_name",
     }),
-    columnHelper.display({
+    columnHelper.accessor(row => formatGlAccount(row), {
       cell: info => {
         return <span>{formatGlAccount(info.row.original)}</span>;
       },
@@ -383,3 +379,30 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
  * Helper for creating columns in the Transactions table.
  */
 const columnHelper = createColumnHelper<TransactionPlus>();
+
+/**
+ * Date range filter function for the Transactions table.  The filter "value"
+ * should be a string in the format "YYYYMMDD|YYYYMMDD", where the first date is
+ * the "from" date and the second date is the "to" date.
+ */
+const dateRangeFilter: FilterFn<TransactionPlus> = (row, columnId, value) => {
+  if (!value || (value === "")) {
+    return true; // If no value is provided, do not filter out any rows
+  } else {
+    const cellValue = String(row.getValue(columnId));
+    let [fromDate, toDate] = value.split("|");
+    if (fromDate.length >= 8) {
+      fromDate = fromDate.substring(0, 8) + "-000000"; // Start of the day
+      if (cellValue < fromDate) {
+        return false; // Cell value is before the "from" date
+      }
+    }
+    if (toDate.length >= 8) {
+      toDate = toDate.substring(0, 8) + "-235959"; // End of the day
+      if (cellValue > toDate) {
+        return false; // Cell value is after the "to" date
+      }
+    }
+    return true;
+   }
+};
