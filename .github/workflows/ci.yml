@@ -34,15 +34,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Generate Prisma client and migrate to dummy database for bill-db
+        env:
+          DATABASE_URL: file:./github_bill.db
+        run: cd packages/bill-db; pnpm run bill-db:generate; pnpm run bill-db:migrate; cd ../..
+
       - name: Generate Prisma client and migrate to dummy database for ramp-db
         env:
-          DATABASE_URL: file:./github_actions.db
+          DATABASE_URL: file:./github_ramp.db
         run: cd packages/ramp-db; pnpm run ramp-db:generate; pnpm run ramp-db:migrate; cd ../..
 
       - name: Build
-        run: DATABASE_URL=file:./github_actions.db pnpm build
+        env:
+          DATABASE_URL: file:./github_bill.db
+        run: pnpm build
 
       - name: Test
         env:
-          DATABASE_URL: file:./github_actions.db
+          DATABASE_URL: file:./github_bill.db
         run: pnpm test:ci
