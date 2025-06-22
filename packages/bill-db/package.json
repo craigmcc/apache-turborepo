@@ -4,7 +4,7 @@
     "./*": "./dist/index.js"
   },
   "license": "Apache-2.0",
-  "name": "@repo/ramp-db",
+  "name": "@repo/bill-db",
   "private": true,
   "scripts": {
     "build": "tsc",
