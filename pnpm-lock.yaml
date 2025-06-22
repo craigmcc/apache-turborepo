@@ -404,9 +404,6 @@ importers:
 
   packages/bill-api:
     dependencies:
-      '@repo/ramp-api':
-        specifier: workspace:*
-        version: link:../ramp-api
       '@repo/shared-utils':
         specifier: workspace:*
         version: link:../shared-utils
