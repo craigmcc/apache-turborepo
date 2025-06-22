@@ -1,0 +1,39 @@
+{
+  "description": "Stand alone Node application that refreshes the Bill database",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "jest": {
+    "preset": "@repo/jest-presets/node"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/bill-refresh",
+  "private": true,
+  "scripts": {
+    "dotenv": "dotenvx",
+    "build": "dotenvx run --quiet -- tsc",
+    "check-types": "dotenvx run --quiet -- tsc --noEmit",
+    "dev": "dotenvx run --quiet -- tsc --watch",
+    "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
+    "start": "dotenvx run --quiet -- tsx ./dist/index.js"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@types/jest": "catalog:jest29",
+    "@types/node": "catalog:node22",
+    "eslint": "catalog:eslint",
+    "jest": "catalog:jest29",
+    "ts-jest": "catalog:jest29",
+    "tsx": "catalog:tsx",
+    "typescript": "catalog:typescript5"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@repo/bill-api": "workspace:*",
+    "@repo/bill-db": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/jest-presets": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  }
+}

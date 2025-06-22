@@ -1,0 +1,16 @@
+{
+  "extends": "@repo/typescript-config/node",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+  ],
+  "include": [
+    "src",
+  ],
+  "module": "esnext",
+  "moduleResolution": "bundler",
+}

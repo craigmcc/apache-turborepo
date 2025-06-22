@@ -1,9 +1,6 @@
 /**
- * @repo/ramp-refresh
- *
  * Application that refreshes the data in the Ramp database from the Ramp API.
  */
-
 
 // External Modules ----------------------------------------------------------
 

@@ -72,7 +72,7 @@ export async function fetchUsers(
       url: url.toString(),
       body,
     });
-    const text = await response.text();
+    const text = JSON.stringify(body, null, 2);
     throw new Error(`Error fetching users: ${text}`);
   } else {
     return await response.json();

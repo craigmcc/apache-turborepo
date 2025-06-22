@@ -53,7 +53,7 @@ export type BillLoginRequest = {
   // The Bill password
   password: string;
   // The Bill username
-  userName: string;
+  username: string;
 }
 
 /**

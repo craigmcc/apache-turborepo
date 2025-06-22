@@ -45,7 +45,7 @@ export async function fetchSessionId(): Promise<string> {
     devKey: BILL_DEVELOPER_KEY!,
     organizationId: BILL_ORGANIZATION_ID!,
     password: BILL_PASSWORD!,
-    userName: BILL_USERNAME!,
+    username: BILL_USERNAME!,
   }
   const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/login`);
 
@@ -67,7 +67,7 @@ export async function fetchSessionId(): Promise<string> {
       url: url.toString(),
       body,
     });
-    const text = await response.text();
+    const text = JSON.stringify(body, null, 2);
     throw new Error(`Failed to fetch session ID: ${text}`);
   } else {
     const data: BillLoginResponse = await response.json();

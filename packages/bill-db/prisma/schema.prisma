@@ -18,17 +18,25 @@ model User {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this User
-  id        String    @id
+  id              String        @id
   /// Has this User been archived?
-  archived  Boolean?
+  archived        Boolean?
+  /// Date/time when this User was created
+  createdTime     String?
   /// Email address of this User
-  email     String?
+  email           String?
   /// First name of this User
-  firstName String?
+  firstName       String?
   /// Last name of this User
-  lastName  String?
-  /// Role of this User
-  role      UserRole?
+  lastName        String?
+  /// Description of this User role
+  roleDescription String?
+  /// Role ID of the Role this User belongs to
+  roleId          String?
+  /// Role Type of this User
+  roleType        UserRoleType?
+  /// Date/time when this User was last updated
+  updatedTime     String?
 
   // Potential Relationships -------------------------------------------------
 
@@ -38,7 +46,7 @@ model User {
 }
 
 /// Role of a User
-enum UserRole {
+enum UserRoleType {
   ACCOUNTANT
   ADMINISTRATOR
   APPROVER
@@ -50,7 +58,7 @@ enum UserRole {
   NO_ACCESS
   PARTNER
   PAYER
-  PURCHSE_REQUESTER
+  PURCHASE_REQUESTER
   REVIEWER
   UNDEFINED
 }
