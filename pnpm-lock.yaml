@@ -125,43 +125,6 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  apps/docs:
-    dependencies:
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      next:
-        specifier: ^15.3.0
-        version: 15.3.2(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react:
-        specifier: ^19.1.0
-        version: 19.1.0
-      react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.15.21
-      '@types/react':
-        specifier: 19.1.0
-        version: 19.1.0
-      '@types/react-dom':
-        specifier: 19.1.1
-        version: 19.1.1(@types/react@19.1.0)
-      eslint:
-        specifier: ^9.26.0
-        version: 9.27.0(jiti@2.4.2)
-      typescript:
-        specifier: 5.8.2
-        version: 5.8.2
-
   apps/ramp-download:
     dependencies:
       '@repo/ramp-api':
@@ -439,43 +402,6 @@ importers:
         specifier: catalog:typescript5
         version: 5.8.3
 
-  apps/web:
-    dependencies:
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      next:
-        specifier: ^15.3.0
-        version: 15.3.2(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react:
-        specifier: ^19.1.0
-        version: 19.1.0
-      react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../../packages/eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.15.21
-      '@types/react':
-        specifier: 19.1.0
-        version: 19.1.0
-      '@types/react-dom':
-        specifier: 19.1.1
-        version: 19.1.1(@types/react@19.1.0)
-      eslint:
-        specifier: ^9.26.0
-        version: 9.27.0(jiti@2.4.2)
-      typescript:
-        specifier: 5.8.2
-        version: 5.8.2
-
   packages/bill-api:
     devDependencies:
       '@repo/eslint-config':
@@ -608,6 +534,9 @@ importers:
       date-fns:
         specifier: catalog:date-fns
         version: 4.1.0
+      pino:
+        specifier: catalog:pino
+        version: 9.7.0
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
