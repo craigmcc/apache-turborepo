@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Server Actions for Authentication.
+ * Server Actions for Ramp Authentication.
  */
 
 // External Modules ----------------------------------------------------------

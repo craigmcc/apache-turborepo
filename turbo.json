@@ -8,6 +8,11 @@
         "^ramp-db:generate"
       ],
       "env": [
+        "BILL_DEVELOPER_KEY",
+        "BILL_ORGANIZATION_ID",
+        "BILL_PASSWORD",
+        "BILL_PROD_API_BASE_URL",
+        "BILL_USERNAME",
         "DATABASE_URL",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
@@ -36,6 +41,11 @@
         "^ramp-db:generate"
       ],
       "env": [
+        "BILL_DEVELOPER_KEY",
+        "BILL_ORGANIZATION_ID",
+        "BILL_PASSWORD",
+        "BILL_PROD_API_BASE_URL",
+        "BILL_USERNAME",
         "DATABASE_URL",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
@@ -63,6 +73,11 @@
         "^build"
       ],
       "env": [
+        "BILL_DEVELOPER_KEY",
+        "BILL_ORGANIZATION_ID",
+        "BILL_PASSWORD",
+        "BILL_PROD_API_BASE_URL",
+        "BILL_USERNAME",
         "DATABASE_URL",
         "RAMP_PROD_API_BASE_URL",
         "RAMP_PROD_API_CLIENT_ID",
