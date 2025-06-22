@@ -8,12 +8,21 @@
 
 // Internal Modules ----------------------------------------------------------
 
-import type {BillListResponse, BillUser} from "./Models";
+import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+import type { BillListResponse, BillUser } from "./Models";
 
 // Private Objects ------------------------------------------------------------
 
 const BILL_DEVELOPER_KEY = process.env.BILL_DEVELOPER_KEY;
 const BILL_PROD_API_BASE_URL = process.env.BILL_PROD_API_BASE_URL;
+
+// Validate presence of required environment variables
+if (!BILL_DEVELOPER_KEY) {
+  throw new Error("BILL_DEVELOPER_KEY is not set");
+}
+if (!BILL_PROD_API_BASE_URL) {
+  throw new Error("BILL_PROD_API_BASE_URL is not set");
+}
 
 // Public Objects ------------------------------------------------------------
 
@@ -38,13 +47,6 @@ export async function fetchUsers(
   params: FetchUsersParams
 ): Promise<BillListResponse<BillUser>> {
 
-  if (!BILL_DEVELOPER_KEY) {
-    throw new Error("BILL_DEVELOPER_KEY is not set");
-  }
-  if (!BILL_PROD_API_BASE_URL) {
-    throw new Error("BILL_PROD_API_BASE_URL is not set");
-  }
-
   const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/users`);
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
@@ -55,16 +57,23 @@ export async function fetchUsers(
   const response = await fetch(url, {
     headers: {
       "Accept": "application/json",
-      "Content-Type": "application/json",
-      "devKey": BILL_DEVELOPER_KEY,
+      "devKey": BILL_DEVELOPER_KEY!,
       "sessionId": sessionId,
     },
     method: "GET",
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Error fetching users: ${error.response_message}`);
+    const body = await response.json();
+    logger.error({
+      context: "fetchUsers",
+      message: "Failed to fetch users",
+      status: response.status,
+      url: url.toString(),
+      body,
+    });
+    const text = await response.text();
+    throw new Error(`Error fetching users: ${text}`);
   } else {
     return await response.json();
   }

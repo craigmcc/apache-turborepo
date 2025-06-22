@@ -27,5 +27,8 @@
     "jest": "catalog:jest29",
     "ts-jest": "catalog:jest29",
     "typescript": "catalog:typescript5"
+  },
+  "dependencies": {
+    "@repo/shared-utils": "workspace:*"
   }
 }

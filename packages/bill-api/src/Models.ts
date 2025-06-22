@@ -49,7 +49,7 @@ export type BillLoginRequest = {
   // The Bill developer key
   devKey: string;
   // The Bill organization ID
-  orgId: string;
+  organizationId: string;
   // The Bill password
   password: string;
   // The Bill username
