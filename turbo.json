@@ -2,9 +2,19 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "tasks": {
+    "bill-db:deploy": {
+      "cache": false
+    },
+    "bill-db:generate": {
+      "cache": true
+    },
+    "bill-db:migrate": {
+      "cache": true
+    },
     "build": {
       "dependsOn": [
         "^build",
+        "^bill-db:generate",
         "^ramp-db:generate"
       ],
       "env": [

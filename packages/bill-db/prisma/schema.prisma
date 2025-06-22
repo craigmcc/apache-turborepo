@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Bill API Models (Database Schema) -----------------------------------------
+
+// Users (https://developer.bill.com/reference/listorganizationusers)
+model User {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this User
+  id        String    @id
+  /// Has this User been archived?
+  archived  Boolean?
+  /// Email address of this User
+  email     String?
+  /// First name of this User
+  firstName String?
+  /// Last name of this User
+  lastName  String?
+  /// Role of this User
+  role      UserRole?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  @@map("users")
+}
+
+/// Role of a User
+enum UserRole {
+  ACCOUNTANT
+  ADMINISTRATOR
+  APPROVER
+  AUDITOR
+  CLERK
+  CUSTOM
+  INTERNAL
+  MEMBER
+  NO_ACCESS
+  PARTNER
+  PAYER
+  PURCHSE_REQUESTER
+  REVIEWER
+  UNDEFINED
+}

@@ -436,6 +436,22 @@ importers:
         specifier: catalog:typescript5
         version: 5.8.3
 
+  packages/bill-db:
+    dependencies:
+      '@prisma/client':
+        specifier: catalog:prisma6
+        version: 6.8.2(prisma@6.8.2(typescript@5.8.3))(typescript@5.8.3)
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      prisma:
+        specifier: catalog:prisma6
+        version: 6.8.2(typescript@5.8.3)
+
   packages/eslint-config:
     devDependencies:
       '@eslint/js':

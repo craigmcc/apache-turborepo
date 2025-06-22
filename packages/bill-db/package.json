@@ -1,0 +1,25 @@
+{
+  "description": "Prisma client and generated models for a database corresponding to Bill API objects",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/ramp-db",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "bill-db:deploy": "prisma migrate deploy",
+    "bill-db:generate" : "prisma generate",
+    "bill-db:migrate": "prisma migrate dev --skip-generate"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "prisma": "catalog:prisma6"
+  },
+  "dependencies": {
+    "@prisma/client": "catalog:prisma6"
+  }
+}
