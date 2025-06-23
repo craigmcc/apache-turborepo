@@ -1,5 +1,5 @@
 /**
- * Formatters for RAMP amounts that include both the value and the currency.
+ * Formatters for RAMP values.
  */
 
 // Internal Imports ----------------------------------------------------------
