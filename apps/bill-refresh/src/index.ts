@@ -11,6 +11,7 @@ import { exit } from "node:process";
 import {
   refreshSessionId,
   refreshUsers,
+  refreshVendors,
 } from "./Refreshers";
 
 // Private Objects ------------------------------------------------------------
@@ -20,6 +21,7 @@ export async function main() {
   console.log("Bill Refresh started at ", new Date().toLocaleString());
   const sessionId = await refreshSessionId();
   await refreshUsers(sessionId);
+  await refreshVendors(sessionId);
   console.log("Done with refreshing data");
 
 }

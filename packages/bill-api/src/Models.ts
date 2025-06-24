@@ -19,7 +19,28 @@
  */
 
 /**
+ * A generic address object from the Bill API.
+ */
+export type BillAddress = {
+  // The Bill address city
+  city: string;
+  // The country of the address (ISO2 two-letter country code)
+  country: string;
+  // Country name of the address
+  countryName?: string;
+  // Line 1 of the address
+  line1: string;
+  // Line 2 of the address
+  line2?: string;
+  // The state or province of the address
+  stateOrProvince?: string;
+  // The postal code of the address
+  zipOrPostalCode: string;
+}
+
+/**
  * An API operation that fails will return an error object with the following properties:
+ * TODO: looks like v3 is different.
  */
 export type BillErrorResponse = {
   response_status: number; // Will be 1 for an error
@@ -76,7 +97,7 @@ export type BillLoginResponse = {
 export type BillUser = {
   // The Bill user ID
   id: string;
-  // Has this Bill been archived?
+  // Has this User been archived?
   archived: boolean;
   // The date/time the Bill user was created
   createdTime: string;
@@ -111,3 +132,143 @@ export type BillUserRoleType =
   "ACCOUNTANT" | "ADMINISTRATOR" | "APPROVER" | "AUDITOR" |
   "CLERK" | "CUSTOM" | "INTERNAL" | "MEMBER" | "NO_ACCESS" |
   "PARTNER" | "PAYER" | "PURCHASE_REQUESTER" | "REVIEWER" | "UNDEFINED";
+
+/**
+ * A Bill Vendor object.
+ */
+export type BillVendor = {
+  // The Bill vendor ID
+  id: string;
+  // User account number set by the vendor
+  accountNumber?: string;
+  // Vendor account type
+  accountType?: BillVendorType;
+  // Vendor additional information
+  additionalInfo?: BillVendorAdditionalInfo;
+  // The Bill vendor address
+  address?: BillAddress;
+  // Has this Vendor been archived?
+  archived: boolean;
+  // The Bill vendor autopay information
+  autoPay?: BillVendorAutoPay;
+  // The Bill vendor balance information
+  balance?: BillVendorBalance;
+  // The Bill vendor bank account status
+  bankAccountStatus?: BillVendorBankAccountStatus;
+  // The bill currency for this vendor (ISO 4217 three-letter currency code)
+  billCurrency?: string;
+  // The date/time the Bill vendor was created
+  createdTime: string;
+  // The Bill vendor email address
+  email?: string;
+  // The Bill vendor name
+  name: string;
+  // Network connection status (if available to this vendor)
+  networkStatus?: BillVendorNetworkStatus;
+  // The Bill vendor payment information
+  paymentInformation?: BillVendorPaymentInformation;
+  // Vendor phone number (overridden when using Bill Network vendors)
+  phone?: string;
+  // Does this vendor have recurring payments enabled?
+  recurringPayments?: boolean;
+  // Bill-generated ID of the verified national vendor (if any)
+  rppsid?: string;
+  // The Bill vendor short name
+  shortName?: string;
+  // The date/time the Bill vendor was last updated
+  updatedTime: string;
+}
+
+export type BillVendorAdditionalInfo = {
+  // OK to combine a bulk payment for this vendor?
+  combinePayment?: boolean;
+  // Vendor business name (required by IRS)
+  companyName?: string;
+  // Lead time in days for vendor payments
+  leadTimeInDays?: number;
+  // Bill-generated ID of the payment term for this vendor
+  paymentTermId?: string;
+  // Vendor tax ID
+  taxId?: string;
+  // Vendor tax ID type
+  taxIdType?: BillVendorTaxIdType;
+  // Vendor eligible to receive 1099?
+  track1099?: boolean;
+}
+
+export type BillVendorAlternatePayByType =
+  "ACH" | "AMEX" | "CHECK" | "CREDIT_CARD" | "INTERNATIONAL_E_PAYMENT" |
+  "OFFLINE" | "PAYPAL" | "RPPS" | "UNDEFINED" | "VIRTUAL_CARD" | "WALLET";
+
+export type BillVendorAutoPay = {
+  // Bill-generated ID of the organization bank account used for autopay
+  bankAccountId?: string;
+  // Bill-generated ID of the user that set up vendor autopay
+  createdBy?: string;
+  // Number of days before the bill payment due date that autopay is enabled
+  daysBeforeDueDate?: number;
+  // Is vendor auto pay enabled?
+  enabled?: boolean;
+  // Maximum amount for which vendor autopay is enabled
+  maxAmount?: number;
+}
+
+export type BillVendorBalance = {
+  // Amount to be paid to the vendor
+  amount?: number;
+  // Last date/time the balance amount was updated
+  lastUpdatedDate?: string;
+}
+
+export type BillVendorBankAccountStatus =
+  "NET_LINKED_ACCOUNT" | "NO_ACCOUNT" | "NO_NET_LINKED_ACCOUNT" | "UNDEFINED";
+
+export type BillVendorNetworkStatus =
+  "CONNECTED" | "CONNECTED_RPPS" | "NOT_CONNECTED" | "PENDING";
+
+export type BillVendorPayBySubType =
+  "ACH" | "IACH" | "LOCAL" | "MULTIPLE" | "NONE" | "UNDEFINED" | "WIRE";
+
+export type BillVendorPayByType =
+  "ACH" | "CHECK" | "INTERNATIONAL_E_PAYMENT" | "OFFLINE" | "RPPS" |
+  "UNDEFINED" | "VIRTUAL_CARD" | "WALLET";
+
+export type BillVendorPaymentInformation = {
+  // Vendor email address for receiving payment information
+  email?: string;
+  // Last payment date
+  lastPaymentDate?: string;
+  // Payment delivery method for making international payments
+  payBySubType?: BillVendorPayBySubType;
+  // Payment method for Bill payments
+  payByType?: BillVendorPayByType;
+  // Vendor name for check and electronic payments (overridden for Bill Network vendors)
+  payeeName?: string;
+  // Virtual card information
+  virtualCard?: BillVendorVirtualCard;
+}
+
+export type BillVendorTaxIdType =
+  "EIN" | "SSN" | "UNDEFINED";
+
+export type BillVendorType =
+  "BUSINESS" | "NONE" | "PERSON" | "UNDEFINED";
+
+export type BillVendorVirtualCard = {
+  // The alternate payment method for virtual card settlement
+  alternatePayByType?: BillVendorAlternatePayByType;
+  // Date/time the virtual card was declined
+  declineDate?: string;
+  // Date/time the virtual card was enrolled
+  enrollDate?: string;
+  // Remittance email address for this vendor
+  remitEmail?: string;
+  // Enrollment status for this vendor
+  status: BillVendorVirtualCardStatus;
+}
+
+export type BillVendorVirtualCardStatus =
+  "CONFIRMED" | "DECLINED" | "ENROLLED" | "ON_HOLD" | "OPEN" |
+  "PAY_FOR_YOUR_OPPORTUNITY" | "PAYER_ASSIST" | "PENDING" |
+  "PHONE_NUMBER_NEEDED" | "RECRUITING" | "REQUIRE_MORE_INFO" |
+  "UNDEFINED" | "UNKNOWN" | "VERBAL_COMMITMENT";

@@ -13,7 +13,7 @@ datasource db {
 
 // Bill API Models (Database Schema) -----------------------------------------
 
-// Users (https://developer.bill.com/reference/listorganizationusers)
+/// Users (https://developer.bill.com/reference/listorganizationusers)
 model User {
   // Scalar Fields -----------------------------------------------------------
 
@@ -61,4 +61,267 @@ enum UserRoleType {
   PURCHASE_REQUESTER
   REVIEWER
   UNDEFINED
+}
+
+/// Vendors (https://developer.bill.com/reference/listvendors)
+model Vendor {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  id                      String               @id
+  /// User account number set by the vendor
+  accountNumber           String?
+  /// Vendor account type
+  accountType             VendorType?
+  /// Has this Vendor been archived?
+  archived                Boolean?
+  /// Amount to be paid to the vendor
+  balance_amount          Float?
+  /// Last date/time the balance amount was updated
+  balance_lastUpdatedDate String?
+  /// Currency for this vendor (ISO 4217 code)
+  billCurrency            String?
+  /// Date/time when this Vendor was created
+  createdTime             String?
+  /// Email address of this Vendor
+  email                   String?
+  /// Vendor name
+  name                    String?
+  /// Vendor network status
+  networkStatus           VendorNetworkStatus?
+  /// Vendor phone number (overridden when using Bill Network vendors)
+  phone                   String?
+  /// Does this vendor have recurring payments enabled?
+  recurringPayments       Boolean?
+  /// Bill-generated ID of the verified national vendor
+  rppsid                  String?
+  /// Short name for this Vendor
+  shortName               String?
+  /// Date/time when this Vendor was last updated
+  updatedTime             String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  additionalInfo     VendorAdditionalInfo?
+  address            VendorAddress?
+  autoPay            VendorAutoPay?
+  paymentInformation VendorPaymentInformation?
+  virtualCard        VendorVirtualCard? // Lifted from paymentInformation
+
+  @@map("vendors")
+}
+
+model VendorAdditionalInfo {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  vendorId       String           @id
+  /// OK to combine a bulk payment for this Vendor?
+  combinePayment Boolean?
+  /// Vendor business name (required by IRS)
+  companyName    String?
+  /// Lead time in days for vendor payments
+  leadTimeInDays Int?
+  /// Bill-generated ID of the payment term for this Vendor
+  paymentTermId  String?
+  /// Vendor tax ID
+  taxId          String?
+  /// Vendor tax ID type
+  taxIdType      VendorTaxIdType?
+  /// Vendor eligible to receive 1099?
+  track1099      Boolean?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_additional_info")
+}
+
+model VendorAddress {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  vendorId        String  @id
+  /// Address line 1
+  line1           String?
+  /// Address line 2
+  line2           String?
+  /// City
+  city            String?
+  /// Country (ISO 3166-1 alpha-2 code)
+  country         String?
+  /// Country name
+  countryName     String?
+  /// State or province (ISO 3166-2 code)
+  stateOrProvince String?
+  /// Zip or postal code
+  zipOrPostalCode String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_address")
+}
+
+enum VendorAlternatePayByType {
+  ACH
+  AMEX
+  CHECK
+  CREDIT_CARD
+  INTERNATIONAL_E_PAYMENT
+  OFFLINE
+  PAYPAL
+  RPPS
+  UNDEFINED
+  VIRTUAL_CARD
+  WALLET
+}
+
+model VendorAutoPay {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  vendorId          String   @id
+  /// Bill-gnerated ID of the organization bank account used for autopay
+  bankAccountId     String?
+  /// Bill-generated ID of the user that set up vendor autopay
+  createdBy         String?
+  /// Number of days before the bill payment due date that autopay is enabled
+  daysBeforeDueDate Int?
+  /// Is vendor auto pay enabled?
+  enabled           Boolean?
+  /// Maximum amount for which vendor autopay is enabled
+  maxAmount         Float?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_autopay")
+}
+
+enum VendorBankAccountStatus {
+  NET_LINKED_ACCOUNT
+  NO_ACCOUNT
+  NO_NET_LINKED_ACCOUNT
+  UNDEFINED
+}
+
+enum VendorNetworkStatus {
+  CONNECTED
+  CONNECTED_RPPS
+  NOT_CONNECTED
+  PENDING
+}
+
+enum VendorPayBySubType {
+  ACH
+  IACH
+  LOCAL
+  MULTIPLE
+  NONE
+  UNDEFINED
+  WIRE
+}
+
+enum VendorPayByType {
+  ACH
+  CHECK
+  INTERNATIONAL_E_PAYMENT
+  OFFLINE
+  RPPS
+  UNDEFINED
+  VIRTUAL_CARD
+  WALLET
+}
+
+model VendorPaymentInformation {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  vendorId        String             @id
+  /// Vendor email address for receiving payment information
+  email           String?
+  /// Last payment date
+  lastPaymentDate String?
+  /// Payment delivery method for making international payments
+  payBySubType    VendorPayBySubType
+  /// Payment method for Bill payments
+  payByType       VendorPayByType
+  /// Vendor name for check and electronic payments (overridden for Bill Network vendors)
+  payeeName       String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  // virtualCard is lifted to Vendor model directly
+
+  @@map("vendors_payment_information")
+}
+
+enum VendorTaxIdType {
+  EIN
+  SSN
+  UNDEFINED
+}
+
+enum VendorType {
+  BUSINESS
+  NONE
+  PERSON
+  UNDEFINED
+}
+
+model VendorVirtualCard {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor
+  vendorId           String                    @id
+  /// Alternate payment method for virtual card settlement
+  alternatePayByType VendorAlternatePayByType?
+  /// Date/time the virtual card was declined
+  declineDate        String?
+  /// Date/time the virtual card was enrolled
+  enrollDate         String?
+  /// Remittance email address for this vendor
+  remitEmail         String?
+  /// Enrollment status for this vendor
+  status             VendorVirtualCardStatus?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_virtual_card")
+}
+
+enum VendorVirtualCardStatus {
+  CONFIRMED
+  DECLINED
+  ENROLLED
+  ON_HOLD
+  OPEN
+  PAY_FOR_YOUR_OPPORTUNITY
+  PAYER_ASSIST
+  PENDING
+  PHONE_NUMBER_NEEDED
+  RECRUITING
+  REQUIRE_MORE_INFO
+  UNDEFINED
+  UNKNOWN
+  VERBAL_COMMITMENT
 }
