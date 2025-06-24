@@ -14,11 +14,6 @@ import {
   dbBill,
   User,
   Vendor,
-  VendorAdditionalInfo,
-  VendorAddress,
-  VendorAutoPay,
-  VendorPaymentInformation,
-  VendorVirtualCard,
 } from "@repo/bill-db/Models";
 import {
   createUser,

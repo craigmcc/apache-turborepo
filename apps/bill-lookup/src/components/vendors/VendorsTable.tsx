@@ -28,27 +28,25 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { DataTable } from "@/components/tables/DataTable";
-import { UsersCsvExport } from "@/components/users/UsersCsvExport";
-import { UserMoreInfo } from "@/components/users/UserMoreInfo";
+import { VendorsCsvExport } from "@/components/vendors/VendorsCsvExport";
+import { VendorMoreInfo } from "@/components/vendors/VendorMoreInfo";
 import {
-  formatUserEmail,
-  formatUserName,
-  formatUserRoleDescription,
-  formatUserRoleType,
+  formatVendorEmail,
+  formatVendorName,
 } from "@/lib/Formatters";
-import {  UserPlus } from "@/types/types";
+import {  VendorPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
-export type UsersTableProps = {
-  // All Users to display in the table
-  allUsers: UserPlus[];
+export type VendorsTableProps = {
+  // All Vendors to display in the table
+  allVendors: VendorPlus[];
 }
 
-export function UsersTable({ allUsers }: UsersTableProps) {
+export function VendorsTable({ allVendors }: VendorsTableProps) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [currentUser, setCurrentUser] = useState<UserPlus | null>(null);
+  const [currentVendor, setCurrentVendor] = useState<VendorPlus | null>(null);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -56,25 +54,25 @@ export function UsersTable({ allUsers }: UsersTableProps) {
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "user_name", desc: false },
+    { id: "vendor_name", desc: false },
   ]);
-  const [userNameFilter, setUserNameFilter] = useState<string>("");
+  const [vendorNameFilter, setVendorNameFilter] = useState<string>("");
 
   // Apply selection filters whenever they change
   useEffect(() => {
 
     const filters: ColumnFiltersState = [];
 
-    if (userNameFilter.length > 0) {
+    if (vendorNameFilter.length > 0) {
       filters.push({
-        id: "user_name",
-        value: userNameFilter,
+        id: "name",
+        value: vendorNameFilter,
       });
     }
 
     setColumnFilters(filters);
 
-  }, [userNameFilter]);
+  }, [vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -88,30 +86,30 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-    setCurrentUser(null);
+    setCurrentVendor(null);
     setShowMoreInfo(false);
   }
 
   // Handle the "More Info" modal open
-  function handleMoreInfoOpen(user: UserPlus) {
-    setCurrentUser(user);
+  function handleMoreInfoOpen(vendor: VendorPlus) {
+    setCurrentVendor(vendor);
     setShowMoreInfo(true);
   }
 
   // Column definitions for the Users table
   const columns = useMemo(() => [
-    columnHelper.accessor(row => formatUserName(row), {
+    columnHelper.accessor(row => formatVendorName(row), {
       cell: info => {
-        return <span>{formatUserName(info.row.original)}</span>;
+        return <span>{formatVendorName(info.row.original)}</span>;
       },
-      header: "User Name",
-      id: "user_name",
+      header: "Vendor Name",
+      id: "name",
     }),
     columnHelper.display({
       cell: info => {
-        return <span>{formatUserEmail(info.row.original)}</span>
+        return <span>{formatVendorEmail(info.row.original)}</span>
       },
-      header: "User Email",
+      header: "Vendor Email",
       id: "email",
     }),
     columnHelper.display({
@@ -132,17 +130,38 @@ export function UsersTable({ allUsers }: UsersTableProps) {
     }),
     columnHelper.display({
       cell: info => {
-        return <span>{formatUserRoleType(info.row.original)}</span>
+        return <span>{info.row.original.accountType || "n/a"}</span>
       },
-      header: "Role Type",
-      id: "roleType",
+      header: "Account Type",
+      id: "accountType",
     }),
     columnHelper.display({
       cell: info => {
-        return <span>{formatUserRoleDescription(info.row.original)}</span>
+        return <span>{info.row.original.paymentInformation?.payByType || "n/a"}</span>
       },
-      header: "Role Description",
-      id: "roleDescription",
+      header: "Pay By Type",
+      id: "payByType",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.paymentInformation?.payBySubType || "n/a"}</span>
+      },
+      header: "Pay By SubType",
+      id: "payBySubtype",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.balance_amount || "n/a"}</span>
+      },
+      header: "Balance Amount",
+      id: "balance_amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.balance_lastUpdatedDate || "n/a"}</span>
+      },
+      header: "Balance Last Updated",
+      id: "balance_lastUpdatedDate",
     }),
     columnHelper.display({
       cell: info => {
@@ -161,9 +180,9 @@ export function UsersTable({ allUsers }: UsersTableProps) {
   ], []);
 
   // Overall table instance
-  const table = useReactTable<UserPlus>({
+  const table = useReactTable<VendorPlus>({
     columns,
-    data: allUsers,
+    data: allVendors,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -183,7 +202,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          <span className="me-5">Users Table</span>
+          <span className="me-5">Vendors Table</span>
           <Button
             className="bg-info"
             onClick={handleCsvExportOpen}
@@ -196,12 +215,12 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       <Row className="mb-2">
         <Col>
           <Form.Group controlId="nameFilter">
-            <span>Filter by User Name:</span>
+            <span>Filter by Vendor Name:</span>
             <Form.Control
-              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
+              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
               type="text"
-              value={userNameFilter}
+              value={vendorNameFilter}
             />
           </Form.Group>
         </Col>
@@ -212,16 +231,16 @@ export function UsersTable({ allUsers }: UsersTableProps) {
         table={table}
       />
 
-      <UsersCsvExport
+      <VendorsCsvExport
         hide={handleCsvExportClose}
         show={showCsvExport}
-        users={table.getSortedRowModel().flatRows.map(row => row.original)}
+        vendors={table.getSortedRowModel().flatRows.map(row => row.original)}
       />
 
-      <UserMoreInfo
+      <VendorMoreInfo
         hide={handleMoreInfoClose}
         show={showMoreInfo}
-        user={currentUser}
+        vendor={currentVendor}
       />
 
     </Container>
@@ -233,4 +252,4 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 /**
  * Helper for creating columns in the Users table.
  */
-const columnHelper = createColumnHelper<UserPlus>();
+const columnHelper = createColumnHelper<VendorPlus>();

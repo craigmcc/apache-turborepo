@@ -5,13 +5,14 @@
 // Internal Imports ----------------------------------------------------------
 
 import {
-  UserPlus
+  UserPlus,
+  VendorPlus,
 } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
 /**
- * Format a RAMP user email.
+ * Format a Bill user email.
  *
  * @param user User object
  */
@@ -24,7 +25,7 @@ export function formatUserEmail(user: UserPlus | null | undefined): string {
 }
 
 /**
- * Format a RAMP user name.
+ * Format a Bill user name.
  *
  * @param user User object
  */
@@ -35,8 +36,9 @@ export function formatUserName(user: UserPlus | null | undefined): string {
     return "n/a";
   }
 }
+
 /**
- * Format a RAMP user role description.
+ * Format a Bill user role description.
  *
  * @param user User object
  */
@@ -49,7 +51,7 @@ export function formatUserRoleDescription(user: UserPlus | null | undefined): st
 }
 
 /**
- * Format a RAMP user type.
+ * Format a Bill user role type.
  *
  * @param user User object
  */
@@ -60,3 +62,30 @@ export function formatUserRoleType(user: UserPlus | null | undefined): string {
     return "n/a";
   }
 }
+
+/**
+ * Format a Bill vendor email.
+ *
+ * @param vendor Vendor object
+ */
+export function formatVendorEmail(vendor: VendorPlus | null | undefined): string {
+  if (vendor && vendor.email) {
+    return `${vendor.email}`;
+  } else {
+    return "n/a";
+  }
+}
+
+/**
+ * Format a Bill vendor name.
+ *
+ * @param vendor Vendor object
+ */
+export function formatVendorName(vendor: VendorPlus | null | undefined): string {
+  if (vendor && vendor.name) {
+    return `${vendor.name}`;
+  } else {
+    return "n/a";
+  }
+}
+
