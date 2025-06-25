@@ -17,6 +17,7 @@ import Table from "react-bootstrap/Table";
 import {
   formatAccountingDate,
   formatAmount,
+  formatCardLastFour,
   formatCardName,
   formatCardState,
   formatGlAccount,
@@ -109,6 +110,10 @@ export function TransactionMoreInfo({ hide, show, transaction }: TransactionMore
                 <tr>
                   <td>card.state</td>
                   <td>{formatCardState(transaction.card)}</td>
+                </tr>
+                <tr>
+                  <td>card.last_four</td>
+                  <td>{formatCardLastFour(transaction.card)}</td>
                 </tr>
                 <tr>
                   <td>user.id</td>

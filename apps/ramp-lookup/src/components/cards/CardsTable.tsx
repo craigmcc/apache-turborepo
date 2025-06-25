@@ -176,6 +176,14 @@ export function CardsTable({ allCards }: CardsTableProps) {
       id: "state",
     },
     {
+      accessorFn: row => row.last_four || "n/a",
+      cell: ({ row }) => {
+        return <span>{row.original.last_four || "n/a"}</span>;
+      },
+      header: "Last 4",
+      id: "last_four",
+    },
+    {
       cell: ({ row }) => {
         return <span>{formatAmountFunky(row.original.spending_restrictions?.amount)}</span>;
       },

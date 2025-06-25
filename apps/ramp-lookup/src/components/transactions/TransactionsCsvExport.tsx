@@ -19,7 +19,7 @@ import Row from "react-bootstrap/Row";
 
 import {
   formatAccountingDate,
-  formatAmount,
+  formatAmount, formatCardLastFour,
   formatCardName, formatGlAccount,
   formatMerchantName,
   formatTransactionState,
@@ -43,7 +43,7 @@ export function TransactionsCsvExport({ hide, show, transactions }: Transactions
   const [filename, setFilename] = useState<string>("Ramp-Transactions.csv");
 
   const data = [
-    [ "Accounting Date-Time", "User Name", "Card Name", "Original Amount",
+    [ "Accounting Date-Time", "User Name", "Card Name", "Last 4", "Original Amount",
       "Settled Amount", "Merchant", "GL Account", "State" ],
   ];
   for (const transaction of transactions) {
@@ -51,6 +51,7 @@ export function TransactionsCsvExport({ hide, show, transactions }: Transactions
       formatAccountingDate(transaction),
       formatUserName(transaction.card_holder_user),
       formatCardName(transaction.card),
+      formatCardLastFour(transaction.card),
       formatAmount(transaction.original_transaction_amount_amt, transaction.original_transaction_amount_cc),
       formatAmount(transaction.amount_amt, transaction.amount_cc),
       formatMerchantName(transaction),

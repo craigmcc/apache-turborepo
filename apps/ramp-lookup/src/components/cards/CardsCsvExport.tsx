@@ -19,6 +19,7 @@ import Row from "react-bootstrap/Row";
 
 import {
   formatCardInterval,
+  formatCardLastFour,
   formatCardName,
   formatCardState,
   formatDepartmentName,
@@ -42,7 +43,7 @@ export function CardsCsvExport({ hide, show, cards }: CardsCsvExportProps) {
   const [filename, setFilename] = useState<string>("Ramp-Cards.csv");
 
   const data = [
-    [ "Department Name", "User Name", "Card Name", "Physical", "State",
+    [ "Department Name", "User Name", "Card Name", "Physical", "State", "Last 4",
       "Interval Limit", "Interval", "Transaction Limit", "Suspended" ],
   ];
   for (const card of cards) {
@@ -52,6 +53,7 @@ export function CardsCsvExport({ hide, show, cards }: CardsCsvExportProps) {
       formatCardName(card),
       card.is_physical ? "Yes" : "No",
       formatCardState(card),
+      formatCardLastFour(card),
       formatAmountFunky(card.spending_restrictions?.amount),
       formatCardInterval(card),
       formatAmountFunky(card.spending_restrictions?.transaction_amount_limit),

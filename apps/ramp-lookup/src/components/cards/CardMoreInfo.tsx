@@ -72,12 +72,12 @@ export function CardMoreInfo({ card, hide, show }: CardMoreInfoProps) {
                   <td>{card.is_physical ? "Yes" : "No"}</td>
                 </tr>
                 <tr>
-                  <td>last_four</td>
-                  <td>{card.last_four}</td>
-                </tr>
-                <tr>
                   <td>state</td>
                   <td>{card.state || "n/a"}</td>
+                </tr>
+                <tr>
+                  <td>last_four</td>
+                  <td>{card.last_four}</td>
                 </tr>
                 </tbody>
               </Table>

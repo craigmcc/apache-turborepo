@@ -47,6 +47,15 @@ export function formatAmount(amt: number | null | undefined, cc: string | null |
 }
 
 /**
+ * Format a RAMP card last four digits.
+ *
+ * @param card Card object
+ */
+export function formatCardLastFour(card: CardPlus | null | undefined): string {
+  return card?.last_four || "n/a";
+}
+
+/**
  * Format a RAMP card name.
  *
  * @param card Card object

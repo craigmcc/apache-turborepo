@@ -34,6 +34,7 @@ import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsv
 import {
   formatAccountingDate,
   formatAmount,
+  formatCardLastFour,
   formatCardName,
   formatDepartmentName,
   formatGlAccount,
@@ -179,6 +180,14 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       enableSorting: true,
       header: () => <span>Card Name</span>,
       id: "card_name",
+    }),
+    columnHelper.accessor(row => formatCardLastFour(row.card), {
+      cell: info => {
+        return <span>{formatCardLastFour(info.row.original.card)}</span>;
+      },
+      enableSorting: true,
+      header: () => <span>Last 4</span>,
+      id: "last_four",
     }),
     columnHelper.display({
       cell: info => {
