@@ -9,6 +9,7 @@ import { exit } from "node:process";
 // Internal Modules -----------------------------------------------------------
 
 import {
+  refreshBills,
   refreshSessionId,
   refreshUsers,
   refreshVendors,
@@ -22,6 +23,7 @@ export async function main() {
   const sessionId = await refreshSessionId();
   await refreshUsers(sessionId);
   await refreshVendors(sessionId);
+  await refreshBills(sessionId);
   console.log("Done with refreshing data");
 
 }

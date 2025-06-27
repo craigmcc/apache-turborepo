@@ -13,11 +13,159 @@ datasource db {
 
 // Bill API Models (Database Schema) -----------------------------------------
 
+/// Bills (https://developer.bill.com/reference/listbills)
+model Bill {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Bill (begins with "00n")
+  id            String   @id
+  /// Bill total amount (local currency)
+  amount        Float?
+  /// Has this Bill been archived?
+  archived      Boolean?
+  /// Date/time when this Bill was created
+  createdTime   String?
+  /// Credit amount applied to this Bill
+  creditAmount  Float?
+  /// Description of this Bill
+  description   String?
+  /// Amount still due (after subtracting credits, scheduled payments, and cleared payments)
+  dueAmount     Float?
+  /// Due date for the bill payment (yyyy-MM-dd)
+  dueDate       String?
+  /// Exchange rate for this Bill (may differ at settlement time)
+  exchangeRate  Float?
+  /// Bill total amount (USD)
+  fundingAmount Float?
+  /// Date of this invoice (yyyy-MM-dd)
+  invoiceDate   String?
+  /// User-generated invoice number
+  invoiceNumber String?
+  /// Amount that has been paid minus any credits
+  paidAmount    Float?
+  /// Date/time when this Bill was last updated
+  updatedTime   String?
+  /// Name of the bill vendor
+  vendorName    String?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
+  payFromChartOfAccountId String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  billLineItems   BillLineItem[]
+  classifications BillClassifications?
+  /// Bill-generated ID of the vendor (begins with "009")
+  vendorId        String
+  vendor          Vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("bills")
+}
+
+/// Classifications for a Bill
+model BillClassifications {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Bill (begins with "00n")
+  billId String @id
+
+  // Potential Relationships -------------------------------------------------
+
+  /// The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId String?
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId  String?
+  /// The Bill-generated ID of the department (begins with "0de)
+  departmentId      String?
+  /// The Bill-generated ID of the item (begins with "0ii")
+  itemId            String?
+  /// The Bill-generated ID of the location (begins with "loc")
+  locationId        String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@map("bills_classifications")
+}
+
+/// Line Items for a Bill
+model BillLineItem {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Bill Line Item (begins with "bli")
+  id          String  @id
+  /// Amount for this Bill Line Item (local currency)
+  amount      Float?
+  /// Description of this Bill Line Item
+  description String?
+  /// Unit price for this line item (local currency)
+  price       Float?
+  /// Quantity for this line item
+  quantity    Float?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Primary key for the Bill this line item belongs to (begins with "00n")
+  billId          String
+  bill            Bill                         @relation(fields: [billId], references: [id], onDelete: Cascade)
+  classifications BillLineItemClassifications?
+
+  @@map("bills_line_items")
+}
+
+/// Classifications for a BillLineItem
+model BillLineItemClassifications {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Bill Line Item (begins with "bli")
+  billLineItemId String @id
+
+  // Potential Relationships -------------------------------------------------
+
+  /// The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId String?
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId  String?
+  /// The Bill-generated ID of the customer (begins with "0cu")
+  customerId        String?
+  /// The Bill-generated ID of the department (begins with "dep")
+  departmentId      String?
+  /// The Bill-generated ID of the employee (begins with "emp")
+  employeeId        String?
+  /// The Bill-generated ID of the item (begins with "0ii")
+  itemId            String?
+  /// The Bill-generated ID of the jog (begins with "job")
+  jobId             String?
+  /// The Bill-generated ID of the location (begins with "loc")
+  locationId        String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  billLineItem BillLineItem @relation(fields: [billLineItemId], references: [id], onDelete: Cascade)
+
+  @@map("bills_line_items_classifications")
+}
+
+/// Payment Status of a Bill
+enum BillPaymentStatus {
+  IN_PROCESS
+  PAID
+  PARTIALLY_PAID
+  SCHEDULED
+  UNDEFINED
+  UNPAID
+}
+
 /// Users (https://developer.bill.com/reference/listorganizationusers)
 model User {
   // Scalar Fields -----------------------------------------------------------
 
-  /// Primary key for this User
+  /// Primary key for this User (begins with "006")
   id              String        @id
   /// Has this User been archived?
   archived        Boolean?
@@ -67,7 +215,7 @@ enum UserRoleType {
 model Vendor {
   // Scalar Fields -----------------------------------------------------------
 
-  /// Primary key for this Vendor
+  /// Primary key for this Vendor (begins with "009")
   id                      String               @id
   /// User account number set by the vendor
   accountNumber           String?
@@ -94,7 +242,7 @@ model Vendor {
   /// Does this vendor have recurring payments enabled?
   recurringPayments       Boolean?
   /// Bill-generated ID of the verified national vendor
-  rppsid                  String?
+  rppsId                  String?
   /// Short name for this Vendor
   shortName               String?
   /// Date/time when this Vendor was last updated
@@ -107,6 +255,7 @@ model Vendor {
   additionalInfo     VendorAdditionalInfo?
   address            VendorAddress?
   autoPay            VendorAutoPay?
+  bills              Bill[]
   paymentInformation VendorPaymentInformation?
   virtualCard        VendorVirtualCard? // Lifted from paymentInformation
 

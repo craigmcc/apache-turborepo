@@ -15,10 +15,6 @@
  */
 
 /**
- * The response for a successful Bill login request will be a sessionId as a string.
- */
-
-/**
  * A generic address object from the Bill API.
  */
 export type BillAddress = {
@@ -37,6 +33,118 @@ export type BillAddress = {
   // The postal code of the address
   zipOrPostalCode: string;
 }
+
+/**
+ * A Bill "bill" object.
+ */
+export type BillBill = {
+  // The Bill-generated bill ID (begins with "00n")
+  id: string;
+  // Bill total amount (local currency)
+  amount?: number;
+  // Has this bill been archived?
+  archived?: boolean;
+  // Line items on this bill
+  billLineItems?: BillBillLineItem[];
+  // Classifications for this bill
+  classifications?: BillBillClassifications;
+  // Date/time the bill was created
+  createdTime?: string;
+  // Credit amount applied to this bill
+  creditAmount?: number;
+  // Description of the bill
+  description?: string;
+  // Amount still due (after subtracting credits, scheduled payments, and cleared payments)
+  dueAmount?: number;
+  // Due date for the bill payment (yyyy-MM-dd)
+  dueDate?: string;
+  // Exchange rate for bills not in USD (may differ at settlement time)
+  exchangeRate?: number;
+  // Bill total amount (USD)
+  fundingAmount?: number;
+  // Invoice information
+  invoice?: {
+    // The date of this invoice (yyyy-MM-dd)
+    invoiceDate: string;
+    // The user-generated invoice number
+    invoiceNumber?: string;
+  };
+  // Amount that has been paid minus any credits
+  paidAmount?: number;
+  // Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
+  payFromChartOfAccountId?: string;
+  // Bill payment status
+  paymentStatus?: BillBillPaymentStatus;
+  // Amount scheduled to be paid and is pending clearance
+  scheduledAmount?: number;
+  // Date/time the bill was last updated
+  updatedTime?: string;
+  // Bill-generated ID of the bill vendor (begins with "009")
+  vendorId: string;
+  // Corresponding name of the bill vendor
+  vendorName: string;
+}
+
+/**
+ * General ledger classifications for a bill.
+ */
+export type BillBillClassifications = {
+  // The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId?: string;
+  // The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId: string;
+  // The Bill-generated ID of the department (begins with "0de")
+  departmentId?: string;
+  // The Bill-generated ID of the item (begins with "0ii")
+  itemId?: string;
+  // The Bill-generated ID of the location (begins with "loc")
+  locationId?: string;
+}
+
+/**
+ * A line item on a bill.
+ */
+export type BillBillLineItem = {
+  // The Bill-generated ID of the bill line item (begins with "bli")
+  id: string;
+  // Amount for this line item (local currency)
+  amount?: number;
+  // General ledger classifications for this line item
+  classifications?: BillBillLineItemClassifications
+  // The description of the bill line item
+  description?: string;
+  // Bill-generated ID of the chart of accounts for the
+  // Unit price for this line item (local currency)
+  price?: number;
+  // Quantity for this line item
+  quantity?: number;
+}
+
+/**
+ * General ledger classifications for a bill line item.
+ */
+export type BillBillLineItemClassifications = {
+  // The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId?: string;
+  // The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId: string;
+  // The Bill-generated ID of the customer (begins with "0cu")
+  customerId?: string;
+  // The Bill-generated ID of the department (begins with "0de")
+  departmentId?: string;
+  // The Bill-generated ID of the employee (begins with "emp")
+  employeeId?: string;
+  // The Bill-generated ID of the item (begins with "0ii")
+  itemId?: string;
+  // The Bill-generated ID of the job (begins with "job")
+  jobId?: string;
+  // The Bill-generated ID of the location (begins with "loc")
+  locationId?: string;
+}
+
+export type BillBillPaymentStatus =
+  "IN_PROCESS" | "PAID" | "PARTIALLY_PAID" |
+  "SCHEDULED" | "UNDEFINED" | "UNPAID";
 
 /**
  * An API operation that fails will return an error object with the following properties:
@@ -95,7 +203,7 @@ export type BillLoginResponse = {
  * A Bill User object.
  */
 export type BillUser = {
-  // The Bill user ID
+  // The Bill user ID (begins with "006")
   id: string;
   // Has this User been archived?
   archived: boolean;
@@ -137,7 +245,7 @@ export type BillUserRoleType =
  * A Bill Vendor object.
  */
 export type BillVendor = {
-  // The Bill vendor ID
+  // The Bill vendor ID (begins with "009")
   id: string;
   // User account number set by the vendor
   accountNumber?: string;
@@ -172,7 +280,7 @@ export type BillVendor = {
   // Does this vendor have recurring payments enabled?
   recurringPayments?: boolean;
   // Bill-generated ID of the verified national vendor (if any)
-  rppsid?: string;
+  rppsId?: string;
   // The Bill vendor short name
   shortName?: string;
   // The date/time the Bill vendor was last updated

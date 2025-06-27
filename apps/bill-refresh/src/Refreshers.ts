@@ -8,6 +8,7 @@
 // Internal Modules ----------------------------------------------------------
 
 import { fetchSessionId } from "@repo/bill-api/AuthActions";
+import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
 import {
@@ -16,6 +17,10 @@ import {
   Vendor,
 } from "@repo/bill-db/Models";
 import {
+  createBill,
+  createBillClassifications,
+  createBillLineItem,
+  createBillLineItemClassifications,
   createUser,
   createVendor,
   createVendorAdditionalInfo,
@@ -26,6 +31,75 @@ import {
 } from "./Creators";
 
 // Public Objects ------------------------------------------------------------
+
+export async function refreshBills(sessionId: string): Promise<void> {
+
+  console.log("Fetching bills...");
+  let count = 0;
+  let nextPage: string | null = "";
+
+  while (nextPage !== null) {
+
+    const result = await fetchBills(sessionId,
+      {
+        max: 100,
+        page: nextPage && nextPage.length > 0 ? nextPage : undefined,
+      });
+
+    for (const billBill of result.results) {
+
+      const bill = createBill(billBill);
+      await dbBill.bill.upsert({
+        where: { id: bill.id },
+        create: bill,
+        update: bill,
+      });
+
+      const classifications = createBillClassifications(billBill);
+      if (classifications) {
+        await dbBill.billClassifications.upsert({
+          where: { billId: classifications.billId },
+          create: classifications,
+          update: classifications,
+        });
+      } else {
+        await dbBill.billClassifications.deleteMany({
+          where: { billId: bill.id },
+        });
+      }
+
+      for (const billBillLineItem of billBill.billLineItems || []) {
+        const billLineItem = createBillLineItem(billBill, billBillLineItem);
+        await dbBill.billLineItem.upsert({
+          where: { id: billLineItem.id },
+          create: billLineItem,
+          update: billLineItem,
+        });
+
+        const lineItemClassifications = createBillLineItemClassifications(billBill, billBillLineItem);
+        if (lineItemClassifications) {
+          await dbBill.billLineItemClassifications.upsert({
+            where: { billLineItemId: lineItemClassifications.billLineItemId },
+            create: lineItemClassifications,
+            update: lineItemClassifications,
+          });
+        } else {
+          await dbBill.billLineItemClassifications.deleteMany({
+            where: { billLineItemId: billLineItem.id },
+          });
+        }
+      }
+
+      count++;
+    }
+
+    nextPage = result.nextPage || null;
+
+  }
+
+  console.log("Bills refreshed:", count);
+
+}
 
 export async function refreshSessionId(): Promise<string> {
   console.log("Fetching session ID...");

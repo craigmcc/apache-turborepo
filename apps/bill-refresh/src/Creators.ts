@@ -7,10 +7,15 @@
 // Internal Modules ----------------------------------------------------------
 
 import {
+  BillBill, BillBillLineItem,
   BillUser,
   BillVendor,
 } from "@repo/bill-api/Models";
 import {
+  Bill,
+  BillClassifications,
+  BillLineItem,
+  BillLineItemClassifications,
   User,
   Vendor,
   VendorAdditionalInfo,
@@ -21,6 +26,67 @@ import {
 } from "@repo/bill-db/Models";
 
 // Public Objects ------------------------------------------------------------
+
+export function createBill(bill: BillBill): Bill {
+  return {
+    id: bill.id,
+    amount: bill.amount || null,
+    archived: bill.archived || null,
+    createdTime: bill.createdTime || null,
+    creditAmount: bill.creditAmount || null,
+    description: bill.description || null,
+    dueAmount: bill.dueAmount || null,
+    dueDate: bill.dueDate || null,
+    exchangeRate: bill.exchangeRate || null,
+    fundingAmount: bill.fundingAmount || null,
+    invoiceDate: bill.invoice?.invoiceDate || null,
+    invoiceNumber: bill.invoice?.invoiceNumber || null,
+    paidAmount: bill.paidAmount || null,
+    updatedTime: bill.updatedTime || null,
+    vendorName: bill.vendorName || null,
+    payFromChartOfAccountId: bill.payFromChartOfAccountId || null,
+    vendorId: bill.vendorId,
+  };
+}
+
+export function createBillClassifications(bill: BillBill): BillClassifications | null {
+  if (!bill.classifications) {
+    return null;
+  }
+  return {
+    billId: bill.id,
+    accountingClassId: bill.classifications.accountingClassId || null,
+    chartOfAccountId: bill.classifications.chartOfAccountId || null,
+    departmentId: bill.classifications.departmentId || null,
+    itemId: bill.classifications.itemId || null,
+    locationId: bill.classifications.locationId || null,
+  };
+}
+
+export function createBillLineItem(bill: BillBill, billLineItem: BillBillLineItem): BillLineItem {
+  return {
+    id: billLineItem.id,
+    amount: billLineItem.amount || null,
+    description: billLineItem.description || null,
+    price: billLineItem.price || null,
+    quantity: billLineItem.quantity || null,
+    billId: bill.id,
+  };
+}
+
+export function createBillLineItemClassifications(bill: BillBill, billLineItem: BillBillLineItem): BillLineItemClassifications {
+  return {
+    billLineItemId: billLineItem.id,
+    accountingClassId: billLineItem.classifications?.accountingClassId || null,
+    chartOfAccountId: billLineItem.classifications?.chartOfAccountId || null,
+    customerId: billLineItem.classifications?.customerId || null,
+    departmentId: billLineItem.classifications?.departmentId || null,
+    employeeId: billLineItem.classifications?.employeeId || null,
+    itemId: billLineItem.classifications?.itemId || null,
+    jobId: billLineItem.classifications?.jobId || null,
+    locationId: billLineItem.classifications?.locationId || null,
+  };
+}
 
 export function createUser(billUser: BillUser): User {
   return {
@@ -55,7 +121,7 @@ export function createVendor(billVendor: BillVendor): Vendor {
     networkStatus: billVendor.networkStatus || null,
     phone: billVendor.phone || null,
     recurringPayments: billVendor.recurringPayments || null,
-    rppsid: billVendor.rppsid || null,
+    rppsId: billVendor.rppsId || null,
     shortName: billVendor.shortName || null,
     updatedTime: billVendor.updatedTime,
   };
