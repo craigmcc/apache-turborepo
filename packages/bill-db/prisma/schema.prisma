@@ -13,6 +13,43 @@ datasource db {
 
 // Bill API Models (Database Schema) -----------------------------------------
 
+/// Accounts (https://developer.bill.com/v2/reference/org-accounts-listchartofaccount)
+model Account {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Account (begins with "0ca")
+  id             String   @id
+  /// Account number
+  accountNumber  String?
+  /// Account type (code replaced by description)
+  accountType    String?
+  /// CA Form 1099 form type
+  ca1099FormType String?
+  /// CA Form 1099 filing categorization
+  ca1099Type     String?
+  /// Date/time when this Account was created
+  createdTime    String?
+  /// Account description
+  description    String?
+  /// Entity object type (should be "ChartofAccount")
+  entity         String?
+  /// Is this account active?
+  isActive       Boolean?
+  /// Account name
+  name           String?
+  /// Date/time when this Account was last updated
+  updatedTime    String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // ID of the parent account (if any)
+  parentChartOfAccountId String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  @@map("accounts")
+}
+
 /// Bills (https://developer.bill.com/reference/listbills)
 model Bill {
   // Scalar Fields -----------------------------------------------------------

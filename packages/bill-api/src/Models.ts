@@ -15,6 +15,65 @@
  */
 
 /**
+ * A Bill Chart of Accounts object (V2)
+ */
+export type BillAccount = {
+  // The Bill-generated ID of the chart of accounts (begins with "0ca")
+  id: string;
+  // Account number
+  accountNumber?: string;
+  // Account type code (0-16)
+  accountType?: string;
+  // CA Form 1099 form type (0=none, 1=MISC2021, 2=NEC2021) for Sage Intacct
+  ca1099FormType?: string;
+  // CA Form 1099 filing categorization (0-14) for Sage Intacct
+  ca1099Type?: string;
+  // The date/time the account was created
+  createdTime: string;
+  // Description of this account
+  description?: string;
+  // Entity object type (should be "ChartOfAccount")
+  entity?: string;
+  // Error code (if this is an error response)
+  error_code?: string;
+  // Error message (if this is an error response)
+  error_message?: string;
+  // Is this account active (1=yes, 2=no)?
+  isActive?: string;
+  // Parent account that the current ID is merged into (if any)
+  mergedIntoId?: string;
+  // Name of this account
+  name?: string;
+  // ID of the parent account (if any)
+  parentChartOfAccountId?: string;
+  // The date/time the account was updated
+  updatedTime: string;
+}
+
+/**
+ * Mapping of account type codes to their descriptions.
+ */
+export const BillAccountTypes = new Map<string, string>([
+  ["0", "Unspecified"],
+  ["1", "Accounts Payable"],
+  ["2", "Accounts Receivable"],
+  ["3", "Bank"],
+  ["4", "Cost of Goods Sold"],
+  ["5", "Credit Card"],
+  ["6", "Equity"],
+  ["7", "Expense"],
+  ["8", "Fixed Asset"],
+  ["9", "Income"],
+  ["10", "Long Term Liability"],
+  ["11", "Other Asset"],
+  ["12", "Other Current Asset"],
+  ["13", "Other Current Liability"],
+  ["14", "Other Expense"],
+  ["15", "Other Income"],
+  ["16", "Non Posting"],
+]);
+
+/**
  * A generic address object from the Bill API.
  */
 export type BillAddress = {
@@ -189,6 +248,8 @@ export type BillLoginRequest = {
  * The response for a successful Bill login request.
  */
 export type BillLoginResponse = {
+  // The API endpoint URL for the Bill API (V2 only)
+  apiEndpoint?: string;
   // The bill organization ID
   organizationId: string;
   // The session ID to use for subsequent API requests

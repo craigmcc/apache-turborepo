@@ -37,9 +37,61 @@ if (!BILL_USERNAME) {
 }
 
 /**
- * Fetch a fresh session ID from the Bill API.
+ * Fetch the current user profile from the Bill API for the V2 APIs.
  */
-export async function fetchSessionId(): Promise<string> {
+export async function fetchSessionIdV2(): Promise<string> {
+
+  const url: URL = new URL("https://api.bill.com/api/v2/Login.json");
+  const requestData = {
+    devKey: BILL_DEVELOPER_KEY!,
+    orgId: BILL_ORGANIZATION_ID!,
+    password: BILL_PASSWORD!,
+    userName: BILL_USERNAME!,
+  }
+  const response = await fetch(url, {
+    body: new URLSearchParams(requestData).toString(),
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    logger.error({
+      context: "fetchSessionIdV2.receive",
+      status: response.status,
+      statusText: response.statusText,
+      url: url,
+      response: JSON.stringify(await response.json()),
+    });
+    throw new Error(`Failed to receive Session ID V2: ${response.status} ${response.statusText}`);
+  }
+
+  const json = await response.json();
+  if (json.response_status === 0) {
+    const response_data: BillLoginResponse = json.response_data;
+    logger.trace({
+      context: "fetchSessionIdV2.success",
+      response_data,
+    });
+    return response_data.sessionId;
+  } else {
+    logger.error({
+      context: "fetchSessionIdV2.failure",
+      response_status: json.response_status,
+      response_message: json.response_message,
+      response_data: json.response_data,
+    });
+    throw new Error(`Failed to process Session ID V2: ${JSON.stringify(json, null, 2)}`);
+  }
+
+}
+
+/**
+ * Fetch a fresh session ID from the Bill API for the V3 APIs
+ */
+export async function fetchSessionIdV3(): Promise<string> {
 
   const request: BillLoginRequest = {
     devKey: BILL_DEVELOPER_KEY!,
@@ -71,6 +123,10 @@ export async function fetchSessionId(): Promise<string> {
     throw new Error(`Failed to fetch session ID: ${text}`);
   } else {
     const data: BillLoginResponse = await response.json();
+    logger.trace({
+      context: "fetchSessionId.success",
+      response_data: data,
+    });
     return data.sessionId;
   }
 

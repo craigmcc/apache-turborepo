@@ -7,11 +7,14 @@
 // Internal Modules ----------------------------------------------------------
 
 import {
-  BillBill, BillBillLineItem,
+  BillAccount,
+  BillBill,
+  BillBillLineItem,
   BillUser,
   BillVendor,
 } from "@repo/bill-api/Models";
 import {
+  Account,
   Bill,
   BillClassifications,
   BillLineItem,
@@ -26,6 +29,23 @@ import {
 } from "@repo/bill-db/Models";
 
 // Public Objects ------------------------------------------------------------
+
+export function createAccount(billAccount: BillAccount): Account {
+  return {
+    id: billAccount.id,
+    accountNumber: billAccount.accountNumber || null,
+    accountType: billAccount.accountType || null,
+    ca1099FormType: billAccount.ca1099FormType || null,
+    ca1099Type: billAccount.ca1099Type || null,
+    createdTime: billAccount.createdTime || null,
+    description: billAccount.description || null,
+    entity: billAccount.entity || null,
+    isActive: billAccount.isActive === "1",
+    name: billAccount.name || null,
+    updatedTime: billAccount.updatedTime || null,
+    parentChartOfAccountId: billAccount.parentChartOfAccountId || null,
+  };
+}
 
 export function createBill(bill: BillBill): Bill {
   return {

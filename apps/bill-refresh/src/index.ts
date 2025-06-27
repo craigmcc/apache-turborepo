@@ -9,8 +9,10 @@ import { exit } from "node:process";
 // Internal Modules -----------------------------------------------------------
 
 import {
+  refreshAccounts,
   refreshBills,
-  refreshSessionId,
+  refreshSessionIdV2,
+  refreshSessionIdV3,
   refreshUsers,
   refreshVendors,
 } from "./Refreshers";
@@ -20,7 +22,9 @@ import {
 export async function main() {
 
   console.log("Bill Refresh started at ", new Date().toLocaleString());
-  const sessionId = await refreshSessionId();
+  const sessionIdV2 = await refreshSessionIdV2();
+  const sessionId = await refreshSessionIdV3();
+  await refreshAccounts(sessionIdV2);
   await refreshUsers(sessionId);
   await refreshVendors(sessionId);
   await refreshBills(sessionId);
@@ -36,6 +40,6 @@ main()
     exit(0);
   })
   .catch((error) => {
-    console.error("Error in Bill Refresh:", JSON.stringify(error, null, 2));
+    console.error("Error in Bill Refresh:", error);
     exit(1);
   });

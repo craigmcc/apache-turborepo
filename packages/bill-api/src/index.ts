@@ -2,6 +2,7 @@
  * Export the relevant action functions.
  */
 
+export * from "./AccountActions";
 export * from "./AuthActions";
 export * from "./BillActions";
 export * from "./Models";

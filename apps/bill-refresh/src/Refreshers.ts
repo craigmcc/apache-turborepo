@@ -7,7 +7,8 @@
 
 // Internal Modules ----------------------------------------------------------
 
-import { fetchSessionId } from "@repo/bill-api/AuthActions";
+import { fetchAccounts } from "@repo/bill-api/AccountActions";
+import { fetchSessionIdV2, fetchSessionIdV3 } from "@repo/bill-api/AuthActions";
 import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
@@ -17,6 +18,7 @@ import {
   Vendor,
 } from "@repo/bill-db/Models";
 import {
+  createAccount,
   createBill,
   createBillClassifications,
   createBillLineItem,
@@ -31,6 +33,24 @@ import {
 } from "./Creators";
 
 // Public Objects ------------------------------------------------------------
+
+export async function refreshAccounts(sessionId: string): Promise<void> {
+
+  console.log("Fetching accounts...");
+
+  const billAccounts = await fetchAccounts(sessionId);
+
+  for (const billAccount of billAccounts) {
+    const account = createAccount(billAccount);
+    await dbBill.account.upsert({
+      where: { id: account.id },
+      create: account,
+      update: account,
+    });
+  }
+
+  console.log("Accounts refreshed:", billAccounts.length);
+}
 
 export async function refreshBills(sessionId: string): Promise<void> {
 
@@ -101,11 +121,14 @@ export async function refreshBills(sessionId: string): Promise<void> {
 
 }
 
-export async function refreshSessionId(): Promise<string> {
-  console.log("Fetching session ID...");
-  const sessionId = await fetchSessionId();
-  console.log("Session ID fetched:", sessionId);
-  return sessionId;
+export async function refreshSessionIdV2(): Promise<string> {
+  console.log("Fetching session ID V2...");
+  return await fetchSessionIdV2();
+}
+
+export async function refreshSessionIdV3(): Promise<string> {
+  console.log("Fetching session ID V3...");
+  return await fetchSessionIdV3();
 }
 
 export async function refreshUsers(sessionId: string): Promise<void> {
