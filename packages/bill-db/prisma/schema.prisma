@@ -47,6 +47,10 @@ model Account {
 
   // Actual Relationships ----------------------------------------------------
 
+  bill                        Bill[]
+  billClassifications         BillClassifications[]
+  billLineItemClassifications BillLineItemClassifications[]
+
   @@map("accounts")
 }
 
@@ -87,16 +91,16 @@ model Bill {
 
   // Potential Relationships -------------------------------------------------
 
-  /// Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
-  payFromChartOfAccountId String?
-
   // Actual Relationships ----------------------------------------------------
 
-  billLineItems   BillLineItem[]
-  classifications BillClassifications?
+  billLineItems           BillLineItem[]
+  classifications         BillClassifications?
+  /// Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
+  payFromChartOfAccountId String?
+  account                 Account?             @relation(fields: [payFromChartOfAccountId], references: [id], onDelete: Cascade)
   /// Bill-generated ID of the vendor (begins with "009")
-  vendorId        String
-  vendor          Vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId                String
+  vendor                  Vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@map("bills")
 }
@@ -112,8 +116,6 @@ model BillClassifications {
 
   /// The Bill-generated ID of the accounting class (begins with "cls")
   accountingClassId String?
-  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
-  chartOfAccountId  String?
   /// The Bill-generated ID of the department (begins with "0de)
   departmentId      String?
   /// The Bill-generated ID of the item (begins with "0ii")
@@ -123,7 +125,10 @@ model BillClassifications {
 
   // Actual Relationships ----------------------------------------------------
 
-  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  bill             Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId String?
+  account          Account? @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
 
   @@map("bills_classifications")
 }
@@ -166,8 +171,6 @@ model BillLineItemClassifications {
 
   /// The Bill-generated ID of the accounting class (begins with "cls")
   accountingClassId String?
-  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
-  chartOfAccountId  String?
   /// The Bill-generated ID of the customer (begins with "0cu")
   customerId        String?
   /// The Bill-generated ID of the department (begins with "dep")
@@ -183,7 +186,10 @@ model BillLineItemClassifications {
 
   // Actual Relationships ----------------------------------------------------
 
-  billLineItem BillLineItem @relation(fields: [billLineItemId], references: [id], onDelete: Cascade)
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId String?
+  account          Account?     @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
+  billLineItem     BillLineItem @relation(fields: [billLineItemId], references: [id], onDelete: Cascade)
 
   @@map("bills_line_items_classifications")
 }
