@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Overview table for Users.
+ * Overview table for Accounts.
  */
 
 // External Imports ----------------------------------------------------------
@@ -19,7 +19,6 @@ import {
 } from "@tanstack/react-table";
 import { BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -28,25 +27,24 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { DataTable } from "@/components/tables/DataTable";
-import { VendorsCsvExport } from "@/components/vendors/VendorsCsvExport";
-import { VendorMoreInfo } from "@/components/vendors/VendorMoreInfo";
-import {
-  formatVendorEmail,
-  formatVendorName,
-} from "@/lib/Formatters";
-import {  VendorPlus } from "@/types/types";
+import { AccountPlus } from "@/types/types";
+import Button from "react-bootstrap/Button";
+import { AccountsCsvExport } from "@/components/accounts/AccountsCsvExport";
+import { AccountMoreInfo } from "@/components/accounts/AccountMoreInfo";
 
 // Public Objects ------------------------------------------------------------
 
-export type VendorsTableProps = {
-  // All Vendors to display in the table
-  allVendors: VendorPlus[];
-}
+export type AccountsTableProps = {
+  // All Accounts to display in the table
+  allAccounts: AccountPlus[];
+};
 
-export function VendorsTable({ allVendors }: VendorsTableProps) {
+export function AccountsTable({ allAccounts }: AccountsTableProps) {
 
+  const [accountFilter, setAccountFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [currentVendor, setCurrentVendor] = useState<VendorPlus | null>(null);
+  const [currentAccount, setCurrentAccount] = useState<AccountPlus | null>(null);
+  const [nameFilter, setNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -54,25 +52,37 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "name", desc: false },
+    {id: "accountNumber", desc: false},
   ]);
-  const [vendorNameFilter, setVendorNameFilter] = useState<string>("");
+  const [typeFilter, setTypeFilter] = useState<string>("");
 
   // Apply selection filters whenever they change
   useEffect(() => {
 
     const filters: ColumnFiltersState = [];
 
-    if (vendorNameFilter.length > 0) {
+    if (accountFilter.length > 0) {
+      filters.push({
+        id: "accountNumber",
+        value: accountFilter,
+      });
+    }
+    if (nameFilter.length > 0) {
       filters.push({
         id: "name",
-        value: vendorNameFilter,
+        value: nameFilter,
+      });
+    }
+    if (typeFilter.length > 0) {
+      filters.push({
+        id: "accountType",
+        value: typeFilter,
       });
     }
 
     setColumnFilters(filters);
 
-  }, [vendorNameFilter]);
+  }, [accountFilter, nameFilter, typeFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -86,82 +96,50 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-    setCurrentVendor(null);
+    setCurrentAccount(null);
     setShowMoreInfo(false);
   }
 
   // Handle the "More Info" modal open
-  function handleMoreInfoOpen(vendor: VendorPlus) {
-    setCurrentVendor(vendor);
+  function handleMoreInfoOpen(account: AccountPlus) {
+    setCurrentAccount(account);
     setShowMoreInfo(true);
   }
 
-  // Column definitions for the Users table
+  // Column definitions for the Accounts table
   const columns = useMemo(() => [
-    columnHelper.accessor(row => formatVendorName(row), {
-      cell: info => {
-        return <span>{formatVendorName(info.row.original)}</span>;
-      },
-      header: "Vendor Name",
-      id: "name",
+    columnHelper.accessor("accountNumber", {
+      header: "GL Account",
+      cell: info => info.getValue(),
     }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatVendorEmail(info.row.original)}</span>
-      },
-      header: "Vendor Email",
-      id: "email",
+    columnHelper.accessor("name", {
+      header: "Account Name",
+      cell: info => info.getValue(),
     }),
-    columnHelper.display({
-      cell: info => {
-        const archived = info.row.original.archived;
-        if (archived !== null) {
-          if (archived) {
-            return <span className="text-warning">Yes</span>;
-          } else {
-            return <span className="text-success">No</span>;
-          }
-        }  else {
-          return <span>n/a</span>;
-        }
-      },
-      header: "Archived",
-      id: "archived",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.accountType || "n/a"}</span>
-      },
+    columnHelper.accessor("accountType", {
       header: "Account Type",
-      id: "accountType",
+      cell: info => info.getValue(),
     }),
     columnHelper.display({
       cell: info => {
-        return <span>{info.row.original.paymentInformation?.payByType || "n/a"}</span>
+        const active = info.row.original.isActive;
+        if (active !== null) {
+          if (active) {
+            return <span className="text-success">Yes</span>;
+          } else {
+            return <span className="text-warning">No</span>;
+          }
+        }
+        return <span className="text-danger">Unknown</span>;
       },
-      header: "Pay By Type",
-      id: "payByType",
+      header: "Active",
+      id: "isActive",
     }),
     columnHelper.display({
+      header: "#Bills",
       cell: info => {
-        return <span>{info.row.original.paymentInformation?.payBySubType || "n/a"}</span>
+        return info.row.original.billClassifications?.length || 0;
       },
-      header: "Pay By SubType",
-      id: "payBySubtype",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.balance_amount || "n/a"}</span>
-      },
-      header: "Balance Amount",
-      id: "balance_amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.balance_lastUpdatedDate || "n/a"}</span>
-      },
-      header: "Balance Last Updated",
-      id: "balance_lastUpdatedDate",
     }),
     columnHelper.display({
       cell: info => {
@@ -179,14 +157,13 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
     }),
   ], []);
 
-  // Overall table instance
-  const table = useReactTable<VendorPlus>({
+  const table = useReactTable({
+    data: allAccounts,
     columns,
-    data: allVendors,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -202,7 +179,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          <span className="me-5">Vendors Table</span>
+          <span className="me-5">Accounts Table</span>
           <Button
             className="bg-info"
             onClick={handleCsvExportOpen}
@@ -214,13 +191,35 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by Vendor Name:</span>
+          <Form.Group controlId="accountFilter">
+            <span>Filter by Account Number:</span>
             <Form.Control
-              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
+              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a number to filter"
+              type="text"
+              value={accountFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId="nameFilter">
+            <span>Filter by Account Name:</span>
+            <Form.Control
+              onChange={e => setNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
               type="text"
-              value={vendorNameFilter}
+              value={nameFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId="typeFilter">
+            <span>Filter by Account Type:</span>
+            <Form.Control
+              onChange={e => setTypeFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a type to filter"
+              type="text"
+              value={typeFilter}
             />
           </Form.Group>
         </Col>
@@ -231,25 +230,23 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
         table={table}
       />
 
-      <VendorsCsvExport
+      <AccountsCsvExport
+        accounts={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
         show={showCsvExport}
-        vendors={table.getSortedRowModel().flatRows.map(row => row.original)}
       />
 
-      <VendorMoreInfo
+      <AccountMoreInfo
+        account={currentAccount}
         hide={handleMoreInfoClose}
         show={showMoreInfo}
-        vendor={currentVendor}
       />
 
     </Container>
   );
+
 }
 
 // Private Objects -----------------------------------------------------------
 
-/**
- * Helper for creating columns in the Users table.
- */
-const columnHelper = createColumnHelper<VendorPlus>();
+const columnHelper = createColumnHelper<AccountPlus>();

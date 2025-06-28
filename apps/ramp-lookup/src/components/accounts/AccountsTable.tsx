@@ -32,7 +32,7 @@ import { AccountingGLAccountPlus } from "@/types/types";
 // Public Objects ------------------------------------------------------------
 
 export type AccountsTableProps = {
-  // All Departments to display in the table
+  // All Accounts to display in the table
   allAccounts: AccountingGLAccountPlus[];
 }
 
