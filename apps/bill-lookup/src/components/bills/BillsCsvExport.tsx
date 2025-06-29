@@ -17,6 +17,15 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
+import {
+  formatAccountNumberAndName,
+  formatBillAmount,
+  formatBillDueDate,
+  formatBillExchangeRate,
+  formatBillInvoiceDate,
+  formatBillPaidAmount,
+  formatVendorName
+} from "@/lib/Formatters";
 import { BillPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -35,24 +44,21 @@ export function BillsCsvExport({ bills, hide, show }: BillsCsvExportProps) {
   const [filename, setFilename] = useState<string>("Bill-Bills.csv");
 
   const data = [
-    [ "Bill Name", "Bill Email","Archived",
-      "Account Type", "Pay By Type", "Pay By Subtype",
-      "Balance Amount", "Balance Last Updated"],
+    [ "Due Date", "Vendor Name", "Invoice Date", "Invoice Number",
+      "Total (USD)", "Paid (Local)", "Exchange Rate", "GL Account", "Archived"],
   ];
 
   for (const bill of bills) {
     data.push([
-      bill.id,
-/*
-      formatBillName(vendor),
-      formatBillEmail(vendor),
-      vendor.archived ? "Yes" : "No",
-      vendor.accountType || "n/a",
-      vendor.paymentInformation?.payByType || "n/a",
-      vendor.paymentInformation?.payBySubType || "n/a",
-      vendor.balance_amount ? vendor.balance_amount.toString() : "0.00",
-      vendor.balance_lastUpdatedDate || "n/a",
-*/
+      formatBillDueDate(bill),
+      formatVendorName(bill.vendor),
+      formatBillInvoiceDate(bill),
+      bill.invoiceNumber || "n/a",
+      formatBillAmount(bill),
+      formatBillPaidAmount(bill),
+      formatBillExchangeRate(bill),
+      formatAccountNumberAndName(bill.classifications?.account),
+      bill.archived ? "Yes" : "No",
     ]);
   }
 

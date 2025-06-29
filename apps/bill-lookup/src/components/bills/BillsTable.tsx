@@ -30,7 +30,15 @@ import Row from "react-bootstrap/Row";
 import { DataTable } from "@/components/tables/DataTable";
 import { BillsCsvExport } from "@/components/bills/BillsCsvExport";
 import { BillMoreInfo } from "@/components/bills/BillMoreInfo";
-import { formatVendorName } from "@/lib/Formatters";
+import {
+  formatAccountNumberAndName,
+  formatBillAmount,
+  formatBillDueDate,
+  formatBillExchangeRate,
+  formatBillInvoiceDate,
+  formatBillPaidAmount,
+  formatVendorName
+} from "@/lib/Formatters";
 import { BillPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -107,12 +115,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
   const columns = useMemo(() => [
     columnHelper.accessor("dueDate", {
       cell: info => {
-        const dueDate = info.getValue();
-        if (dueDate) {
-          return <span>{new Date(dueDate).toLocaleDateString()}</span>;
-        } else {
-          return <span>n/a</span>
-        }
+        return <span>{formatBillDueDate(info.row.original)}</span>;
       },
       filterFn: dateRangeFilterFn,
       header: "Due Date",
@@ -125,59 +128,60 @@ export function BillsTable({ allBills }: BillsTableProps) {
       header: "Vendor Name",
       id: "name",
     }),
-/*
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatBillInvoiceDate(info.row.original)}</span>
+      },
+      header: "Invoice Date",
+      id: "invoiceDate",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.invoiceNumber || "n/a"}</span>;
+      },
+      header: "Invoice Number",
+      id: "invoiceNumber",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatBillAmount(info.row.original)}</span>;
+      },
+      header: "Total (USD)",
+      id: "amount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatBillPaidAmount(info.row.original)}</span>
+      },
+      header: "Paid (Local)",
+      id: "paidAmount",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatBillExchangeRate(info.row.original) || "n/a"}</span>;
+      },
+      header: "Exchange Rate",
+      id: "exchangeRate",
+    }),
+    columnHelper.display({
+      cell: info => {
+        return <span>{formatAccountNumberAndName(info.row.original.classifications?.account)}</span>
+      },
+      header: "GL Account",
+      id: "accountNumber",
+    }),
     columnHelper.display({
       cell: info => {
         const archived = info.row.original.archived;
-        if (archived !== null) {
-          if (archived) {
-            return <span className="text-warning">Yes</span>;
-          } else {
-            return <span className="text-success">No</span>;
-          }
-        }  else {
-          return <span>n/a</span>;
+        if (archived) {
+          return <span className="text-warning">Yes</span>;
+        } else {
+          return <span className="text-success">No</span>;
         }
       },
       header: "Archived",
       id: "archived",
     }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.accountType || "n/a"}</span>
-      },
-      header: "Account Type",
-      id: "accountType",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.paymentInformation?.payByType || "n/a"}</span>
-      },
-      header: "Pay By Type",
-      id: "payByType",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.paymentInformation?.payBySubType || "n/a"}</span>
-      },
-      header: "Pay By SubType",
-      id: "payBySubtype",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.balance_amount || "n/a"}</span>
-      },
-      header: "Balance Amount",
-      id: "balance_amount",
-    }),
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.balance_lastUpdatedDate || "n/a"}</span>
-      },
-      header: "Balance Last Updated",
-      id: "balance_lastUpdatedDate",
-    }),
-*/
     columnHelper.display({
       cell: info => {
         return (

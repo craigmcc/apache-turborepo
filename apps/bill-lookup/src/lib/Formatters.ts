@@ -5,6 +5,8 @@
 // Internal Imports ----------------------------------------------------------
 
 import {
+  AccountPlus,
+  BillPlus,
   UserPlus,
   VendorPlus,
 } from "@/types/types";
@@ -12,22 +14,64 @@ import {
 // Public Objects ------------------------------------------------------------
 
 /**
- * Format a Bill user email.
- *
- * @param user User object
+ * Format an Account number and name
  */
-export function formatUserEmail(user: UserPlus | null | undefined): string {
-  if (user && user.email) {
-    return `${user.email}`;
+export function formatAccountNumberAndName(account: AccountPlus | null | undefined): string {
+  if (account && account.accountNumber && account.name) {
+    return `${account.accountNumber} - ${account.name}`;
+  } else if (account && account.accountNumber) {
+    return `${account.accountNumber} - n/a`;
+  } else if (account && account.name) {
+    return `n/a - ${account.name}`;
   } else {
     return "n/a";
   }
 }
 
 /**
- * Format a Bill user name.
- *
- * @param user User object
+ * Format a Bill amount
+ */
+export function formatBillAmount(bill: BillPlus | null | undefined): string {
+  return bill?.amount?.toFixed(2) || "n/a";
+  }
+
+/**
+ * Format a Bill due date
+ */
+export function formatBillDueDate(bill: BillPlus | null | undefined): string {
+  return bill?.dueDate ? new Date(bill.dueDate).toLocaleDateString() : "n/a";
+}
+
+/**
+ * Format a Bill exchange rate
+ */
+export function formatBillExchangeRate(bill: BillPlus | null | undefined): string {
+  return bill?.exchangeRate?.toFixed(2) || "n/a";
+}
+
+/**
+ * Format a Bill invoice date
+ */
+export function formatBillInvoiceDate(bill: BillPlus | null | undefined): string {
+  return bill?.invoiceDate ? new Date(bill.invoiceDate).toLocaleDateString() : "n/a";
+}
+
+/**
+ * Format a Bill paid amount
+ */
+export function formatBillPaidAmount(bill: BillPlus | null | undefined): string {
+  return bill?.paidAmount?.toFixed(2) || "n/a";
+}
+
+/**
+ * Format a User email.
+ */
+export function formatUserEmail(user: UserPlus | null | undefined): string {
+  return user?.email || "n/a";
+}
+
+/**
+ * Format a User name.
  */
 export function formatUserName(user: UserPlus | null | undefined): string {
   if (user && user.firstName && user.lastName) {
@@ -38,54 +82,31 @@ export function formatUserName(user: UserPlus | null | undefined): string {
 }
 
 /**
- * Format a Bill user role description.
+ * Format a User role description.
  *
  * @param user User object
  */
 export function formatUserRoleDescription(user: UserPlus | null | undefined): string {
-  if (user && user.roleDescription) {
-    return `${user.roleDescription}`;
-  } else {
-    return "n/a";
-  }
+  return user?.roleDescription || "n/a";
 }
 
 /**
- * Format a Bill user role type.
- *
- * @param user User object
+ * Format a User role type.
  */
 export function formatUserRoleType(user: UserPlus | null | undefined): string {
-  if (user && user.roleType) {
-    return `${user.roleType}`;
-  } else {
-    return "n/a";
-  }
+  return user?.roleType || "n/a";
 }
 
 /**
- * Format a Bill vendor email.
- *
- * @param vendor Vendor object
+ * Format a Vendor email.
  */
 export function formatVendorEmail(vendor: VendorPlus | null | undefined): string {
-  if (vendor && vendor.email) {
-    return `${vendor.email}`;
-  } else {
-    return "n/a";
-  }
+  return vendor?.email || "n/a";
 }
 
 /**
- * Format a Bill vendor name.
- *
- * @param vendor Vendor object
+ * Format a Vendor name.
  */
 export function formatVendorName(vendor: VendorPlus | null | undefined): string {
-  if (vendor && vendor.name) {
-    return `${vendor.name}`;
-  } else {
-    return "n/a";
-  }
+  return vendor?.name || "n/a";
 }
-
