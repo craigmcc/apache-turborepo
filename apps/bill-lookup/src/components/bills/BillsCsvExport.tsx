@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Modal for exporting Vendors to CSV.
+ * Modal for exporting Bills to CSV.
  */
 
 // External Imports ----------------------------------------------------------
@@ -17,43 +17,42 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import {
-  formatVendorEmail,
-  formatVendorName
-} from "@/lib/Formatters";
-import { VendorPlus } from "@/types/types";
+import { BillPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
-export type VendorsCsvExportProps = {
+export type BillsCsvExportProps = {
+  // Bills to export
+  bills: BillPlus[];
   // Function to close the modal
   hide: () => void;
   // Current "show" state of the modal
   show: boolean;
-  // Vendors to export
-  vendors: VendorPlus[];
 }
 
-export function VendorsCsvExport({ hide, show, vendors }: VendorsCsvExportProps) {
+export function BillsCsvExport({ bills, hide, show }: BillsCsvExportProps) {
 
-  const [filename, setFilename] = useState<string>("Bill-Vendors.csv");
+  const [filename, setFilename] = useState<string>("Bill-Bills.csv");
 
   const data = [
-    [ "Vendor Name", "Vendor Email","Archived",
+    [ "Bill Name", "Bill Email","Archived",
       "Account Type", "Pay By Type", "Pay By Subtype",
       "Balance Amount", "Balance Last Updated"],
   ];
 
-  for (const vendor of vendors) {
+  for (const bill of bills) {
     data.push([
-      formatVendorName(vendor),
-      formatVendorEmail(vendor),
+      bill.id,
+/*
+      formatBillName(vendor),
+      formatBillEmail(vendor),
       vendor.archived ? "Yes" : "No",
       vendor.accountType || "n/a",
       vendor.paymentInformation?.payByType || "n/a",
       vendor.paymentInformation?.payBySubType || "n/a",
       vendor.balance_amount ? vendor.balance_amount.toString() : "0.00",
       vendor.balance_lastUpdatedDate || "n/a",
+*/
     ]);
   }
 
@@ -68,7 +67,7 @@ export function VendorsCsvExport({ hide, show, vendors }: VendorsCsvExportProps)
       size="xl"
     >
       <Modal.Header closeButton>
-        <Modal.Title>Vendors CSV Export</Modal.Title>
+        <Modal.Title>Bills CSV Export</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>

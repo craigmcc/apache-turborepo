@@ -29,22 +29,23 @@ export type AccountPlus = Account & {
 
 export type BillPlus = Bill & {
   account?: AccountPlus | null;
-  classifications?: BillClassifications[] | null;
-  billLineItems?: BillLineItem[] | null;
+  classifications?: BillClassificationsPlus | null;
+  lineItems?: BillLineItemPlus[] | null;
+  vendor?: VendorPlus | null;
 }
 
 export type BillClassificationsPlus = BillClassifications & {
-  account?: AccountPlus | null;
+  account?: Account | null;
   bill?: BillPlus | null;
 }
 
 export type BillLineItemPlus = BillLineItem & {
   bill?: BillPlus | null;
-  classifications?: BillLineItemClassifications[] | null;
+  classifications?: BillLineItemClassificationsPlus | null;
 }
 
 export type BillLineItemClassificationsPlus = BillLineItemClassifications & {
-  account?: AccountPlus | null;
+  account?: Account | null;
   billLineItem?: BillLineItemPlus | null;
 }
 

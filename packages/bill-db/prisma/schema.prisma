@@ -93,8 +93,8 @@ model Bill {
 
   // Actual Relationships ----------------------------------------------------
 
-  billLineItems           BillLineItem[]
   classifications         BillClassifications?
+  lineItems               BillLineItem[]
   /// Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
   payFromChartOfAccountId String?
   account                 Account?             @relation(fields: [payFromChartOfAccountId], references: [id], onDelete: Cascade)
