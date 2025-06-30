@@ -32,7 +32,7 @@ export default async function BillsPage() {
       vendor: true,
     },
     orderBy: [
-      { dueDate: "asc" },
+      { invoiceDate: "asc" },
       { vendorName: "asc" },
     ],
   });

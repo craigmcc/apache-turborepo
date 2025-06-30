@@ -14,6 +14,15 @@ import Table from "react-bootstrap/Table";
 
 // Internal Imports ----------------------------------------------------------
 
+import {
+  formatAccountNumberAndName,
+  formatBillAmount,
+  formatBillDueDate,
+  formatBillExchangeRate,
+  formatBillInvoiceDate,
+  formatBillPaidAmount,
+  formatVendorName
+} from "@/lib/Formatters";
 import { BillPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
@@ -50,145 +59,111 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
 
           <Row>
 
-            <Col xs={12} md={6}>
-              <h5 className="bg-primary-subtle">Bill Information</h5>
+            <Col xs={12} md={5}>
+              <h5 className="bg-primary-subtle text-center">Bill Information</h5>
               <Table size="sm" bordered>
                 <tbody>
                 <tr>
                   <td>id</td>
                   <td>{bill.id}</td>
                 </tr>
-{/*
                 <tr>
-                  <td>accountType</td>
-                  <td>{vendor.accountType}</td>
+                  <td>amount</td>
+                  <td>{formatBillAmount(bill)}</td>
                 </tr>
                 <tr>
                   <td>archived</td>
-                  <td>{vendor.archived}</td>
+                  <td>{bill.archived ? "Yes" : "No"}</td>
                 </tr>
                 <tr>
-                  <td>balance_amount</td>
-                  <td>{vendor.balance_amount}</td>
+                  <td>dueDate</td>
+                  <td>{formatBillDueDate(bill)}</td>
                 </tr>
                 <tr>
-                  <td>email</td>
-                  <td>{vendor.email}</td>
+                  <td>exchangeRate</td>
+                  <td>{formatBillExchangeRate(bill)}</td>
                 </tr>
                 <tr>
-                  <td>name</td>
-                  <td>{vendor.name}</td>
+                  <td>invoiceDate</td>
+                  <td>{formatBillInvoiceDate(bill)}</td>
                 </tr>
                 <tr>
-                  <td>networkStatus</td>
-                  <td>{vendor.networkStatus}</td>
+                  <td>invoiceNumber</td>
+                  <td>{bill.invoiceNumber || "n/a"}</td>
                 </tr>
-*/}
+                <tr>
+                  <td>paidAmount</td>
+                  <td>{formatBillPaidAmount(bill)}</td>
+                </tr>
+                <tr>
+                  <td>GL Account</td>
+                  <td>{formatAccountNumberAndName(bill.classifications?.account)}</td>
+                </tr>
+                <tr>
+                  <td>vendor.name</td>
+                  <td>{formatVendorName(bill.vendor)}</td>
+                </tr>
                 </tbody>
               </Table>
             </Col>
 
-{/*
-            <Col xs={12} md={6}>
-              <h5 className="bg-primary-subtle">Bill Address</h5>
+            <Col xs={12} md={7}>
+              <h5 className="bg-primary-subtle text-center">Bill Classifications</h5>
               <Table size="sm" bordered>
                 <tbody>
                 <tr>
-                  <td>line1</td>
-                  <td>{vendor.address?.line1 || "n/a"}</td>
+                  <td>accountingClassId</td>
+                  <td>{bill.classifications?.accountingClassId || "n/a"}</td>
                 </tr>
                 <tr>
-                  <td>line2</td>
-                  <td>{vendor.address?.line2 || "n/a"}</td>
+                  <td>chartOfAccountId</td>
+                  <td>{bill.classifications?.chartOfAccountId || "n/a"}</td>
                 </tr>
                 <tr>
-                  <td>city</td>
-                  <td>{vendor.address?.city || "n/a"}</td>
+                  <td>departmentId</td>
+                  <td>{bill.classifications?.departmentId || "n/a"}</td>
                 </tr>
                 <tr>
-                  <td>stateOrProvince</td>
-                  <td>{vendor.address?.stateOrProvince || "n/a"}</td>
+                  <td>itemId</td>
+                  <td>{bill.classifications?.itemId || "n/a"}</td>
                 </tr>
                 <tr>
-                  <td>country</td>
-                  <td>{vendor.address?.country}</td>
-                </tr>
-                <tr>
-                  <td>zipOrPostalCode</td>
-                  <td>{vendor.address?.zipOrPostalCode}</td>
-                </tr>
-                <tr>
-                  <td>countryName</td>
-                  <td>{vendor.address?.countryName}</td>
+                  <td>locationId</td>
+                  <td>{bill.classifications?.locationId || "n/a"}</td>
                 </tr>
                 </tbody>
               </Table>
             </Col>
-*/}
 
           </Row>
 
           <Row>
 
-{/*
-            <Col xs={12} md={6}>
-              <h5 className="bg-primary-subtle">Additional Information</h5>
-              <Table size="sm" bordered>
-                <tbody>
-                <tr>
-                  <td>combinePayment</td>
-                  <td>{vendor.additionalInfo?.combinePayment || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>companyName</td>
-                  <td>{vendor.additionalInfo?.companyName || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>leadTimeInDays</td>
-                  <td>{vendor.additionalInfo?.leadTimeInDays || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>taxId</td>
-                  <td>{vendor.additionalInfo?.taxId || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>taxIdType</td>
-                  <td>{vendor.additionalInfo?.taxIdType || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>track1099</td>
-                  <td>{vendor.additionalInfo?.track1099 || "n/a"}</td>
-                </tr>
-                </tbody>
-              </Table>
+            <Col xs={12} md={12}>
+              <h5 className="bg-primary-subtle text-center">Line Items</h5>
+              { bill.lineItems && bill.lineItems.length > 0 ? (
+                <Table size="sm" bordered>
+                  <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>GL Account</th>
+                    <th className="text-end">Amount (Local)</th>
+                  </tr>
+                  <tbody>
+                  {bill.lineItems!.map(lineItem => (
+                    <tr key={lineItem.id}>
+                      <td>{lineItem.id}</td>
+                      <td>{lineItem.description || "n/a"}</td>
+                      <td>{formatAccountNumberAndName(lineItem.classifications?.account)}</td>
+                      <td className="text-end">{lineItem.amount?.toFixed(2) || "n/a"}</td>
+                    </tr>
+                  ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p className="text-center">No line items available for this bill.</p>
+              )}
             </Col>
-*/}
-
-{/*
-            <Col xs={12} md={6}>
-              <h5 className="bg-primary-subtle">Payment Information</h5>
-              <Table size="sm" bordered>
-                <tbody>
-                <tr>
-                  <td>email</td>
-                  <td>{vendor.paymentInformation?.email || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>payBySubType</td>
-                  <td>{vendor.paymentInformation?.payBySubType || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>payByType</td>
-                  <td>{vendor.paymentInformation?.payByType || "n/a"}</td>
-                </tr>
-                <tr>
-                  <td>payeeName</td>
-                  <td>{vendor.paymentInformation?.payeeName || "n/a"}</td>
-                </tr>
-                </tbody>
-              </Table>
-            </Col>
-*/}
 
           </Row>
 

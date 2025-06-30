@@ -52,7 +52,8 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentBill, setCurrentBill] = useState<BillPlus | null>(null);
-  const [fromDateFilter, setFromDateFilter] = useState<string>("");
+  const [fromDueDateFilter, setFromDueDateFilter] = useState<string>("");
+  const [fromInvoiceDateFilter, setFromInvoiceDateFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -62,7 +63,8 @@ export function BillsTable({ allBills }: BillsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "name", desc: false },
   ]);
-  const [toDateFilter, setToDateFilter] = useState<string>("");
+  const [toDueDateFilter, setToDueDateFilter] = useState<string>("");
+  const [toInvoiceDateFilter, setToInvoiceDateFilter] = useState<string>("");
   const [vendorNameFilter, setVendorNameFilter] = useState<string>("");
 
   // Apply selection filters whenever they change
@@ -70,11 +72,19 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     const filters: ColumnFiltersState = [];
 
-    const dueDateFilter = fromDateFilter + "|" + toDateFilter;
+    const dueDateFilter = fromDueDateFilter + "|" + toDueDateFilter;
     if (dueDateFilter.length > 1) {
       filters.push({
         id: "dueDate",
         value: dueDateFilter,
+      });
+    }
+
+    const invoiceDateFilter = fromInvoiceDateFilter + "|" + toInvoiceDateFilter;
+    if (invoiceDateFilter.length > 1) {
+      filters.push({
+        id: "invoiceDate",
+        value: invoiceDateFilter,
       });
     }
 
@@ -87,7 +97,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     setColumnFilters(filters);
 
-  }, [fromDateFilter, toDateFilter, vendorNameFilter]);
+  }, [fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -128,10 +138,11 @@ export function BillsTable({ allBills }: BillsTableProps) {
       header: "Vendor Name",
       id: "name",
     }),
-    columnHelper.display({
+    columnHelper.accessor("invoiceDate", {
       cell: info => {
         return <span>{formatBillInvoiceDate(info.row.original)}</span>
       },
+      filterFn: dateRangeFilterFn,
       header: "Invoice Date",
       id: "invoiceDate",
     }),
@@ -233,24 +244,46 @@ export function BillsTable({ allBills }: BillsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId={fromDateFilter}>
+          <Form.Group controlId={fromDueDateFilter}>
             <span>Filter by From Due Date:</span>
             <Form.Control
-              onChange={e => setFromDateFilter(e.target.value.toLowerCase())}
+              onChange={e => setFromDueDateFilter(e.target.value.toLowerCase())}
               placeholder="Enter YYYYMMDD"
               type="text"
-              value={fromDateFilter}
+              value={fromDueDateFilter}
             />
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group controlId={toDateFilter}>
+          <Form.Group controlId={toDueDateFilter}>
             <span>Filter by To Due Date:</span>
             <Form.Control
-              onChange={e => setToDateFilter(e.target.value.toLowerCase())}
+              onChange={e => setToDueDateFilter(e.target.value.toLowerCase())}
               placeholder="Enter YYYYMMDD"
               type="text"
-              value={toDateFilter}
+              value={toDueDateFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={fromInvoiceDateFilter}>
+            <span>Filter by From Invoice Date:</span>
+            <Form.Control
+              onChange={e => setFromInvoiceDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
+              type="text"
+              value={fromInvoiceDateFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={toInvoiceDateFilter}>
+            <span>Filter by To Invoice Date:</span>
+            <Form.Control
+              onChange={e => setToInvoiceDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
+              type="text"
+              value={toInvoiceDateFilter}
             />
           </Form.Group>
         </Col>
