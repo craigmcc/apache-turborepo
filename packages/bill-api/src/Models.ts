@@ -94,7 +94,39 @@ export type BillAddress = {
 }
 
 /**
- * A Bill "bill" object.
+ * A Bill "approver" object (V2).
+ */
+export type BillApprover = {
+  // The Bill-generated ID of the approver record
+  id: string;
+  /// The Bill bill or vendor credit ID being approved (begins with "00n" for bills, "vcr" for vendor credits ???)
+  billId?: string;
+  /// Is this approval active? (1=yes, 2=no)
+  isActive?: string;
+  /// Timestamp of the last approval reminder sent for this approval
+  lastReminderDate?: string;
+  /// Zero-relative index of this approver in the approval chain
+  sortOrder?: number;
+  /// Status of this approval (will be replaced during refresh)
+  status?: string;
+  /// Timestamp of the last stattus change
+  statusChangedDate?: string;
+  /// The Bill user ID of the approver (begins with "006")
+  usersId?: string;
+}
+
+export const BillApproverStatuses = new Map<string, string>([
+  ["0", "Waiting"],
+  ["1", "Viewed"],
+  ["2", "Rerouted"],
+  ["3", "Denied"],
+  ["4", "Approved"],
+  ["5", "Upcoming"],
+  ["6", "Stale"],
+]);
+
+/**
+ * A Bill "bill" object (V3).
  */
 export type BillBill = {
   // The Bill-generated bill ID (begins with "00n")
@@ -161,7 +193,7 @@ export type BillBillClassifications = {
 }
 
 /**
- * A line item on a bill.
+ * A line item on a bill (V3).
  */
 export type BillBillLineItem = {
   // The Bill-generated ID of the bill line item (begins with "bli")
@@ -261,7 +293,7 @@ export type BillLoginResponse = {
 }
 
 /**
- * A Bill User object.
+ * A Bill User object (V3).
  */
 export type BillUser = {
   // The Bill user ID (begins with "006")
@@ -283,7 +315,7 @@ export type BillUser = {
 }
 
 /**
- * A Bill User Role object.
+ * A Bill User Role object (V3).
  */
 export type BillUserRole = {
   // The Bill user role description
@@ -303,7 +335,7 @@ export type BillUserRoleType =
   "PARTNER" | "PAYER" | "PURCHASE_REQUESTER" | "REVIEWER" | "UNDEFINED";
 
 /**
- * A Bill Vendor object.
+ * A Bill Vendor object (V3).
  */
 export type BillVendor = {
   // The Bill vendor ID (begins with "009")
@@ -441,3 +473,96 @@ export type BillVendorVirtualCardStatus =
   "PAY_FOR_YOUR_OPPORTUNITY" | "PAYER_ASSIST" | "PENDING" |
   "PHONE_NUMBER_NEEDED" | "RECRUITING" | "REQUIRE_MORE_INFO" |
   "UNDEFINED" | "UNKNOWN" | "VERBAL_COMMITMENT";
+
+/**
+ * A Bill Vendor Credit object (V3).
+ */
+export type BillVendorCredit = {
+  // The Bill-generated ID of the vendor credit (begins with "vcr")
+  id: string;
+  // Amount of the vendor credit
+  amount?: number;
+  // Amount of the vendor credit that has been applied to invoices
+  appliedAmount?: number;
+  // NOTE: Only one of the following two properties should be set.
+  // ID of the Bank Account for this vendor credit (begins with "bac")
+  applyToBankAccountId?: string;
+  // ID of the Chart of Accounts for this vendor credit (begins with "0ca")
+  applyToChartOfAccountId?: string;
+  // Has this vendor credit been archived?
+  archived?: boolean;
+  // Date this vendor credit was created (yyyy-MM-dd)
+  createdDate?: string;
+  // Vendor credit description
+  description?: string;
+  // User-generated reference number for this vendor credit
+  referenceNumber?: string;
+  // Usage information for this vendor credit
+  usage?: BillVendorCreditListUsage;
+  // Line items for this vendor credit
+  vendorCreditLineItems?: BillVendorCreditLineItem[];
+  // Status of this vendor credit
+  vendorCreditStatus?: BillVendorCreditStatus;
+  // ID of the Vendor this credit is for (begins with "009")
+  vendorId?: string;
+}
+
+export type BillVendorCreditStatus =
+  "FULLY_APPLIED" | "NOT_APPLIED" | "PARTIALLY_APPLIED" | "UNDEFINED";
+
+/**
+ * A Bill Vendor Credit Line Item object (V3).
+ */
+export type BillVendorCreditLineItem = {
+  // The Bill-generated ID of the vendor credit line item (begins with "vci")
+  id: string;
+  // Amount for this line item
+  amount?: number;
+  // Classifications for this vendor credit line item
+  classifications?: BillVendorCreditLineItemClassifications;
+  // Description of this line item
+  description?: string;
+}
+
+/**
+ * A Bill Vendor Credit Line Item Classifications object (V3).
+ */
+export type BillVendorCreditLineItemClassifications = {
+  // The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId?: string;
+  // The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId: string;
+  // The Bill-generated ID of the customer (begins with "0cu")
+  customerId?: string;
+  // The Bill-generated ID of the department (begins with "0de")
+  departmentId?: string;
+  // The Bill-generated ID of the employee (begins with "emp")
+  employeeId?: string;
+  // The Bill-generated ID of the item (begins with "0ii")
+  itemId?: string;
+  // The Bill-generated ID of the job (begins with "job")
+  jobId?: string;
+  // The Bill-generated ID of the location (begins with "loc")
+  locationId?: string;
+}
+
+/**
+ * A Bill Vendor Credit List Usage object (V3).
+ */
+export type BillVendorCreditListUsage = {
+  // Amount of the vendor credit that has been applied
+  amount?: number;
+  // ID of the bill to which this vendor credit has been applied (begins with "00n")
+  billId?: string;
+  // The Bill-generated ID of the payment
+  paymentId?: string;
+
+  // Amount of the vendor credit that has been applied to invoices
+  appliedAmount?: number;
+  // Amount of the vendor credit that is still available
+  availableAmount?: number;
+  // Date this vendor credit was created (yyyy-MM-dd)
+  createdDate?: string;
+  // User-generated reference number for this vendor credit
+  referenceNumber?: string;
+}
