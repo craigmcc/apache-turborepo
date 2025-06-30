@@ -498,7 +498,7 @@ export type BillVendorCredit = {
   // User-generated reference number for this vendor credit
   referenceNumber?: string;
   // Usage information for this vendor credit
-  usage?: BillVendorCreditListUsage;
+  usage?: BillVendorCreditUsage;
   // Line items for this vendor credit
   vendorCreditLineItems?: BillVendorCreditLineItem[];
   // Status of this vendor credit
@@ -547,22 +547,13 @@ export type BillVendorCreditLineItemClassifications = {
 }
 
 /**
- * A Bill Vendor Credit List Usage object (V3).
+ * A Bill Vendor Credit Usage object (V3).
  */
-export type BillVendorCreditListUsage = {
+export type BillVendorCreditUsage = {
   // Amount of the vendor credit that has been applied
   amount?: number;
   // ID of the bill to which this vendor credit has been applied (begins with "00n")
   billId?: string;
   // The Bill-generated ID of the payment
   paymentId?: string;
-
-  // Amount of the vendor credit that has been applied to invoices
-  appliedAmount?: number;
-  // Amount of the vendor credit that is still available
-  availableAmount?: number;
-  // Date this vendor credit was created (yyyy-MM-dd)
-  createdDate?: string;
-  // User-generated reference number for this vendor credit
-  referenceNumber?: string;
 }

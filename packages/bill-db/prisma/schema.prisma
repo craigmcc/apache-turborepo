@@ -47,9 +47,11 @@ model Account {
 
   // Actual Relationships ----------------------------------------------------
 
-  bills                       Bill[]
-  billClassifications         BillClassifications[]
-  billLineItemClassifications BillLineItemClassifications[]
+  bills                               Bill[]
+  billClassifications                 BillClassifications[]
+  billLineItemClassifications         BillLineItemClassifications[]
+  vendorCredits                       VendorCredit[]
+  VendorCreditLineItemClassifications VendorCreditLineItemClassifications[]
 
   @@map("accounts")
 }
@@ -101,6 +103,7 @@ model Bill {
   /// Bill-generated ID of the vendor (begins with "009")
   vendorId                String
   vendor                  Vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorCreditUsages      VendorCreditUsage[]
 
   @@map("bills")
 }
@@ -300,6 +303,7 @@ model Vendor {
   autoPay            VendorAutoPay?
   bills              Bill[]
   paymentInformation VendorPaymentInformation?
+  vendorCredits      VendorCredit[]
   virtualCard        VendorVirtualCard? // Lifted from paymentInformation
 
   @@map("vendors")
@@ -407,6 +411,136 @@ enum VendorBankAccountStatus {
   NO_ACCOUNT
   NO_NET_LINKED_ACCOUNT
   UNDEFINED
+}
+
+// Vendor Credits (https://developer.bill.com/reference/listvendorcredits)
+model VendorCredit {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor Credit (begins with "vcr")
+  id                 String              @id
+  /// Amount of the vendor credit
+  amount             Float?
+  /// Amount of the vendor credit that has been applied to invoices
+  appliedAmount      Float?
+  /// Has this Vendor Credit been archived?
+  archived           Boolean?
+  /// Date this vendo credit was created (yyyy-MM-dd)
+  createdDate        String?
+  /// Description of this Vendor Credit
+  description        String?
+  /// User-generated reference number for this Vendor Credit
+  referenceNumber    String?
+  /// Status of this Vendor Credit
+  vendorCreditStatus VendorCreditStatus?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// ID of the Bank Account for this Vendor Creit (begins with "bac")
+  applyToBankAccountId String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// ID of the Chart of Accounts for this Vendor Credit (begins with "0ca")
+  applyToChartOfAccountId String?
+  account                 Account?               @relation(fields: [applyToChartOfAccountId], references: [id], onDelete: Cascade)
+  /// VendorCreditUsage related to this Vendor Credit
+  usage                   VendorCreditUsage?
+  /// Bill-generated ID of the vendor (begins with "009")
+  vendorId                String
+  vendor                  Vendor                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  /// Line items for this Vendor Credit
+  vendorCreditLineItems   VendorCreditLineItem[]
+
+  @@map("vendors_credits")
+}
+
+model VendorCreditLineItem {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor Credit Line Item (begins with "vci")
+  id          String  @id
+  /// Amount for this Vendor Credit Line Item
+  amount      Float?
+  /// Description of this Vendor Credit Line Item
+  description String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// Classifications for this Vendor Credit Line Item
+  classifications VendorCreditLineItemClassifications?
+  /// Primary key for the Vendor Credit this line item belongs to (begins with "vcr")
+  vendorCreditId  String
+  vendorCredit    VendorCredit                         @relation(fields: [vendorCreditId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_credits_line_items")
+}
+
+model VendorCreditLineItemClassifications {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor Credit Line Item Classifications
+  id String @id
+
+  // Potential Relationships -------------------------------------------------
+
+  /// The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId String?
+  /// The Bill-generated ID of the customer (begins with "0cu")
+  customerId        String?
+  /// The Bill-generated ID of the department (begins with "dep")
+  departmentId      String?
+  /// The Bill-generated ID of the employee (begins with "emp")
+  employeeId        String?
+  /// The Bill-generated ID of the item (begins with "0ii")
+  itemId            String?
+  /// The Bill-generated ID of the job (begins with "job")
+  jobId             String?
+  /// The Bill-generated ID of the location (begins with "loc")
+  locationId        String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// ID of the Chart of Accounts for this Vendor Credit Line Item (begins with "0ca")
+  chartOfAccountId     String?
+  account              Account?             @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
+  /// The Vendor Credit Line Item this classification belongs to
+  vendorCreditLineItem VendorCreditLineItem @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("vendors_credits_line_items_classifications")
+}
+
+enum VendorCreditStatus {
+  FULLY_APPLIED
+  NOT_APPLIED
+  PARTIALLY_APPLIED
+  UNDEFINED
+}
+
+model VendorCreditUsage {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// ID of the Vendor Credit Usage (begins with "vcr")
+  vendorCreditId String @id
+  /// Amount of the vendor credit that has been applied
+  amount         Float?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Bill-generated ID of the payment
+  paymentId String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// ID of Bill to which this Vendor Credit was applied (begins with "00n")
+  billId       String?
+  bill         Bill?         @relation(fields: [billId], references: [id])
+  /// Vendor Credit that was used to pay the bill
+  vendorCredit VendorCredit? @relation(fields: [vendorCreditId], references: [id])
+
+  @@map("vendors_credits_usage")
 }
 
 enum VendorNetworkStatus {
