@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Server Actions for Vendors.
+ * Server Actions for Vendor Credits.
  */
 
 // External Modules ----------------------------------------------------------
@@ -9,7 +9,7 @@
 // Internal Modules ----------------------------------------------------------
 
 import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
-import type { BillListResponse, BillVendor } from "./Models";
+import type { BillListResponse, BillVendorCredit } from "./Models";
 
 // Private Objects ------------------------------------------------------------
 
@@ -27,9 +27,9 @@ if (!BILL_PROD_API_BASE_URL) {
 // Public Objects ------------------------------------------------------------
 
 /**
- * Query parameters for fetchVendors().
+ * Query parameters for fetchVendorCredits().
  */
-export type FetchVendorsParams = {
+export type FetchVendorCreditsParams = {
   // TODO: support filtering and sorting options.
   // Number of results to return on each page (2-100). [20]
   max?: number;
@@ -38,16 +38,16 @@ export type FetchVendorsParams = {
 }
 
 /**
- * Fetch all or selected Vendors from the Bill API.
+ * Fetch all or selected Vendor Credits from the Bill API.
  */
-export async function fetchVendors(
+export async function fetchVendorCredits(
   // The session ID to use for authentication
   sessionId: string,
   // Optional query parameters for filtering and pagination
-  params: FetchVendorsParams
-): Promise<BillListResponse<BillVendor>> {
+  params: FetchVendorCreditsParams
+): Promise<BillListResponse<BillVendorCredit>> {
 
-  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/vendors`);
+  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/vendor-credits`);
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
       url.searchParams.append(key, value.toString());
@@ -66,14 +66,14 @@ export async function fetchVendors(
   if (!response.ok) {
     const body = await response.json();
     logger.error({
-      context: "fetchVendors",
-      message: "Failed to fetch vendors",
+      context: "fetchVendorCredits",
+      message: "Failed to fetch vendor credits",
       status: response.status,
       url: url.toString(),
       body,
     });
     const text = JSON.stringify(body, null, 2);
-    throw new Error(`Error fetching vendors: ${text}`);
+    throw new Error(`Error fetching vendor credits: ${text}`);
   } else {
     return await response.json();
   }

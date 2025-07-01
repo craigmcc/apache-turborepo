@@ -445,7 +445,7 @@ model VendorCredit {
   applyToChartOfAccountId String?
   account                 Account?               @relation(fields: [applyToChartOfAccountId], references: [id], onDelete: Cascade)
   /// VendorCreditUsage related to this Vendor Credit
-  usage                   VendorCreditUsage?
+  usages                  VendorCreditUsage[]
   /// Bill-generated ID of the vendor (begins with "009")
   vendorId                String
   vendor                  Vendor                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
@@ -523,7 +523,9 @@ model VendorCreditUsage {
   // Scalar Fields -----------------------------------------------------------
 
   /// ID of the Vendor Credit Usage (begins with "vcr")
-  vendorCreditId String @id
+  vendorCreditId String
+  /// Zero-relative index of the Vendor Credit Usage for this Vendor Credit
+  index          Int
   /// Amount of the vendor credit that has been applied
   amount         Float?
 
@@ -540,6 +542,7 @@ model VendorCreditUsage {
   /// Vendor Credit that was used to pay the bill
   vendorCredit VendorCredit? @relation(fields: [vendorCreditId], references: [id])
 
+  @@id([vendorCreditId, index])
   @@map("vendors_credits_usage")
 }
 

@@ -12,6 +12,7 @@ import { fetchSessionIdV2, fetchSessionIdV3 } from "@repo/bill-api/AuthActions";
 import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
+import { fetchVendorCredits } from "@repo/bill-api/VendorCreditActions";
 import {
   dbBill,
   User,
@@ -28,6 +29,10 @@ import {
   createVendorAdditionalInfo,
   createVendorAddress,
   createVendorAutoPay,
+  createVendorCredit,
+  createVendorCreditLineItem,
+  createVendorCreditLineItemClassifications,
+  createVendorCreditUsage,
   createVendorPaymentInformation,
   createVendorVirtualCard,
 } from "./Creators";
@@ -244,5 +249,73 @@ export async function refreshVendors(sessionId: string): Promise<void> {
   }
 
   console.log("Vendors refreshed:", count);
+
+}
+
+export async function refreshVendorCredits(sessionId: string): Promise<void> {
+
+  console.log("Fetching vendor credits...");
+  let count = 0;
+  let nextPage: string | null = "";
+
+  while (nextPage !== null) {
+
+    const result = await fetchVendorCredits(sessionId,
+      {
+        max: 100,
+        page: nextPage && nextPage.length > 0? nextPage : undefined,
+      });
+
+    for (const billVendorCredit of result.results) {
+
+      const vendorCredit = createVendorCredit(billVendorCredit);
+      await dbBill.vendorCredit.upsert({
+        where: { id: vendorCredit.id },
+        create: vendorCredit,
+        update: vendorCredit,
+      });
+
+      if (billVendorCredit.usage && billVendorCredit.usage.length > 0) {
+        for (let index = 0; index < billVendorCredit.usage.length; index++) {
+          const vendorCreditUsage = createVendorCreditUsage(billVendorCredit.id, billVendorCredit.usage[index]!, index);
+          await dbBill.vendorCreditUsage.upsert({
+            where: {
+              vendorCreditId_index: {
+                vendorCreditId: vendorCreditUsage.vendorCreditId,
+                index: vendorCreditUsage.index,
+              }
+            },
+            create: vendorCreditUsage,
+            update: vendorCreditUsage,
+          });
+        }
+      }
+
+      for (const billVendorCreditLineItem of billVendorCredit.vendorCreditLineItems || []) {
+
+        const vendorCreditLineItem = createVendorCreditLineItem(billVendorCredit.id, billVendorCreditLineItem);
+        await dbBill.vendorCreditLineItem.upsert({
+          where: { id: vendorCreditLineItem.id },
+          create: vendorCreditLineItem,
+          update: vendorCreditLineItem,
+        });
+
+        const lineItemClassifications = createVendorCreditLineItemClassifications(billVendorCreditLineItem);
+        await dbBill.vendorCreditLineItemClassifications.upsert({
+          where: {id: lineItemClassifications.id },
+          create: lineItemClassifications,
+          update: lineItemClassifications,
+        });
+      }
+
+      count++;
+
+    }
+
+    nextPage = result.nextPage || null;
+
+  }
+
+  console.log("Vendor credits refreshed:", count);
 
 }

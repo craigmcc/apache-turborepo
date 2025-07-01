@@ -12,6 +12,9 @@ import {
   BillBillLineItem,
   BillUser,
   BillVendor,
+  BillVendorCredit,
+  BillVendorCreditLineItem,
+  BillVendorCreditUsage,
 } from "@repo/bill-api/Models";
 import {
   Account,
@@ -24,6 +27,10 @@ import {
   VendorAdditionalInfo,
   VendorAddress,
   VendorAutoPay,
+  VendorCredit,
+  VendorCreditLineItem,
+  VendorCreditLineItemClassifications,
+  VendorCreditUsage,
   VendorPaymentInformation,
   VendorVirtualCard,
 } from "@repo/bill-db/Models";
@@ -190,6 +197,55 @@ export function createVendorAutoPay(billVendor: BillVendor): VendorAutoPay | nul
     daysBeforeDueDate: billVendor.autoPay.daysBeforeDueDate || null,
     enabled: billVendor.autoPay.enabled || false,
     maxAmount: billVendor.autoPay.maxAmount || null,
+  };
+}
+
+export function createVendorCredit(billVendorCredit: BillVendorCredit): VendorCredit {
+  return {
+    id: billVendorCredit.id,
+    amount: billVendorCredit.amount || null,
+    appliedAmount: billVendorCredit.appliedAmount || null,
+    archived: billVendorCredit.archived || null,
+    createdDate: billVendorCredit.createdDate || null,
+    description: billVendorCredit.description || null,
+    referenceNumber: billVendorCredit.referenceNumber || null,
+    vendorCreditStatus: billVendorCredit.vendorCreditStatus || "UNDEFINED",
+    applyToBankAccountId: billVendorCredit.applyToBankAccountId || null,
+    applyToChartOfAccountId: billVendorCredit.applyToChartOfAccountId || null,
+    vendorId: billVendorCredit.vendorId!,
+  };
+}
+
+export function createVendorCreditLineItem(vendorCreditId: string, billVendorCredit: BillVendorCredit): VendorCreditLineItem {
+  return {
+    id: billVendorCredit.id,
+    amount: billVendorCredit.amount || null,
+    description: billVendorCredit.description || null,
+    vendorCreditId: vendorCreditId,
+  };
+}
+
+export function createVendorCreditLineItemClassifications(billVendorCreditLineItem: BillVendorCreditLineItem): VendorCreditLineItemClassifications {
+  return {
+    id: billVendorCreditLineItem.id,
+    accountingClassId: billVendorCreditLineItem.classifications?.accountingClassId || null,
+    customerId: billVendorCreditLineItem.classifications?.customerId || null,
+    departmentId: billVendorCreditLineItem.classifications?.departmentId || null,
+    employeeId: billVendorCreditLineItem.classifications?.employeeId || null,
+    itemId: billVendorCreditLineItem.classifications?.itemId || null,
+    jobId: billVendorCreditLineItem.classifications?.jobId || null,
+    locationId: billVendorCreditLineItem.classifications?.locationId || null,
+    chartOfAccountId: billVendorCreditLineItem.classifications?.chartOfAccountId || null,
+  }
+}
+
+export function createVendorCreditUsage(billVendorCreditId: string, usage: BillVendorCreditUsage, index: number): VendorCreditUsage {
+  return {
+    vendorCreditId: billVendorCreditId,
+    index: index,
+    amount: usage.amount || null,
+    billId: usage.billId || null,
+    paymentId: usage.paymentId || null,
   };
 }
 

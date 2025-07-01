@@ -498,7 +498,7 @@ export type BillVendorCredit = {
   // User-generated reference number for this vendor credit
   referenceNumber?: string;
   // Usage information for this vendor credit
-  usage?: BillVendorCreditUsage;
+  usage?: BillVendorCreditUsage[];
   // Line items for this vendor credit
   vendorCreditLineItems?: BillVendorCreditLineItem[];
   // Status of this vendor credit
