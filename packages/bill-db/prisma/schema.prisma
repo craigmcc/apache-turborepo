@@ -236,6 +236,9 @@ model User {
 
   // Actual Relationships ----------------------------------------------------
 
+  /// Vendor Credit approvers for this User
+  VendorCreditApprover VendorCreditApprover[]
+
   @@map("users")
 }
 
@@ -451,8 +454,42 @@ model VendorCredit {
   vendor                  Vendor                 @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   /// Line items for this Vendor Credit
   vendorCreditLineItems   VendorCreditLineItem[]
+  /// Approvers for this Vendor Credit
+  vendorCreditApprovers   VendorCreditApprover[]
 
   @@map("vendors_credits")
+}
+
+model VendorCreditApprover {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Vendor Credit Approver (begins with "vca")
+  id                String   @id
+  /// Object type (should be "VendorCreditApprover")
+  entity            String?
+  /// Is this approver active?
+  isActive          Boolean?
+  /// Timestamp of the last approval reminder sent to this approver
+  lastReminderDate  String?
+  /// Zero-relative index of this approver in the list of approvers for this Vendor Credit
+  sortOrder         Int?
+  /// Status of this vendor credit approver (will be replaced by description)
+  status            String?
+  /// Timestamp of the last status change
+  statusChangedDate String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// ID of the User that is this approver (begins with "006")
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// ID of the Vendor Credit this approver belongs to (begins with "vcr")
+  vendorCreditId String
+  vendorCredit   VendorCredit @relation(fields: [vendorCreditId], references: [id], onDelete: Cascade)
+
+  @@map("vendors_credits_approvers")
 }
 
 model VendorCreditLineItem {

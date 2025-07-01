@@ -13,6 +13,7 @@ import {
   BillUser,
   BillVendor,
   BillVendorCredit,
+  BillVendorCreditApprover,
   BillVendorCreditLineItem,
   BillVendorCreditUsage,
 } from "@repo/bill-api/Models";
@@ -28,6 +29,7 @@ import {
   VendorAddress,
   VendorAutoPay,
   VendorCredit,
+  VendorCreditApprover,
   VendorCreditLineItem,
   VendorCreditLineItemClassifications,
   VendorCreditUsage,
@@ -213,6 +215,20 @@ export function createVendorCredit(billVendorCredit: BillVendorCredit): VendorCr
     applyToBankAccountId: billVendorCredit.applyToBankAccountId || null,
     applyToChartOfAccountId: billVendorCredit.applyToChartOfAccountId || null,
     vendorId: billVendorCredit.vendorId!,
+  };
+}
+
+export function createVendorCreditApprover(billVendorCreditApprover: BillVendorCreditApprover): VendorCreditApprover {
+  return {
+    id: billVendorCreditApprover.id,
+    entity: billVendorCreditApprover.entity || null,
+    isActive: billVendorCreditApprover.isActive === "1",
+    lastReminderDate: billVendorCreditApprover.lastReminderDate || null,
+    sortOrder: billVendorCreditApprover.sortOrder || null,
+    status: billVendorCreditApprover.status || "UNDEFINED",
+    statusChangedDate: billVendorCreditApprover.statusChangedDate || null,
+    userId: billVendorCreditApprover.usersId,
+    vendorCreditId: billVendorCreditApprover.vendorCreditId,
   };
 }
 

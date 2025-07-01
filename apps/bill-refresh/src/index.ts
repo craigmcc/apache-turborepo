@@ -16,6 +16,7 @@ import {
   refreshUsers,
   refreshVendors,
   refreshVendorCredits,
+  refreshVendorCreditApprovers,
 } from "./Refreshers";
 
 // Private Objects ------------------------------------------------------------
@@ -30,6 +31,7 @@ export async function main() {
   await refreshVendors(sessionId);
   await refreshBills(sessionId);
   await refreshVendorCredits(sessionId);
+  await refreshVendorCreditApprovers(sessionIdV2);
   console.log("Done with refreshing data");
 
 }

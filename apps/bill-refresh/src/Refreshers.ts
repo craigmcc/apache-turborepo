@@ -13,10 +13,12 @@ import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
 import { fetchVendorCredits } from "@repo/bill-api/VendorCreditActions";
+import { fetchVendorCreditApprovers } from "@repo/bill-api/VendorCreditApproverActions";
 import {
   dbBill,
   User,
   Vendor,
+  VendorCreditApprover,
 } from "@repo/bill-db/Models";
 import {
   createAccount,
@@ -30,6 +32,7 @@ import {
   createVendorAddress,
   createVendorAutoPay,
   createVendorCredit,
+  createVendorCreditApprover,
   createVendorCreditLineItem,
   createVendorCreditLineItemClassifications,
   createVendorCreditUsage,
@@ -317,5 +320,24 @@ export async function refreshVendorCredits(sessionId: string): Promise<void> {
   }
 
   console.log("Vendor credits refreshed:", count);
+
+}
+
+export async function refreshVendorCreditApprovers(sessionId: string): Promise<void> {
+
+  console.log("Fetching vendor credit approvers...");
+
+  const result = await fetchVendorCreditApprovers(sessionId);
+
+  for (const billVendorCreditApprover of result) {
+    const approver: VendorCreditApprover = createVendorCreditApprover(billVendorCreditApprover);
+    await dbBill.vendorCreditApprover.upsert({
+      where: { id: approver.id },
+      create: approver,
+      update: approver,
+    });
+  }
+
+  console.log("Vendor credit approvers refreshed:", result.length);
 
 }

@@ -9,4 +9,5 @@ export * from "./Models";
 export * from "./UserActions";
 export * from "./VendorActions";
 export * from "./VendorCreditActions";
+export * from "./VendorCreditApproverActions";
 

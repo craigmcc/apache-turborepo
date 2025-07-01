@@ -101,9 +101,11 @@ export type BillApprover = {
   id: string;
   /// The Bill bill or vendor credit ID being approved (begins with "00n" for bills, "vcr" for vendor credits ???)
   billId?: string;
+  /// Object type (should be "BillApprover")
+  entity?: string;
   /// Is this approval active? (1=yes, 2=no)
   isActive?: string;
-  /// Timestamp of the last approval reminder sent for this approval
+  /// Timestamp of the last approval reminder sent to this approver
   lastReminderDate?: string;
   /// Zero-relative index of this approver in the approval chain
   sortOrder?: number;
@@ -190,6 +192,31 @@ export type BillBillClassifications = {
   itemId?: string;
   // The Bill-generated ID of the location (begins with "loc")
   locationId?: string;
+}
+
+/**
+ * A Bill Bill Approver (V2).
+ * NOTE: This is not documented, but the V2 API endpoint seems to exist.
+ */
+export type BillBillApprover = {
+  // The Bill-generated ID of the vendor credit approver (begins with "???")
+  id: string;
+  // The Bill-generated ID of the bill being approved (begins with "00n")
+  billId: string;
+  // Object type (should be "BillApprover")
+  entity?: string;
+  // Is this approver active? (1=yes, 2=no)
+  isActive?: string;
+  // Timestamp of last approval reminder sent to this approver
+  lastReminderDate?: string;
+  // Zero-relative index of this approver in the approval chain
+  sortOrder?: number;
+  // Status of this bill approval (will be replaced during refresh)
+  status?: string;
+  // Timestamp of the last status change
+  statusChangedDate?: string;
+  // Bill-generated ID of the User that is the approver (begins with "006")
+  usersId: string;
 }
 
 /**
@@ -509,6 +536,30 @@ export type BillVendorCredit = {
 
 export type BillVendorCreditStatus =
   "FULLY_APPLIED" | "NOT_APPLIED" | "PARTIALLY_APPLIED" | "UNDEFINED";
+
+/**
+ * A Bill Vendor Credit Approver (V2).
+ */
+export type BillVendorCreditApprover = {
+  // The Bill-generated ID of the vendor credit approver (begins with "vca")
+  id: string;
+  // Object type (should be "VendorCreditApprover")
+  entity?: string;
+  // Is this approver active? (1=yes, 2=no)
+  isActive?: string;
+  // Timestamp of last approval reminder sent to this approver
+  lastReminderDate?: string;
+  // Zero-relative index of this approver in the approval chain
+  sortOrder?: number;
+  // Status of this vendor credit approval (will be replaced during refresh)
+  status?: string;
+  // Timestamp of the last status change
+  statusChangedDate?: string;
+  // Bill-generated ID of the User that is the approver (begins with "006")
+  usersId: string;
+  // Bill-generated ID of the vendor credit (begins with "vcr")
+  vendorCreditId: string;
+}
 
 /**
  * A Bill Vendor Credit Line Item object (V3).
