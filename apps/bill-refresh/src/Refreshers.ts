@@ -10,12 +10,14 @@
 import { fetchAccounts } from "@repo/bill-api/AccountActions";
 import { fetchSessionIdV2, fetchSessionIdV3 } from "@repo/bill-api/AuthActions";
 import { fetchBills } from "@repo/bill-api/BillActions";
+import { fetchBillApprovers } from "@repo/bill-api/BillApproverActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
 import { fetchVendorCredits } from "@repo/bill-api/VendorCreditActions";
 import { fetchVendorCreditApprovers } from "@repo/bill-api/VendorCreditApproverActions";
 import {
   dbBill,
+  BillApprover,
   User,
   Vendor,
   VendorCreditApprover,
@@ -24,6 +26,7 @@ import {
   createAccount,
   createBill,
   createBillClassifications,
+  createBillApprover,
   createBillLineItem,
   createBillLineItemClassifications,
   createUser,
@@ -129,6 +132,24 @@ export async function refreshBills(sessionId: string): Promise<void> {
 
 }
 
+export async function refreshBillApprovers(sessionId: string): Promise<void> {
+
+  console.log("Fetching bill approvers...");
+
+  const result = await fetchBillApprovers(sessionId);
+
+  for (const billBillApprover of result) {
+    const approver: BillApprover = createBillApprover(billBillApprover);
+    await dbBill.billApprover.upsert({
+      where: { id: approver.id },
+      create: approver,
+      update: approver,
+    });
+  }
+
+  console.log("Bill approvers refreshed:", result.length);
+
+}
 export async function refreshSessionIdV2(): Promise<string> {
   console.log("Fetching session ID V2...");
   return await fetchSessionIdV2();

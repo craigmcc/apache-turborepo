@@ -9,6 +9,7 @@
 import {
   BillAccount,
   BillBill,
+  BillBillApprover,
   BillBillLineItem,
   BillUser,
   BillVendor,
@@ -20,6 +21,7 @@ import {
 import {
   Account,
   Bill,
+  BillApprover,
   BillClassifications,
   BillLineItem,
   BillLineItemClassifications,
@@ -75,6 +77,20 @@ export function createBill(bill: BillBill): Bill {
     vendorName: bill.vendorName || null,
     payFromChartOfAccountId: bill.payFromChartOfAccountId || null,
     vendorId: bill.vendorId,
+  };
+}
+
+export function createBillApprover(billBillApprover: BillBillApprover): BillApprover {
+  return {
+    id: billBillApprover.id,
+    entity: billBillApprover.entity || null,
+    isActive: billBillApprover.isActive === "1",
+    lastReminderDate: billBillApprover.lastReminderDate || null,
+    sortOrder: billBillApprover.sortOrder || null,
+    status: billBillApprover.status || "UNDEFINED",
+    statusChangedDate: billBillApprover.statusChangedDate || null,
+    billId: billBillApprover.billId,
+    userId: billBillApprover.usersId,
   };
 }
 

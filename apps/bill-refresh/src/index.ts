@@ -11,6 +11,7 @@ import { exit } from "node:process";
 import {
   refreshAccounts,
   refreshBills,
+  refreshBillApprovers,
   refreshSessionIdV2,
   refreshSessionIdV3,
   refreshUsers,
@@ -30,6 +31,7 @@ export async function main() {
   await refreshUsers(sessionId);
   await refreshVendors(sessionId);
   await refreshBills(sessionId);
+  await refreshBillApprovers(sessionIdV2);
   await refreshVendorCredits(sessionId);
   await refreshVendorCreditApprovers(sessionIdV2);
   console.log("Done with refreshing data");

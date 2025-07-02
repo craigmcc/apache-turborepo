@@ -93,30 +93,6 @@ export type BillAddress = {
   zipOrPostalCode: string;
 }
 
-/**
- * A Bill "approver" object (V2).
- */
-export type BillApprover = {
-  // The Bill-generated ID of the approver record
-  id: string;
-  /// The Bill bill or vendor credit ID being approved (begins with "00n" for bills, "vcr" for vendor credits ???)
-  billId?: string;
-  /// Object type (should be "BillApprover")
-  entity?: string;
-  /// Is this approval active? (1=yes, 2=no)
-  isActive?: string;
-  /// Timestamp of the last approval reminder sent to this approver
-  lastReminderDate?: string;
-  /// Zero-relative index of this approver in the approval chain
-  sortOrder?: number;
-  /// Status of this approval (will be replaced during refresh)
-  status?: string;
-  /// Timestamp of the last stattus change
-  statusChangedDate?: string;
-  /// The Bill user ID of the approver (begins with "006")
-  usersId?: string;
-}
-
 export const BillApproverStatuses = new Map<string, string>([
   ["0", "Waiting"],
   ["1", "Viewed"],
@@ -199,7 +175,7 @@ export type BillBillClassifications = {
  * NOTE: This is not documented, but the V2 API endpoint seems to exist.
  */
 export type BillBillApprover = {
-  // The Bill-generated ID of the vendor credit approver (begins with "???")
+  // The Bill-generated ID of the vendor credit approver (begins with "0ba")
   id: string;
   // The Bill-generated ID of the bill being approved (begins with "00n")
   billId: string;

@@ -95,6 +95,7 @@ model Bill {
 
   // Actual Relationships ----------------------------------------------------
 
+  approvers               BillApprover[]
   classifications         BillClassifications?
   lineItems               BillLineItem[]
   /// Bill-generated ID of the chart of accounts for bill payment (begins with "0ca")
@@ -106,6 +107,38 @@ model Bill {
   vendorCreditUsages      VendorCreditUsage[]
 
   @@map("bills")
+}
+
+model BillApprover {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Bill Approver (begins with "0ba")
+  id                String   @id
+  /// Object type (should be "BillApprover")
+  entity            String?
+  /// Is this approver active?
+  isActive          Boolean?
+  /// Timestamp of the last approval reminder sent to this approver
+  lastReminderDate  String?
+  /// Zero-relative index of this approver in the list of approvers for this Vendor Credit
+  sortOrder         Int?
+  /// Status of this vendor credit approver (will be replaced by description)
+  status            String?
+  /// Timestamp of the last status change
+  statusChangedDate String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  /// ID of the Bill this approver belongs to (begins with "00n")
+  billId String
+  bill   Bill   @relation(fields: [billId], references: [id], onDelete: Cascade)
+  /// ID of the User that is this approver (begins with "006")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bills_approvers")
 }
 
 /// Classifications for a Bill
@@ -236,8 +269,10 @@ model User {
 
   // Actual Relationships ----------------------------------------------------
 
+  /// Bill approvers for this User
+  billApprovers         BillApprover[]
   /// Vendor Credit approvers for this User
-  VendorCreditApprover VendorCreditApprover[]
+  vendorCreditApprovers VendorCreditApprover[]
 
   @@map("users")
 }
