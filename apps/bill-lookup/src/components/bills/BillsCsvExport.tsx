@@ -23,6 +23,7 @@ import {
   formatBillDueDate,
   formatBillExchangeRate,
   formatBillInvoiceDate,
+  formatBillInvoiceNumber,
   formatBillPaidAmount,
   formatVendorName
 } from "@/lib/Formatters";
@@ -44,16 +45,16 @@ export function BillsCsvExport({ bills, hide, show }: BillsCsvExportProps) {
   const [filename, setFilename] = useState<string>("Bill-Bills.csv");
 
   const data = [
-    [ "Due Date", "Vendor Name", "Invoice Date", "Invoice Number",
+    [ "Vendor Name", "Invoice Date", "Invoice Number", "Due Date",
       "Total (USD)", "Paid (Local)", "Exchange Rate", "GL Account", "Archived"],
   ];
 
   for (const bill of bills) {
     data.push([
-      formatBillDueDate(bill),
       formatVendorName(bill.vendor),
       formatBillInvoiceDate(bill),
-      bill.invoiceNumber || "n/a",
+      formatBillInvoiceNumber(bill),
+      formatBillDueDate(bill),
       formatBillAmount(bill),
       formatBillPaidAmount(bill),
       formatBillExchangeRate(bill),

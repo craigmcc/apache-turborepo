@@ -32,8 +32,8 @@ export default async function BillsPage() {
       vendor: true,
     },
     orderBy: [
-      { invoiceDate: "asc" },
       { vendorName: "asc" },
+      { invoiceDate: "asc" },
     ],
   });
 

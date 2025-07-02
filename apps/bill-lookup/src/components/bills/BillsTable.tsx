@@ -36,6 +36,7 @@ import {
   formatBillDueDate,
   formatBillExchangeRate,
   formatBillInvoiceDate,
+  formatBillInvoiceNumber,
   formatBillPaidAmount,
   formatVendorName
 } from "@/lib/Formatters";
@@ -90,7 +91,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     if (vendorNameFilter.length > 0) {
       filters.push({
-        id: "name",
+        id: "vendor.name",
         value: vendorNameFilter,
       });
     }
@@ -121,22 +122,14 @@ export function BillsTable({ allBills }: BillsTableProps) {
     setShowMoreInfo(true);
   }
 
-  // Column definitions for the Users table
+  // Column definitions for the Bills table
   const columns = useMemo(() => [
-    columnHelper.accessor("dueDate", {
-      cell: info => {
-        return <span>{formatBillDueDate(info.row.original)}</span>;
-      },
-      filterFn: dateRangeFilterFn,
-      header: "Due Date",
-      id: "dueDate",
-    }),
-    columnHelper.accessor(row => formatVendorName(row.vendor), {
+    columnHelper.accessor("vendor.name", {
       cell: info => {
         return <span>{formatVendorName(info.row.original.vendor)}</span>;
       },
       header: "Vendor Name",
-      id: "name",
+      id: "vendor.name",
     }),
     columnHelper.accessor("invoiceDate", {
       cell: info => {
@@ -148,10 +141,18 @@ export function BillsTable({ allBills }: BillsTableProps) {
     }),
     columnHelper.display({
       cell: info => {
-        return <span>{info.row.original.invoiceNumber || "n/a"}</span>;
+        return <span>{formatBillInvoiceNumber(info.row.original)}</span>;
       },
       header: "Invoice Number",
       id: "invoiceNumber",
+    }),
+    columnHelper.accessor("dueDate", {
+      cell: info => {
+        return <span>{formatBillDueDate(info.row.original)}</span>;
+      },
+      filterFn: dateRangeFilterFn,
+      header: "Due Date",
+      id: "dueDate",
     }),
     columnHelper.display({
       cell: info => {
@@ -244,24 +245,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId={fromDueDateFilter}>
-            <span>Filter by From Due Date:</span>
+          <Form.Group controlId="nameFilter">
+            <span>Filter by Vendor Name:</span>
             <Form.Control
-              onChange={e => setFromDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
+              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
               type="text"
-              value={fromDueDateFilter}
-            />
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group controlId={toDueDateFilter}>
-            <span>Filter by To Due Date:</span>
-            <Form.Control
-              onChange={e => setToDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toDueDateFilter}
+              value={vendorNameFilter}
             />
           </Form.Group>
         </Col>
@@ -288,13 +278,24 @@ export function BillsTable({ allBills }: BillsTableProps) {
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by Vendor Name:</span>
+          <Form.Group controlId={fromDueDateFilter}>
+            <span>Filter by From Due Date:</span>
             <Form.Control
-              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
+              onChange={e => setFromDueDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
               type="text"
-              value={vendorNameFilter}
+              value={fromDueDateFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId={toDueDateFilter}>
+            <span>Filter by To Due Date:</span>
+            <Form.Control
+              onChange={e => setToDueDateFilter(e.target.value.toLowerCase())}
+              placeholder="Enter YYYYMMDD"
+              type="text"
+              value={toDueDateFilter}
             />
           </Form.Group>
         </Col>

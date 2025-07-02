@@ -111,6 +111,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     columnHelper.accessor("accountNumber", {
       header: "GL Account",
       cell: info => info.getValue(),
+      id: "accountNumber",
     }),
     columnHelper.accessor("name", {
       header: "Account Name",

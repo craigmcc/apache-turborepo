@@ -20,6 +20,7 @@ import {
   formatBillDueDate,
   formatBillExchangeRate,
   formatBillInvoiceDate,
+  formatBillInvoiceNumber,
   formatBillPaidAmount,
   formatVendorName
 } from "@/lib/Formatters";
@@ -89,7 +90,7 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                 </tr>
                 <tr>
                   <td>invoiceNumber</td>
-                  <td>{bill.invoiceNumber || "n/a"}</td>
+                  <td>{formatBillInvoiceNumber(bill)}</td>
                 </tr>
                 <tr>
                   <td>paidAmount</td>

@@ -57,6 +57,13 @@ export function formatBillInvoiceDate(bill: BillPlus | null | undefined): string
 }
 
 /**
+ * Format a Bill invoice number
+ */
+export function formatBillInvoiceNumber(bill: BillPlus | null | undefined): string {
+  return bill?.invoiceNumber || "n/a";
+}
+
+/**
  * Format a Bill paid amount
  */
 export function formatBillPaidAmount(bill: BillPlus | null | undefined): string {
