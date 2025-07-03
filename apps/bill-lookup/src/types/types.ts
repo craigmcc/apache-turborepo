@@ -7,6 +7,7 @@
 import {
   Account,
   Bill,
+  BillApprover,
   BillClassifications,
   BillLineItem,
   BillLineItemClassifications,
@@ -32,6 +33,11 @@ export type BillPlus = Bill & {
   classifications?: BillClassificationsPlus | null;
   lineItems?: BillLineItemPlus[] | null;
   vendor?: VendorPlus | null;
+}
+
+export type BillApproverPlus = BillApprover & {
+  bill?: BillPlus | null;
+  user?: UserPlus | null;
 }
 
 export type BillClassificationsPlus = BillClassifications & {

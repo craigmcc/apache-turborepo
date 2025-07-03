@@ -63,6 +63,10 @@ export function MenuBar() {
               title="Bills"
             />
             <Tab
+              eventKey="Bill-Approverss"
+              title="Bill Approvers"
+            />
+            <Tab
               eventKey="Accounts"
               title="Accounts"
             />
@@ -79,6 +83,7 @@ const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
   ["Home", "/"],
   [ "Accounts", "/accounts"],
   [ "Bills", "/bills"],
+  [ "Bill-Approvers", "/bill-approvers"],
   ["Users", "/users"],
   ["Vendor", "/vendors"],
 ]);

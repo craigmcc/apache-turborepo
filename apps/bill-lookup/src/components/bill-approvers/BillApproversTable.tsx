@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Overview table for Bills.
+ * Overview table for Bill Approvers.
  */
 
 // External Imports ----------------------------------------------------------
@@ -28,32 +28,28 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { DataTable } from "@/components/tables/DataTable";
-import { BillsCsvExport } from "@/components/bills/BillsCsvExport";
-import { BillMoreInfo } from "@/components/bills/BillMoreInfo";
+//import { BillApproversCsvExport } from "@/components/bill-approvers/BillApproversCsvExport";
+//import { BillApproverMoreInfo } from "@/components/bill-approvers/BillApproverMoreInfo";
 import {
   formatAccountNumberAndName,
   formatBillAmount,
-  formatBillDueDate,
-  formatBillExchangeRate,
   formatBillInvoiceDate,
-  formatBillInvoiceNumber,
-  formatBillPaidAmount,
-  formatVendorName
+  formatUserName,
+  formatVendorName,
 } from "@/lib/Formatters";
-import { BillPlus } from "@/types/types";
+import {BillApproverPlus} from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
-export type BillsTableProps = {
-  // All Bills to display in the table
-  allBills: BillPlus[];
-}
+export type BillApproversTableProps = {
+  // Bill Approvers to display
+  allBillApprovers: BillApproverPlus[];
+};
 
-export function BillsTable({ allBills }: BillsTableProps) {
+export function BillApproversTable({ allBillApprovers }: BillApproversTableProps) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [currentBill, setCurrentBill] = useState<BillPlus | null>(null);
-  const [fromDueDateFilter, setFromDueDateFilter] = useState<string>("");
+  const [currentBillApprover, setCurrentBillApprover] = useState<BillApproverPlus | null>(null);
   const [fromInvoiceDateFilter, setFromInvoiceDateFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -62,11 +58,11 @@ export function BillsTable({ allBills }: BillsTableProps) {
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "name", desc: false },
-    { id: "invoiceDate", desc: true },
+    { id: "bill.vendor.name", desc: false },
+    { id: "bill.invoiceDate", desc: false },
   ]);
-  const [toDueDateFilter, setToDueDateFilter] = useState<string>("");
   const [toInvoiceDateFilter, setToInvoiceDateFilter] = useState<string>("");
+  const [userNameFilter, setUserNameFilter] = useState<string>("");
   const [vendorNameFilter, setVendorNameFilter] = useState<string>("");
 
   // Apply selection filters whenever they change
@@ -74,32 +70,31 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     const filters: ColumnFiltersState = [];
 
-    const dueDateFilter = fromDueDateFilter + "|" + toDueDateFilter;
-    if (dueDateFilter.length > 1) {
-      filters.push({
-        id: "dueDate",
-        value: dueDateFilter,
-      });
-    }
-
     const invoiceDateFilter = fromInvoiceDateFilter + "|" + toInvoiceDateFilter;
     if (invoiceDateFilter.length > 1) {
       filters.push({
-        id: "invoiceDate",
+        id: "bill.invoiceDate",
         value: invoiceDateFilter,
+      });
+    }
+
+    if (userNameFilter.length > 0) {
+      filters.push({
+        id: "user.name",
+        value: userNameFilter,
       });
     }
 
     if (vendorNameFilter.length > 0) {
       filters.push({
-        id: "vendor.name",
+        id: "bill.vendor.name",
         value: vendorNameFilter,
       });
     }
 
     setColumnFilters(filters);
 
-  }, [fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
+  }, [fromInvoiceDateFilter,toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -113,88 +108,54 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
-    setCurrentBill(null);
+    setCurrentBillApprover(null);
     setShowMoreInfo(false);
   }
 
   // Handle the "More Info" modal open
-  function handleMoreInfoOpen(bill: BillPlus) {
-    setCurrentBill(bill);
+  function handleMoreInfoOpen(billApprover: BillApproverPlus) {
+    setCurrentBillApprover(billApprover);
     setShowMoreInfo(true);
   }
 
-  // Column definitions for the Bills table
+  // Column definitions for the Bill Approvers table
   const columns = useMemo(() => [
 
-    columnHelper.accessor("vendor.name", {
-      cell: info => {
-        return <span>{formatVendorName(info.row.original.vendor)}</span>;
-      },
-      header: "Vendor Name",
-      id: "vendor.name",
-    }),
+    columnHelper.accessor(
+      row => formatVendorName(row.bill?.vendor),
+      {
+        header: "Vendor Name",
+        id: "bill.vendor.name",
+      }
+    ),
 
-    columnHelper.accessor("invoiceDate", {
-      cell: info => {
-        return <span>{formatBillInvoiceDate(info.row.original)}</span>
-      },
+    columnHelper.accessor(
+      row => formatBillInvoiceDate(row.bill),
+      {
       filterFn: dateRangeFilterFn,
       header: "Invoice Date",
-      id: "invoiceDate",
+      id: "bill.invoiceDate",
     }),
 
     columnHelper.display({
       cell: info => {
-        return <span>{formatBillInvoiceNumber(info.row.original)}</span>;
+        return <span>{formatBillAmount(info.row.original.bill)}</span>;
       },
-      header: "Invoice Number",
-      id: "invoiceNumber",
-    }),
-
-    columnHelper.accessor("dueDate", {
-      cell: info => {
-        return <span>{formatBillDueDate(info.row.original)}</span>;
-      },
-      filterFn: dateRangeFilterFn,
-      header: "Due Date",
-      id: "dueDate",
+      header: "Amount (USD)",
+      id: "bill.amount",
     }),
 
     columnHelper.display({
       cell: info => {
-        return <span>{formatBillAmount(info.row.original)}</span>;
-      },
-      header: "Total (USD)",
-      id: "amount",
-    }),
-
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatBillPaidAmount(info.row.original)}</span>
-      },
-      header: "Paid (Local)",
-      id: "paidAmount",
-    }),
-
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatBillExchangeRate(info.row.original) || "n/a"}</span>;
-      },
-      header: "Exchange Rate",
-      id: "exchangeRate",
-    }),
-
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAccountNumberAndName(info.row.original.classifications?.account)}</span>
+        return <span>{formatAccountNumberAndName(info.row.original.bill?.classifications?.account)}</span>
       },
       header: "GL Account",
-      id: "accountNumber",
+      id: "bill.classifications.accountNumber",
     }),
 
     columnHelper.display({
       cell: info => {
-        const archived = info.row.original.archived;
+        const archived = info.row.original.bill?.archived;
         if (archived) {
           return <span className="text-warning">Yes</span>;
         } else {
@@ -205,15 +166,42 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "archived",
     }),
 
+    columnHelper.accessor(
+      row => formatUserName(row.user),
+      {
+      header: "Approver Name",
+      id: "user.name",
+    }),
+
+    columnHelper.display({
+      cell: info => {
+        const status = info.row.original.status;
+        if (status === "Approved") {
+          return <span className="text-success">Approved</span>;
+        } else if (status === "Denied") {
+          return <span className="text-danger">Denied</span>;
+        } else if (status === "Stale") {
+          return <span className="text-warning">Stale</span>;
+        } else if (status === "Upcoming") {
+          return <span className="text-info">Upcoming</span>;
+        } else {
+          return <span className="text-secondary">{status}</span>;
+        }
+      },
+      header: "Approval Status",
+      id: "status",
+    }),
+
     columnHelper.display({
       cell: info => {
         return (
-          <span>
-          <BookUp
+          <Button
+            className="bg-info"
             onClick={() => handleMoreInfoOpen(info.row.original)}
-            style={{ cursor: "context-menu" }}
-          />
-        </span>
+            size="sm"
+          >
+            <BookUp />
+          </Button>
         );
       },
       header: "Info",
@@ -223,9 +211,9 @@ export function BillsTable({ allBills }: BillsTableProps) {
   ], []);
 
   // Overall table instance
-  const table = useReactTable<BillPlus>({
+  const table = useReactTable<BillApproverPlus>({
     columns,
-    data: allBills,
+    data: allBillApprovers,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -245,7 +233,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
       <Row>
         <h1 className="header text-center">
-          <span className="me-5">Bills Table</span>
+          <span className="me-5">Bill Approvers Table</span>
           <Button
             className="bg-info"
             onClick={handleCsvExportOpen}
@@ -257,7 +245,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId="nameFilter">
+          <Form.Group controlId="vendorNameFilter">
             <span>Filter by Vendor Name:</span>
             <Form.Control
               onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
@@ -290,24 +278,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
           </Form.Group>
         </Col>
         <Col>
-          <Form.Group controlId={fromDueDateFilter}>
-            <span>Filter by From Due Date:</span>
+          <Form.Group controlId="userNameFilter">
+            <span>Filter by User Name:</span>
             <Form.Control
-              onChange={e => setFromDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
+              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of a name to filter"
               type="text"
-              value={fromDueDateFilter}
-            />
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group controlId={toDueDateFilter}>
-            <span>Filter by To Due Date:</span>
-            <Form.Control
-              onChange={e => setToDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toDueDateFilter}
+              value={userNameFilter}
             />
           </Form.Group>
         </Col>
@@ -318,17 +295,21 @@ export function BillsTable({ allBills }: BillsTableProps) {
         table={table}
       />
 
-      <BillsCsvExport
-        bills={table.getSortedRowModel().flatRows.map(row => row.original)}
+{/*
+      <BillApproversCsvExport
+        billApprovers={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
         show={showCsvExport}
       />
+*/}
 
-      <BillMoreInfo
-        bill={currentBill}
+{/*
+      <BillApproverMoreInfo
+        billApprover={currentBillApprover}
         hide={handleMoreInfoClose}
         show={showMoreInfo}
       />
+*/}
 
     </Container>
   );
@@ -339,7 +320,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 /**
  * Helper for creating columns in the Users table.
  */
-const columnHelper = createColumnHelper<BillPlus>();
+const columnHelper = createColumnHelper<BillApproverPlus>();
 
 /**
  * Daet range filter function for the Bills table.  The filter "value"
