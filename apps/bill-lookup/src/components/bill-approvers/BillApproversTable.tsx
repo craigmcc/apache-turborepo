@@ -48,6 +48,7 @@ export type BillApproversTableProps = {
 
 export function BillApproversTable({ allBillApprovers }: BillApproversTableProps) {
 
+  const [accountFilter, setAccountFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentBillApprover, setCurrentBillApprover] = useState<BillApproverPlus | null>(null);
   const [fromInvoiceDateFilter, setFromInvoiceDateFilter] = useState<string>("");
@@ -69,6 +70,13 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
   useEffect(() => {
 
     const filters: ColumnFiltersState = [];
+
+    if (accountFilter.length > 0) {
+      filters.push({
+        id: "accountNumber",
+        value: accountFilter,
+      });
+    }
 
     const invoiceDateFilter = fromInvoiceDateFilter + "|" + toInvoiceDateFilter;
     if (invoiceDateFilter.length > 1) {
@@ -132,10 +140,10 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     columnHelper.accessor(
       row => formatBillInvoiceDate(row.bill),
       {
-      filterFn: dateRangeFilterFn,
-      header: "Invoice Date",
-      id: "bill.invoiceDate",
-    }),
+        filterFn: dateRangeFilterFn,
+        header: "Invoice Date",
+        id: "bill.invoiceDate",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -145,13 +153,13 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
       id: "bill.amount",
     }),
 
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAccountNumberAndName(info.row.original.bill?.classifications?.account)}</span>
-      },
-      header: "GL Account",
-      id: "bill.classifications.accountNumber",
-    }),
+    columnHelper.accessor(
+      row => formatAccountNumberAndName(row.bill?.classifications?.account),
+      {
+        enableSorting: false,
+        header: "GL Account",
+        id: "accountNumber",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -169,14 +177,17 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     columnHelper.accessor(
       row => formatUserName(row.user),
       {
-      header: "Approver Name",
-      id: "user.name",
-    }),
+        header: "Approver Name",
+        id: "user.name",
+      }),
 
     columnHelper.display({
       cell: info => {
+        const archived = info.row.original.bill?.archived;
         const status = info.row.original.status;
-        if (status === "Approved") {
+        if (archived) {
+          return <span className="text-secondary">Archived</span>;
+        } else if (status === "Approved") {
           return <span className="text-success">Approved</span>;
         } else if (status === "Denied") {
           return <span className="text-danger">Denied</span>;
@@ -195,13 +206,12 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     columnHelper.display({
       cell: info => {
         return (
-          <Button
-            className="bg-info"
+          <span>
+          <BookUp
             onClick={() => handleMoreInfoOpen(info.row.original)}
-            size="sm"
-          >
-            <BookUp />
-          </Button>
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
         );
       },
       header: "Info",
@@ -278,8 +288,19 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
           </Form.Group>
         </Col>
         <Col>
+          <Form.Group controlId="accountFilter">
+            <span>Filter by GL Account:</span>
+            <Form.Control
+              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of number or name to filter"
+              type="text"
+              value={accountFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
           <Form.Group controlId="userNameFilter">
-            <span>Filter by User Name:</span>
+            <span>Filter by Approver Name:</span>
             <Form.Control
               onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
               placeholder="Enter part of a name to filter"
@@ -295,7 +316,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
         table={table}
       />
 
-{/*
+      {/*
       <BillApproversCsvExport
         billApprovers={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
@@ -303,7 +324,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
       />
 */}
 
-{/*
+      {/*
       <BillApproverMoreInfo
         billApprover={currentBillApprover}
         hide={handleMoreInfoClose}

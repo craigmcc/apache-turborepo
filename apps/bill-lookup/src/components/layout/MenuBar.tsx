@@ -63,7 +63,7 @@ export function MenuBar() {
               title="Bills"
             />
             <Tab
-              eventKey="Bill-Approverss"
+              eventKey="Bill-Approvers"
               title="Bill Approvers"
             />
             <Tab
