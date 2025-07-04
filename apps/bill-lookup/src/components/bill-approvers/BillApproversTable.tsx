@@ -28,7 +28,7 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { DataTable } from "@/components/tables/DataTable";
-//import { BillApproversCsvExport } from "@/components/bill-approvers/BillApproversCsvExport";
+import { BillApproversCsvExport } from "@/components/bill-approvers/BillApproversCsvExport";
 import { BillApproverMoreInfo } from "@/components/bill-approvers/BillApproverMoreInfo";
 import {
   formatAccountNumberAndName,
@@ -316,13 +316,11 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
         table={table}
       />
 
-      {/*
       <BillApproversCsvExport
         billApprovers={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
         show={showCsvExport}
       />
-*/}
 
       <BillApproverMoreInfo
         billApprover={currentBillApprover}
