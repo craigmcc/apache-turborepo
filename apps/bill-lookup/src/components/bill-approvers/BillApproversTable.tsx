@@ -29,7 +29,7 @@ import Row from "react-bootstrap/Row";
 
 import { DataTable } from "@/components/tables/DataTable";
 //import { BillApproversCsvExport } from "@/components/bill-approvers/BillApproversCsvExport";
-//import { BillApproverMoreInfo } from "@/components/bill-approvers/BillApproverMoreInfo";
+import { BillApproverMoreInfo } from "@/components/bill-approvers/BillApproverMoreInfo";
 import {
   formatAccountNumberAndName,
   formatBillAmount,
@@ -73,7 +73,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
 
     if (accountFilter.length > 0) {
       filters.push({
-        id: "accountNumber",
+        id: "gl_account",
         value: accountFilter,
       });
     }
@@ -102,7 +102,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
 
     setColumnFilters(filters);
 
-  }, [fromInvoiceDateFilter,toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
+  }, [accountFilter, fromInvoiceDateFilter,toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -158,7 +158,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
       {
         enableSorting: false,
         header: "GL Account",
-        id: "accountNumber",
+        id: "gl_account",
       }),
 
     columnHelper.display({
@@ -324,13 +324,11 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
       />
 */}
 
-      {/*
       <BillApproverMoreInfo
         billApprover={currentBillApprover}
         hide={handleMoreInfoClose}
         show={showMoreInfo}
       />
-*/}
 
     </Container>
   );

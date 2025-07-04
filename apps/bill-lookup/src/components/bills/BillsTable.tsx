@@ -62,7 +62,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "name", desc: false },
+    { id: "vendor.name", desc: false },
     { id: "invoiceDate", desc: true },
   ]);
   const [toDueDateFilter, setToDueDateFilter] = useState<string>("");
