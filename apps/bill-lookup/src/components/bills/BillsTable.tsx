@@ -142,14 +142,16 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "vendor.name",
     }),
 
-    columnHelper.accessor("invoiceDate", {
-      cell: info => {
-        return <span>{formatBillInvoiceDate(info.row.original)}</span>
-      },
-      filterFn: dateRangeFilterFn,
-      header: "Invoice Date",
-      id: "invoiceDate",
-    }),
+    columnHelper.accessor(
+      row => row.invoiceDate,
+      {
+        cell: info => {
+          return <span>{formatBillInvoiceDate(info.row.original)}</span>
+        },
+        filterFn: dateRangeFilterFn,
+        header: "Invoice Date",
+        id: "invoiceDate",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -159,15 +161,17 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "invoiceNumber",
     }),
 
-    columnHelper.accessor("dueDate", {
-      cell: info => {
-        return <span>{formatBillDueDate(info.row.original)}</span>;
-      },
-      enableSorting: false,
-      filterFn: dateRangeFilterFn,
-      header: "Due Date",
-      id: "dueDate",
-    }),
+    columnHelper.accessor(
+      row => row.dueDate,
+      {
+        cell: info => {
+          return <span>{formatBillDueDate(info.row.original)}</span>
+        },
+        enableSorting: false,
+        filterFn: dateRangeFilterFn,
+        header: "Due Date",
+        id: "dueDate",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -386,6 +390,7 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
     initialCellValue.substring(8, 10); // Day part
 
   const [fromDate, toDate] = value.split("|");
+//  console.log(`initialCellValue: ${initialCellValue}, compareCellValue: ${compareCellValue}, fromDate: ${fromDate}, toDate: ${toDate}`);
   if ((fromDate.length >= 8) && (compareCellValue < fromDate.substring(0, 8))) {
     return false; // Cell value is before the "from" date
   }

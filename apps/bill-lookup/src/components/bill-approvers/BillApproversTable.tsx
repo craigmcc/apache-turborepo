@@ -102,7 +102,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
 
     setColumnFilters(filters);
 
-  }, [accountFilter, fromInvoiceDateFilter,toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
+  }, [accountFilter, fromInvoiceDateFilter, toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -138,8 +138,12 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     ),
 
     columnHelper.accessor(
-      row => formatBillInvoiceDate(row.bill),
+//      row => formatBillInvoiceDate(row.bill),
+      row => row.bill?.invoiceDate,
       {
+        cell: info => {
+          return <span>{formatBillInvoiceDate(info.row.original.bill)}</span>
+        },
         filterFn: dateRangeFilterFn,
         header: "Invoice Date",
         id: "bill.invoiceDate",
@@ -364,6 +368,7 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
     initialCellValue.substring(8, 10); // Day part
 
   const [fromDate, toDate] = value.split("|");
+//  console.log(`initialCellValue: ${initialCellValue}, compareCellValue: ${compareCellValue}, fromDate: ${fromDate}, toDate: ${toDate}`);
   if ((fromDate.length >= 8) && (compareCellValue < fromDate.substring(0, 8))) {
     return false; // Cell value is before the "from" date
   }
