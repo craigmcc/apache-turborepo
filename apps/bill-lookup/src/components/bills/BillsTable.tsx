@@ -51,6 +51,7 @@ export type BillsTableProps = {
 
 export function BillsTable({ allBills }: BillsTableProps) {
 
+  const [accountFilter, setAccountFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentBill, setCurrentBill] = useState<BillPlus | null>(null);
   const [fromDueDateFilter, setFromDueDateFilter] = useState<string>("");
@@ -73,6 +74,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
   useEffect(() => {
 
     const filters: ColumnFiltersState = [];
+
+    if (accountFilter.length > 0) {
+      filters.push({
+        id: "gl_account",
+        value: accountFilter,
+      });
+    }
 
     const dueDateFilter = fromDueDateFilter + "|" + toDueDateFilter;
     if (dueDateFilter.length > 1) {
@@ -99,7 +107,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     setColumnFilters(filters);
 
-  }, [fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
+  }, [accountFilter, fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -155,6 +163,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
       cell: info => {
         return <span>{formatBillDueDate(info.row.original)}</span>;
       },
+      enableSorting: false,
       filterFn: dateRangeFilterFn,
       header: "Due Date",
       id: "dueDate",
@@ -184,13 +193,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "exchangeRate",
     }),
 
-    columnHelper.display({
-      cell: info => {
-        return <span>{formatAccountNumberAndName(info.row.original.classifications?.account)}</span>
-      },
-      header: "GL Account",
-      id: "accountNumber",
-    }),
+    columnHelper.accessor(
+      row => formatAccountNumberAndName(row.classifications?.account),
+      {
+        enableSorting: false,
+        header: "GL Account",
+        id: "gl_account",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -308,6 +317,17 @@ export function BillsTable({ allBills }: BillsTableProps) {
               placeholder="Enter YYYYMMDD"
               type="text"
               value={toDueDateFilter}
+            />
+          </Form.Group>
+        </Col>
+        <Col>
+          <Form.Group controlId="accountFilter">
+            <span>Filter by GL Account:</span>
+            <Form.Control
+              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
+              placeholder="Enter part of number or name to filter"
+              type="text"
+              value={accountFilter}
             />
           </Form.Group>
         </Col>
