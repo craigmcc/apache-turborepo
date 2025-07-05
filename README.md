@@ -1,33 +1,37 @@
 # apache-turborepo
 
-## Introduction
+## 1. Introduction
 
 This repository is a monorepo (in other words, it contains multiple applications
 and packages that are interdependent) managed by [Turborepo](https://turborepo.com/).
 
 The relevant applications (in the *apps* directory) are:
 
-| Application | Description                                                                                                                                       |
-| ----------- |---------------------------------------------------------------------------------------------------------------------------------------------------|
+| Application   | Description                                                                                                                                       |
+|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| bill-lookup   | Application for looking up information about Bill content, using the local database.                                                              |
+| bill-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
 | ramp-download | **UNNEEDED** NextJS based application for downloading contet from the Ramp API and storing it in a local database when ramp-refresh did not work. |
-| ramp-info | **OBSOLETE** Application originally intended to display information directly from the Ramp APIs.  Superceded by ramp-lookup.                      |
-| ramp-lookup | Application for looking up information about Ramp content, using the local database.                                                              |
-| ramp-refresh | Node-based Application originally intended to download content from the Ramp API and storing it in a local database.                              |
+| ramp-info     | **OBSOLETE** Application originally intended to display information directly from the Ramp APIs.  Superceded by ramp-lookup.                      |
+| ramp-lookup   | Application for looking up information about Ramp content, using the local database.                                                              |
+| ramp-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
 
 The relevant packages (in the *packages* directory) are:
 
-| Package      | Description                                                                                                                                                             |
-| ------------ |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| eslint-config | ESLint configuration files, including `eslint-config-next` and `eslint-config-prettier`, which can be used by the applications and packages in this monorepo.           |
-| jest-presets | Jest configuration files, which can be used by the applications and packages in this monorepo.                                                                          |
-| ramp-api | Server side logic to call the Ramp APIs, which can be used to download content from Ramp.                                                                          |
-| ramp-db      | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Ramp APIs, along with a generated Prisma client for that schema. |
-| shared-utils | Shared utility functions that can be used by the applications and packages in this monorepo.                                                                            |
+| Package           | Description                                                                                                                                                             |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| bill-api          | Server side logic to call the Bill APIs, which can be used to download content from Bill.                                                                               |
+| bill-db           | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Bill APIs, along with a generated Prisma client for that schema. |
+| eslint-config     | ESLint configuration files, including `eslint-config-next` and `eslint-config-prettier`, which can be used by the applications and packages in this monorepo.           |
+| jest-presets      | Jest configuration files, which can be used by the applications and packages in this monorepo.                                                                          |
+| ramp-api          | Server side logic to call the Ramp APIs, which can be used to download content from Ramp.                                                                               |
+| ramp-db           | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Ramp APIs, along with a generated Prisma client for that schema. |
+| shared-utils      | Shared utility functions that can be used by the applications and packages in this monorepo.                                                                            |
 | typescript-config | TypeScript configuration files, which can be used by the applications and packages in this monorepo.                                                                    |
 
-## Installation
+## 2. Installation
 
-### Install Global Dependencies
+### 2.1 Install Global Dependencies
 
 The following global dependencies are required to work with this repository,
 and must be installed using the instructions on each of their respective websites:
@@ -51,7 +55,7 @@ and must be installed using the instructions on each of their respective website
   applications and packages in this repository.  It is installed as a global
   package using `pnpm`.
 
-### Clone the Repository and Install Dependencies
+### 2.2 Clone the Repository and Install Dependencies
 
 In the parent directory into which you want to clone the repository, run:
 
@@ -69,14 +73,17 @@ cd apache-turborepo ## If you are not already in the repository directory
 pnpm install
 ```
 
-### Perform An Initial Build of the Entire Monorepo
+### 2.3 Perform An Initial Build of the Entire Monorepo
 
 There is a step needed before the global build, to generate the Prisma client
-and types that will be used to access the local database.  This is done by running:
+and types that will be used to access the local databases.  This is done by running:
 
 ```bash
+cd packages/bill-db
+pnpm run bill-db:generate
+cd ../..
 cd packages/ramp-db
-pnpm run db-ramp:generate
+pnpm run ramp-db:generate
 cd ../..
 ```
 
@@ -85,7 +92,90 @@ After that, you can build the entire monorepo by running (from the root of the r
 ```bash
 turbo run build
 ```
-### Create the Local Database
+### 2.4 Create the Local Database for Bill Content
+
+To create the local database, you must first set up a `.env` file, in the
+package directory `packages/bill-db/`.  This file should contain a single
+variable defining the location of the local database file, for example:
+
+```env
+DATABASE_URL="file:/Users/craigmcc/sqlite/bill-db.db"
+```
+
+You must create the directory where the database file will be stored, if it does not
+exist, but the database file itself will be created automatically when you run the
+next command.
+
+Now, you can create the local database, and configure its tables, by running:
+
+```bash
+cd packages/bill-db
+turbo run bill-db:migrate
+cd ../..
+```
+This will create the database file (if it does not exist yet), apply the initial
+database schema to it, followed by any migrations that have been defined in the
+`prisma/migrations` directory.  The end result will be that the database
+is configured exactly as defined by the current Prisma schema, as of the time you
+most recently pulled the repository from Github.
+
+### 2.5 Populate the Local Database with Bill Content
+
+Next, we are going to use the `bill-refresh` application to download information
+from Bill, and populate the local database with that content.  Before you can do this,
+however, you must first configure a `.env` file in the `apps/bill-refresh/` directory,
+with the following environment variables:
+
+| Variable Name          | Description                                                                                        |
+|------------------------|----------------------------------------------------------------------------------------------------|
+| DATABASE_URL           | The location of the local database file, same as what was configured for `bill-db` above.          |
+| BILL_PROD_API_BASE_URL | The base URL for the Bill production API, e.g. `https://gateway.prod.bill.com/connect`.            |
+| BILL_DEVELOPER_KEY     | Your developer key from when you registered as a Bill developer.                                   |
+| BILL_ORGANIZATION_ID   | The organization ID (for all of Apache) that you received when you registered as a Bill developer. |
+| BILL_USERNAME          | Your Bill login username.                                                                          |
+| BILL_PASSWORD          | Your Bill login password.                                                                          |
+
+Now, you can run the `bill-refresh` application to download the content from Bill and
+load it into the local database.  This is done by running:
+
+```bash
+cd apps/bill-refresh
+turbo run build
+pnpm run start
+cd ../..
+```
+
+This is a Node-based application that outputs its progress to the terminal window,
+and then exits when it is finished.  It is suitable to be run periodically to update
+the local database with the latest content from Bill, and it can be run as often
+as you like, or even run it periodically with a cron job.
+
+Now, if you use any of the various SQLite database browsers, you will be able to
+see that all of the tables have been populated with the current content from Bill,
+as of the moment you ran this application.  It can be run again at any time
+without problems, because it uses Prisma's `upsert` functionality to insert new
+rows or update existing rows, based on the unique primary key for each table.
+
+### 2.6 Running the Lookup Application to View the Bill Local Database Content
+
+Next, set up a `.env` file in the `apps/bill-lookup/` directory, with only the
+DATABASE_URL variable, which should point to the same local database file.  Now,
+you can run the `bill-lookup` application to view the content of the local database.
+
+```bash
+cd apps/bill-lookup
+turbo run build
+pnpm run dev
+```
+
+Then point your browser at `http://localhost:3001`.  When you want to stop the
+app, you can cancel it with Ctrl-C in the terminal window where it is running
+and return to the repo's root directory.
+
+Running in development mode will automatically reload the application when you make
+changes to the source code, so you can easily make changes and see the results.
+
+### 2.7 Create the Local Database for Ramp Content
 
 To create the local database, you must first set up a `.env` file, in the
 package directory `packages/ramp-db/`.  This file should contain a single
@@ -103,15 +193,15 @@ Now, you can create the local database, and configure its tables, by running:
 
 ```bash
 cd packages/ramp-db
-turbo run db-ramp:migrate
+turbo run ramp-db:migrate
 ```
 This will create the database file (if it does not exist yet), apply the initial
 database schema to it, followed by any migrations that have been defined in the
-`packages/prisma/migrations` directory.  The end result will be that the database
+`prisma/migrations` directory.  The end result will be that the database
 is configured exactly as defined by the current Prisma schema, as of the time you
 most recently pulled the repository from Github.
 
-### Populate the Local Database with Content
+### 2.8 Populate the Local Database with Ramp Content
 
 Next, we are going to use the `ramp-refresh` application to download information
 from Ramp, and populate the local database with that content.  Before you can do this,
@@ -152,7 +242,7 @@ as of the moment you ran this application.  It can be run again at any time
 without problems, because it uses Prisma's `upsert` functionality to insert new
 rows or update existing rows, based on the unique primary key for each table.
 
-### Running the Lookup Application to View the Local Database Content
+### 2.9 Running the Lookup Application to View the Ramp Local Database Content
 
 Next, set up a `.env` file in the `apps/ramp-lookup/` directory, with only the
 DATABASE_URL variable, which should point to the same local database file.  Now,
@@ -171,7 +261,7 @@ and return to the repo's root directory.
 Running in development mode will automatically reload the application when you make
 changes to the source code, so you can easily make changes and see the results.
 
-## Regular Usage
+## 3. Regular Usage
 
 You will periodically want to pull the latest code changes from the Git repository.
 To do so, run the following commands from the root of the repository:
@@ -180,56 +270,70 @@ To do so, run the following commands from the root of the repository:
 git pull
 ```
 
-If there have been any changes, you will typically need to regenerate the Prisma client,
-rebuild the entire monorepo, and then run the migration command to update the local database:
+If there have been any changes, you will typically need to regenerate the Prisma clients,
+rebuild the entire monorepo, and then run the migration commands to update the local database:
 
 ```bash
+cd packages/bill-db
+turbo run bill-db:generate
+turbo run bill-db:migrate
+cd ../..
 cd packages/ramp-db
-turbo run db-ramp:generate
+turbo run ramp-db:generate
+turbo run ramp-db:migrate
 cd ../..
 turbo run build
-cd packages/ramp-db
-turbo run db-ramp:migrate
 ```
 
 Periodically, you will also want to update the local database content with the latest
-information from Ramp.  This will be something you will want to do if there have been
+information from Bill and Ramp.  This will be something you will want to do if there have been
 code changes (such as supporting for new tables or updated schema definitions):
 
 ```bash
+cd apps/bill-refresh
+turbo run build
+pnpm run start
+cd ../..
 cd apps/ramp-refresh
 turbo run build
 pnpm run start
+cd ../..
 ```
 
-As before, you can run the `ramp-lookup` application to view the updated content in the local database:
+As before, you can run the `bill-lookup` and `ramp-lookup` applications to view
+the updated content in the local databases:
 
 ```bash
+cd qpps/bill-lookup
+turbo run build
+pnpm run dev
+# Control-C to stop the app
+cd ../..
+# OR
 cd apps/ramp-lookup
 turbo run build
 pnpm run dev
+# Control-C to stop the app
+cd ../..
 ```
 
-## Tips On Understanding the Repository Contents
+## 4. Tips On Understanding the Repository Contents
 
-### Where are the versions of our dependencies specified?
+### 4.1 Where are the versions of our dependencies specified?
 
 If you look at the `package.json` files in the various applications and packages,
 you will see two interesting types of dependency declarations:
 
 - `workspace:*` - This means that the dependency is a local package in the monorepo,
   and it will be resolved to the latest version of that package in the monorepo.
-  This is used for packages that are part of the same monorepo, such as `@repo/ramp-db`.
+  This is used for packages that are part of the same monorepo, such as
+  `@repo/bill-db` or `@repo/ramp-db`.
 - `catalog:foo` - This means that the actual version of the dependency is stored
   in the `pnpm-workspace.yaml` file in the root of the monorepo.  Declaring
   dependencies this way allows us to ensure that the same version of the
   same dependency is used across the entire monorepo.
 
-We are using the Catalogs feature of `pnpm` to manage the versions of our dependencies
-globally, so that we can ensure that all applications and packages in the monorepo
-use the same version of a dependency.
-
-### How do I verify that the source code in each package has correct styling?
+### 4.2 How do I verify that the source code in each package has correct styling?
 
 You can run the following command from the root of the monorepo to check the
 source code in each package for correct styling, as defined by the ESLint configuration:
@@ -240,7 +344,7 @@ turbo run lint
 
 This will run the `lint` script in each package and application that has one defined.
 
-### Are there any tests in this repository?
+### 4.3 Are there any tests in this repository?
 
 There are woefully few at the moment, but the packages and applications have been
 configured to use Jest for unit testing.  You can run the tests in each package by
@@ -252,7 +356,7 @@ navigating to it's root directory, and running one of the following commands:
   watch for changes to the source code.  This is useful for running tests in a
   continuous integration environment, such as GitHub Actions.
 
-### Is there a GitHub Action workflow in this repository?
+### 4.4 Is there a GitHub Action workflow in this repository?
 
 Yes, defined in the file `.github/workflows/ci.yml`.  This workflow is triggered
 when a push happens to the main branch, and performs the following steps:
@@ -276,7 +380,7 @@ turbo run build
 turbo run test:ci
 ```
 
-### Is there Dependabot support in this repository?
+### 4.5 Is there Dependabot support in this repository?
 
 While it is configured (`.github/dependabot.yml`), GitHub does not currently
 seem to support Dependabot for monorepos.  This means that Dependabot will not
@@ -284,7 +388,7 @@ create pull requests to update the dependencies in the monorepo, and you will
 need to manually update the dependencies in the `pnpm-workspace.yaml` file
 before rebuilding everything.
 
-## Underlying Technologies In Use
+## 5. Underlying Technologies In Use
 
 TODO.
 
