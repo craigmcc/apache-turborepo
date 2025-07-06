@@ -20,18 +20,23 @@ export type AccountGroup = {
  * Is the given account number part of the specified account group?
  */
 export function isAccountInGroup(
-  accountNumber: string,
+  accountNumber: string | null | undefined,
   groupName: string,
 ): boolean {
+  if (!accountNumber) {
+    return false;
+  }
   const accountGroup = ACCOUNT_GROUPS_MAP.get(groupName);
   if (!accountGroup) {
     return false;
   }
   for (const range of accountGroup.groupRanges) {
     if ((accountNumber >= range.start) && (accountNumber <= range.end)) {
+//      console.log("[debug] Account " + accountNumber + " is in group " + groupName);
       return true;
     }
   }
+  console.log("[debug] Account " + accountNumber + " is NOT in group " + groupName);
   return false;
 }
 
@@ -84,8 +89,8 @@ export const ACCOUNT_GROUPS: ReadonlyArray<AccountGroup> = [
   {
     groupName: "Fundraising",
     groupRanges: [
-      { start: "2100", end: "2199" },
-      { start: "2200", end: "2299" },
+//      { start: "2100", end: "2199" },
+//      { start: "2200", end: "2299" },
       { start: "4150", end: "4199" },
       { start: "4200", end: "4299" },
       { start: "6300", end: "6399" },

@@ -43,6 +43,7 @@ import {
   formatUserName
 } from "@/lib/Formatters";
 import { TransactionPlus } from "@/types/types";
+import { isAccountInGroup } from "@repo/shared-utils/dist";
 
 // Public Objects ------------------------------------------------------------
 
@@ -77,6 +78,13 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   useEffect(() => {
 
     const filters: ColumnFiltersState = [];
+
+    if (accountGroupFilter !== "All") {
+      filters.push({
+        id: "account_group",
+        value: accountGroupFilter,
+      });
+    }
 
     const accountingDateFilter = fromDateFilter + "|" + toDateFilter;
     if (accountingDateFilter.length > 1) {
@@ -123,8 +131,8 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
     setColumnFilters(filters);
 
-  }, [cardNameFilter, departmentNameFilter, fromDateFilter, glAccountFilter,
-      merchantFilter, toDateFilter, userNameFilter]);
+  }, [accountGroupFilter, cardNameFilter, departmentNameFilter, fromDateFilter,
+      glAccountFilter, merchantFilter, toDateFilter, userNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -155,7 +163,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         return <span>{formatAccountingDate(info.row.original)}</span>
       },
       enableSorting: true,
-      filterFn: dateRangeFilter,
+      filterFn: dateRangeFilterFn,
       header: () => <span>Trans. Date-Time</span>,
       id: "accounting_date",
     }),
@@ -187,7 +195,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       cell: info => {
         return <span>{formatCardLastFour(info.row.original.card)}</span>;
       },
-      enableSorting: true,
+      enableSorting: false,
       header: () => <span>Last 4</span>,
       id: "last_four",
     }),
@@ -222,18 +230,16 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       cell: info => {
         return <span>{formatGlAccount(info.row.original)}</span>;
       },
+      enableSorting: false,
       header: () => <span>GL Account</span>,
       id: "gl_account",
     }),
-/*
-    columnHelper.display({
-      cell: info => {
-        return <span>{info.row.original.state}</span>;
-      },
-      header: () => <span>State</span>,
-      id: "state",
+    columnHelper.accessor(row => "", {
+      enableSorting: false,
+      filterFn: accountGroupFilterFn,
+      header: () => <span>Account Group</span>,
+      id: "account_group",
     }),
-*/
     columnHelper.display({
       cell: info => {
         return (
@@ -258,6 +264,12 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility:
+        {
+          account_group: false,
+        },
+    },
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -384,11 +396,29 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 const columnHelper = createColumnHelper<TransactionPlus>();
 
 /**
+ * Account group filter function for the Transactions table.  The filter "value"
+ * should be the name of an account group, such as "ComDev" or "Marketing", that must
+ * be matched by the current row.
+ */
+const accountGroupFilterFn: FilterFn<TransactionPlus> = (row, columnId, value) => {
+  if (!value || (value === "All")) {
+    return true; // If no value is provided, do not filter out any rows
+  } else {
+    const tliafs = row.original.line_item_accounting_field_selections
+    if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
+      return isAccountInGroup(tliafs[0].external_code?.substring(0, 4), value);
+    } else {
+      return false;
+    }
+  }
+}
+
+/**
  * Date range filter function for the Transactions table.  The filter "value"
  * should be a string in the format "YYYYMMDD|YYYYMMDD", where the first date is
  * the "from" date and the second date is the "to" date.
  */
-const dateRangeFilter: FilterFn<TransactionPlus> = (row, columnId, value) => {
+const dateRangeFilterFn: FilterFn<TransactionPlus> = (row, columnId, value) => {
   if (!value || (value === "")) {
     return true; // If no value is provided, do not filter out any rows
   } else {
