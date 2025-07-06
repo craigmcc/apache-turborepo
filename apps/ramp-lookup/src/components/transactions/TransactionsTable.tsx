@@ -23,12 +23,13 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
 import { DataTable } from "@/components/tables/DataTable";
+import { AccountGroupFilter } from "@/components/transactions/AccountGroupFilter";
+import { TextFieldFilter } from "@/components/transactions/TextFieldFilter";
 import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
 import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
 import {
@@ -52,6 +53,7 @@ export type TransactionsTableProps = {
 
 export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
+  const [accountGroupFilter, setAccountGroupFilter] = useState<string>("All");
   const [cardNameFilter, setCardNameFilter] = useState<string>("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus | null>(null);
@@ -154,7 +156,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       },
       enableSorting: true,
       filterFn: dateRangeFilter,
-      header: () => <span>Accounting Date-Time</span>,
+      header: () => <span>Trans. Date-Time</span>,
       id: "accounting_date",
     }),
     columnHelper.accessor(row => formatDepartmentName(row.card_holder_user?.department), {
@@ -283,81 +285,73 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       </Row>
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId={fromDateFilter}>
-            <span>Filter by From Date:</span>
-            <Form.Control
-              onChange={e => setFromDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={fromDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="fromDateFilter"
+            label="Filter by From Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setFromDateFilter}
+            textFieldFilter={fromDateFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={toDateFilter}>
-            <span>Filter by To Date:</span>
-            <Form.Control
-              onChange={e => setToDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="toDateFilter"
+            label="Filter by To Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setToDateFilter}
+            textFieldFilter={toDateFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={userNameFilter}>
-            <span>Filter by Department Name:</span>
-            <Form.Control
-              onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={departmentNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="departmentNameFilter"
+            label="Filter by Dept. Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setDepartmentNameFilter}
+            textFieldFilter={departmentNameFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={userNameFilter}>
-            <span>Filter by User Name:</span>
-            <Form.Control
-              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={userNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="userNameFilter"
+            label="Filter by User Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setUserNameFilter}
+            textFieldFilter={userNameFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={cardNameFilter}>
-            <span>Filter by Card Name:</span>
-            <Form.Control
-              onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={cardNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="cardNameFilter"
+            label="Filter by Card Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setCardNameFilter}
+            textFieldFilter={cardNameFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={merchantFilter}>
-            <span>Filter by Merchant Name:</span>
-            <Form.Control
-              onChange={e => setMerchantFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={merchantFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="merchantFilter"
+            label="Filter by Merchant Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setMerchantFilter}
+            textFieldFilter={merchantFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={glAccountFilter}>
-            <span>Filter by GL Acct/Name:</span>
-            <Form.Control
-              onChange={e => setGlAccountFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of GL account or name"
-              type="text"
-              value={glAccountFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="glAccountFilter"
+            label="Filter by GL Acct/Name:"
+            placeholder="Enter part of account or name"
+            setTextFieldFilter={setGlAccountFilter}
+            textFieldFilter={glAccountFilter}
+          />
+        </Col>
+        <Col>
+          <AccountGroupFilter
+            accountGroupFilter={accountGroupFilter}
+            setAccountGroupFilter={setAccountGroupFilter}
+          />
         </Col>
       </Row>
 

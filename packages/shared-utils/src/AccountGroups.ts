@@ -1,38 +1,52 @@
 /**
- * Shared utilities for identifying GL accounts that are part of an account group.
+ * Shared utility for defining GL account groups, and for identifying GL accounts
+ * that are part of a particular account group.
  */
 
 // Public Objects ------------------------------------------------------------
 
-export type AccountGroupsRange = {
+export type AccountGroupRange = {
   start: string;
   end: string;
 }
 
 export type AccountGroup = {
   groupName: string;
-  groupRanges: AccountGroupsRange[];
-  groupType: "GeneralLedger" | "Departmental";
+  groupRanges: AccountGroupRange[];
+  groupType: "All"  | "Departmental" | "Ledger";
 };
 
+/**
+ * Is the given account number part of the specified account group?
+ */
 export function isAccountInGroup(
   accountNumber: string,
-  accountGroups: AccountGroup[],
+  groupName: string,
 ): boolean {
-  for (const group of accountGroups) {
-    for (const range of group.groupRanges) {
-      if ((accountNumber >= range.start) && (accountNumber <= range.end)) {
-        return true;
-      }
+  const accountGroup = ACCOUNT_GROUPS_MAP.get(groupName);
+  if (!accountGroup) {
+    return false;
+  }
+  for (const range of accountGroup.groupRanges) {
+    if ((accountNumber >= range.start) && (accountNumber <= range.end)) {
+      return true;
     }
   }
   return false;
 }
 
-export const ACCOUNT_GROUPS: AccountGroup[] = [
+export const ACCOUNT_GROUPS: ReadonlyArray<AccountGroup> = [
+  // All Account Groups
+  {
+    groupName: "All",
+    groupRanges: [
+      { start: "0000", end: "9999" },
+    ],
+    groupType: "All",
+  },
   // Departmental Account Groups
   {
-    groupName: "Board/Operations",
+    groupName: "Board",
     groupRanges: [
       { start: "6000", end: "6099" },
     ],
@@ -176,34 +190,38 @@ export const ACCOUNT_GROUPS: AccountGroup[] = [
     groupRanges: [
       { start: "1000", end: "1999" },
     ],
-    groupType: "GeneralLedger",
+    groupType: "Ledger",
   },
   {
     groupName: "Liabilities",
     groupRanges: [
       { start: "2000", end: "2999" },
     ],
-    groupType: "GeneralLedger",
+    groupType: "Ledger",
   },
   {
     groupName: "Equity",
     groupRanges: [
       { start: "3000", end: "3999" },
     ],
-    groupType: "GeneralLedger",
+    groupType: "Ledger",
   },
   {
     groupName: "Revenue",
     groupRanges: [
       { start: "4000", end: "4999" },
     ],
-    groupType: "GeneralLedger",
+    groupType: "Ledger",
   },
   {
     groupName: "Expenses",
     groupRanges: [
       { start: "5000", end: "9999" },
     ],
-    groupType: "GeneralLedger",
+    groupType: "Ledger",
   },
 ];
+
+export const ACCOUNT_GROUPS_MAP: ReadonlyMap<string, AccountGroup> = new Map(
+  ACCOUNT_GROUPS.map((group) => [group.groupName, group]),
+);
