@@ -6,6 +6,10 @@
 
 // External Imports ----------------------------------------------------------
 
+import { isAccountInGroup } from "@repo/shared-utils/dist";
+import { DataTable } from "@repo/shared-components/DataTable";
+import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -27,9 +31,6 @@ import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
-import { AccountGroupFilter } from "@/components/transactions/AccountGroupFilter";
-import { TextFieldFilter } from "@/components/transactions/TextFieldFilter";
 import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
 import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
 import {
@@ -43,7 +44,6 @@ import {
   formatUserName
 } from "@/lib/Formatters";
 import { TransactionPlus } from "@/types/types";
-import { isAccountInGroup } from "@repo/shared-utils/dist";
 
 // Public Objects ------------------------------------------------------------
 
@@ -159,9 +159,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   // Column definitions for the Transactions table
   const columns = useMemo(() => [
     columnHelper.accessor(row => formatAccountingDate(row), {
-      cell: info => {
-        return <span>{formatAccountingDate(info.row.original)}</span>
-      },
       enableSorting: true,
       filterFn: dateRangeFilterFn,
       header: () => <span>Trans. Date-Time</span>,
@@ -295,6 +292,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
         <Col>
           <TextFieldFilter

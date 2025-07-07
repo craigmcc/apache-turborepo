@@ -15,6 +15,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@repo/ramp-db": "workspace:*",
+    "@repo/shared-components": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "@tanstack/react-table": "catalog:tanstack",
     "@uidotdev/usehooks": "catalog:uidotdev",

@@ -6,9 +6,11 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
-  ColumnDef,
   ColumnFiltersState,
+  createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -22,14 +24,12 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
 import { CardMoreInfo } from "@/components/cards/CardMoreInfo";
 import { CardsCsvExport } from "@/components/cards/CardsCsvExport";
-import { DataTable } from "@/components/tables/DataTable";
 import {
   formatCardInterval,
   formatCardName,
@@ -37,7 +37,7 @@ import {
   formatDepartmentName,
   formatUserName
 } from "@/lib/Formatters";
-import {CardPlus } from "@/types/types";
+import { CardPlus } from "@/types/types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -60,6 +60,7 @@ export function CardsTable({ allCards }: CardsTableProps) {
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "user_name", desc: false },
+    { id: "card_name", desc: false },
   ]);
   const [userNameFilter, setUserNameFilter] = useState<string>("");
 
@@ -116,46 +117,27 @@ export function CardsTable({ allCards }: CardsTableProps) {
   }
 
   // Column definitions for the Cards table
-  const columns : ColumnDef<CardPlus>[] = useMemo(() => [
-    {
-      accessorFn: row => formatDepartmentName(row.cardholder?.department),
-      cell: ({ row }) => {
-        return <span>{formatDepartmentName(row.original.cardholder?.department)}</span>;
-      },
-      enableMultiSort: true,
-      enableSorting: true,
+  const columns = useMemo(() => [
+    columnHelper.accessor(row => formatDepartmentName(row.cardholder?.department), {
       header: "Department Name",
       id: "department_name",
-    },
-    {
-      accessorFn: row => formatUserName(row.cardholder),
-      cell: ({ row }) => {
-        return <span>{formatUserName(row.original.cardholder)}</span>;
-      },
-      enableMultiSort: true,
-      enableSorting: true,
+    }),
+    columnHelper.accessor(row => formatUserName(row.cardholder), {
       header: "User Name",
       id: "user_name",
-    },
-    {
-      accessorFn: row => formatCardName(row),
-      cell: ({ row }) => {
-        return <span>{formatCardName(row.original)}</span>;
-      },
-      enableMultiSort: true,
-      enableSorting: true,
+    }),
+    columnHelper.accessor(row => formatCardName(row), {
       header: "Card Name",
       id: "card_name",
-    },
-    {
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
-        return <span>{row.original.is_physical ? "Yes" : "No"}</span>;
+        return <span>{row.original.is_physical ? "Yes" : "No"}</span>
       },
       header: "Physical?",
       id: "is_physical",
-    },
-    {
-      accessorFn: row => row.state,
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         const state = row.original.state;
         if (!state) {
@@ -174,37 +156,36 @@ export function CardsTable({ allCards }: CardsTableProps) {
       },
       header: "State",
       id: "state",
-    },
-    {
-      accessorFn: row => row.last_four || "n/a",
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         return <span>{row.original.last_four || "n/a"}</span>;
       },
       header: "Last 4",
       id: "last_four",
-    },
-    {
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         return <span>{formatAmountFunky(row.original.spending_restrictions?.amount)}</span>;
       },
       header: "Interval Limit",
       id: "amount",
-    },
-    {
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         return <span>{formatCardInterval(row.original)}</span>;
       },
       header: "Interval",
       id: "interval",
-    },
-    {
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         return <span>{formatAmountFunky(row.original.spending_restrictions?.transaction_amount_limit)}</span>;
       },
       header: "Transaction Limit",
       id: "transaction_amount_limit",
-    },
-    {
+    }),
+    columnHelper.display({
       cell: ({ row }) => {
         const suspended = row.original.spending_restrictions?.suspended;
         if (suspended) {
@@ -215,21 +196,21 @@ export function CardsTable({ allCards }: CardsTableProps) {
       },
       header: "Suspended?",
       id: "suspended",
-    },
-    {
-      cell: ({ row }) => {
+    }),
+    columnHelper.display({
+      cell: info => {
         return (
           <span>
-            <BookUp
-              onClick={() => handleMoreInfoOpen(row.original)}
-              style={{ cursor: "context-menu" }}
-            />
-          </span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
         );
       },
       header: "Info",
       id: "moreInfo",
-    }
+    }),
   ], []);
 
   // Overall table instance
@@ -265,39 +246,34 @@ export function CardsTable({ allCards }: CardsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
         <Col>
-          <Form.Group controlId={departmentNameFilter}>
-            <span>Filter by Department Name:</span>
-            <Form.Control
-              onChange={e => setDepartmentNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={departmentNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="departmentNameFilter"
+            label="Filter by Department Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setDepartmentNameFilter}
+            textFieldFilter={departmentNameFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={userNameFilter}>
-            <span>Filter by User Name:</span>
-            <Form.Control
-              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={userNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="userNameFilter"
+            label="Filter by User Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setUserNameFilter}
+            textFieldFilter={userNameFilter}
+          />
         </Col>
         <Col>
-          <Form.Group controlId={cardNameFilter}>
-            <span>Filter by Card Name:</span>
-            <Form.Control
-              onChange={e => setCardNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={cardNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="cardNameFilter"
+            label="Filter by Card Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setCardNameFilter}
+            textFieldFilter={cardNameFilter}
+          />
         </Col>
       </Row>
 
@@ -324,6 +300,11 @@ export function CardsTable({ allCards }: CardsTableProps) {
 }
 
 // Private Objects -----------------------------------------------------------
+
+/**
+ * Helper for creating columns in the Cards table.
+ */
+const columnHelper = createColumnHelper<CardPlus>();
 
 /**
  * Format an amount as a string with two decimal places.  Funky for old API things.
