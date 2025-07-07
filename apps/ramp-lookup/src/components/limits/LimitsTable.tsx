@@ -59,7 +59,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   // Apply selection filters whenever they change
   useEffect(() => {
 
-    const filters = [];
+    const filters: ColumnFiltersState = [];
 
     if (limitNameFilter.length > 0) {
       filters.push({
@@ -67,6 +67,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
         value: limitNameFilter,
       });
     }
+
     setColumnFilters(filters);
 
   }, [limitNameFilter]);
