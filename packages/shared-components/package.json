@@ -13,8 +13,7 @@
     "check-types": "tsc --noEmit",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
-    "test": "jest --watch",
-    "test:ci": "jest"
+    "test": "jest --watch"
   },
   "type": "module",
   "version": "0.0.0",

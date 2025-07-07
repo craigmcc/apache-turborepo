@@ -26,6 +26,7 @@ The relevant packages (in the *packages* directory) are:
 | jest-presets      | Jest configuration files, which can be used by the applications and packages in this monorepo.                                                                          |
 | ramp-api          | Server side logic to call the Ramp APIs, which can be used to download content from Ramp.                                                                               |
 | ramp-db           | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Ramp APIs, along with a generated Prisma client for that schema. |
+| shared-components | Shared React components that can be used by the applications and packages in this monorepo.  Depends on React Boostrap and Tanstack Table.                              |
 | shared-utils      | Shared utility functions that can be used by the applications and packages in this monorepo.                                                                            |
 | typescript-config | TypeScript configuration files, which can be used by the applications and packages in this monorepo.                                                                    |
 
