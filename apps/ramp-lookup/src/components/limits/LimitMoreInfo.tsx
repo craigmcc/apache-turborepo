@@ -25,10 +25,14 @@ export type LimitMoreInfoProps = {
   // Current "show" state of the modal
   show: boolean;
   // Limit to display more information about
-  limit: LimitPlus;
+  limit: LimitPlus | null | undefined;
 };
 
 export function LimitMoreInfo({ hide, show, limit }: LimitMoreInfoProps) {
+
+  if (!limit) {
+    return null;
+  }
 
   return (
     <Modal

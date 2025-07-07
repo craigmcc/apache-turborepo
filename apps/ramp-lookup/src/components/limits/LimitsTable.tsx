@@ -6,19 +6,23 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
-//  CellContext,
+  ColumnFiltersState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   PaginationState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowDownAZ, ArrowUpAZ, ArrowDownUp, BookUp } from "lucide-react";
+import { BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -28,10 +32,8 @@ import Row from "react-bootstrap/Row";
 
 import { LimitMoreInfo } from "@/components/limits/LimitMoreInfo";
 import { LimitsCsvExport } from "@/components/limits/LimitsCsvExport";
-import { PaginationFooter } from "@/components/tables/PaginationFooter";
 import { formatAmount, formatLimitName } from "@/lib/Formatters";
 import { LimitPlus } from "@/types/types";
-import Button from "react-bootstrap/Button";
 
 // Public Objects ------------------------------------------------------------
 
@@ -42,8 +44,8 @@ export type LimitsTableProps = {
 
 export function LimitsTable({ allLimits }: LimitsTableProps) {
 
-  const [currentLimit, setCurrentLimit] = useState<LimitPlus>(placeholderLimit);
-  const [filteredLimits, setFilteredLimits] = useState<LimitPlus[]>(allLimits);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [currentLimit, setCurrentLimit] = useState<LimitPlus | null>(null);
   const [limitNameFilter, setLimitNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -58,18 +60,17 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   // Apply selection filters whenever they change
   useEffect(() => {
 
-    let matchingLimits: LimitPlus[] = allLimits;
+    const filters = [];
 
     if (limitNameFilter.length > 0) {
-      matchingLimits = matchingLimits.filter(limit => {
-        const limitName = formatLimitName(limit);
-        return limitName.toLowerCase().includes(limitNameFilter);
+      filters.push({
+        id: "limit_name",
+        value: limitNameFilter,
       });
     }
+    setColumnFilters(filters);
 
-    setFilteredLimits(matchingLimits);
-
-  }, [allLimits, limitNameFilter]);
+  }, [limitNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -84,7 +85,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
 //    console.log("Closing More Info modal for limit:", formatLimitName(currentLimit));
-    setCurrentLimit(placeholderLimit);
+    setCurrentLimit(null);
     setShowMoreInfo(false);
   }
 
@@ -98,9 +99,6 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   // Column definitions for the Limits table
   const columns = useMemo(() =>   [
     columnHelper.accessor(row => formatLimitName(row), {
-      cell: info => {
-        return <span>{formatLimitName(info.row.original)}</span>
-      },
       header: "Limit Name",
       id: "limit_name",
     }),
@@ -192,13 +190,15 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
   // Create the table instance
   const table = useReactTable({
     columns,
-    data: filteredLimits,
+    data: allLimits,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
+      columnFilters,
       pagination,
       sorting,
     },
@@ -219,6 +219,7 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
         <Col className="text-center">
           <Form.Group controlId={limitNameFilter}>
@@ -230,62 +231,20 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
               value={limitNameFilter}
             />
           </Form.Group>
+          <TextFieldFilter
+            controlId="limitNameFilter"
+            label="Filter by Limit Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setLimitNameFilter}
+            textFieldFilter={limitNameFilter}
+          />
         </Col>
       </Row>
 
-      <table className="table table-bordered table-striped">
-
-        <thead>
-        {table.getHeaderGroups().map(headerGroup => (
-          <tr key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
-              <th key={header.id} colSpan={header.colSpan}>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-                { header.column.getCanSort() ? (
-                    <>
-                    <span
-                      onClick={header.column.getToggleSortingHandler()}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {header.column.getIsSorted() === "asc" ? (
-                        <ArrowUpAZ className="ms-2 text-info" size={24}/>
-                      ) : header.column.getIsSorted() === "desc" ? (
-                        <ArrowDownAZ className="ms-2 text-info" size={24}/>
-                      ) : (
-                        <ArrowDownUp className="ms-2 text-info" size={24}/>
-                      )}
-                    </span>
-                    </>
-                  ) :
-                  null
-                }
-              </th>
-            ))}
-          </tr>
-        ))}
-        </thead>
-
-        <tbody>
-        {table.getRowModel().rows.map(row => (
-          <tr key={row.id}>
-            {row.getVisibleCells().map(cell => (
-              <td key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </td>
-            ))}
-          </tr>
-        ))}
-        </tbody>
-
-        <tfoot>
-        <tr>
-          <th colSpan={table.getCenterLeafColumns().length}>
-            <PaginationFooter table={table}/>
-          </th>
-        </tr>
-        </tfoot>
-
-      </table>
+      <DataTable
+        showPagination={true}
+        table={table}
+      />
 
       <LimitsCsvExport
         hide={handleCsvExportClose}
@@ -310,35 +269,3 @@ export function LimitsTable({ allLimits }: LimitsTableProps) {
  * Helper for creating columns in the Limits table.
  */
 const columnHelper = createColumnHelper<LimitPlus>();
-
-/**
- * Placeholder for the LimitMoreInfo component.
- * This is used to ensure the component always has a valid limit to display.
- */
-const placeholderLimit: LimitPlus =  {
-  // Scalar fields
-  id: "",
-  balance_cleared_amt: null,
-  balance_cleared_cc: null,
-  balance_pending_amt: null,
-  balance_pending_cc: null,
-  balance_total_amt: null,
-  balance_total_cc: null,
-  created_at: null,
-  display_name: "",
-  has_program_overridden: null,
-  is_shareable: false,
-  permitted_primary_card_enabled: null,
-  permitted_reimbursements_enabled: null,
-  state: "ACTIVE",
-  suspension_acting_user_id: null,
-  suspension_inserted_at: null,
-  suspension_suspended_by_ramp: null,
-  // Potential relationships
-  entity_id: null,
-  // Actual relationships
-  cards: [],
-  spend_program_id: null,
-  spending_restrictions: null,
-  users: [],
-}
