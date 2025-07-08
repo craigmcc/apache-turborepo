@@ -6,6 +6,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -22,12 +24,10 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
 import { UsersCsvExport } from "@/components/users/UsersCsvExport";
 import { UserMoreInfo } from "@/components/users/UserMoreInfo";
 import {
@@ -100,13 +100,12 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 
   // Column definitions for the Users table
   const columns = useMemo(() => [
+
     columnHelper.accessor(row => formatUserName(row), {
-      cell: info => {
-        return <span>{formatUserName(info.row.original)}</span>;
-      },
       header: "User Name",
       id: "user_name",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{formatUserEmail(info.row.original)}</span>
@@ -114,6 +113,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "User Email",
       id: "email",
     }),
+
     columnHelper.display({
       cell: info => {
         const archived = info.row.original.archived;
@@ -130,6 +130,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "Archived",
       id: "archived",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{formatUserRoleType(info.row.original)}</span>
@@ -137,6 +138,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "Role Type",
       id: "roleType",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{formatUserRoleDescription(info.row.original)}</span>
@@ -144,6 +146,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "Role Description",
       id: "roleDescription",
     }),
+
     columnHelper.display({
       cell: info => {
         return (
@@ -158,6 +161,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "Info",
       id: "moreInfo",
     }),
+
   ], []);
 
   // Overall table instance
@@ -193,18 +197,19 @@ export function UsersTable({ allUsers }: UsersTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
+
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by User Name:</span>
-            <Form.Control
-              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={userNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="nameFilter"
+            label="Filter by User Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setUserNameFilter}
+            textFieldFilter={userNameFilter}
+          />
         </Col>
+
       </Row>
 
       <DataTable

@@ -130,6 +130,9 @@ importers:
       '@repo/bill-db':
         specifier: workspace:*
         version: link:../../packages/bill-db
+      '@repo/shared-components':
+        specifier: workspace:*
+        version: link:../../packages/shared-components
       '@repo/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils

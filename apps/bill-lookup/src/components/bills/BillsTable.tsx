@@ -6,6 +6,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -22,12 +24,10 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
 import { BillsCsvExport } from "@/components/bills/BillsCsvExport";
 import { BillMoreInfo } from "@/components/bills/BillMoreInfo";
 import {
@@ -134,10 +134,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
   // Column definitions for the Bills table
   const columns = useMemo(() => [
 
-    columnHelper.accessor("vendor.name", {
-      cell: info => {
-        return <span>{formatVendorName(info.row.original.vendor)}</span>;
-      },
+    columnHelper.accessor(row => formatVendorName(row.vendor), {
       header: "Vendor Name",
       id: "vendor.name",
     }),
@@ -268,73 +265,69 @@ export function BillsTable({ allBills }: BillsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
+
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by Vendor Name:</span>
-            <Form.Control
-              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={vendorNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="nameFilter"
+            label="Filter by Vendor Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setVendorNameFilter}
+            textFieldFilter={vendorNameFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={fromInvoiceDateFilter}>
-            <span>Filter by From Invoice Date:</span>
-            <Form.Control
-              onChange={e => setFromInvoiceDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={fromInvoiceDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="fromInvoiceDateFilter"
+            label="Filter by From Invoice Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setFromInvoiceDateFilter}
+            textFieldFilter={fromInvoiceDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={toInvoiceDateFilter}>
-            <span>Filter by To Invoice Date:</span>
-            <Form.Control
-              onChange={e => setToInvoiceDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toInvoiceDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="toInvoiceDateFilter"
+            label="Filter by To Invoice Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setToInvoiceDateFilter}
+            textFieldFilter={toInvoiceDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={fromDueDateFilter}>
-            <span>Filter by From Due Date:</span>
-            <Form.Control
-              onChange={e => setFromDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={fromDueDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="fromDueDateFilter"
+            label="Filter by From Due Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setFromDueDateFilter}
+            textFieldFilter={fromDueDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={toDueDateFilter}>
-            <span>Filter by To Due Date:</span>
-            <Form.Control
-              onChange={e => setToDueDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toDueDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="toDueDateFilter"
+            label="Filter by To Due Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setToDueDateFilter}
+            textFieldFilter={toDueDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId="accountFilter">
-            <span>Filter by GL Account:</span>
-            <Form.Control
-              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of number or name to filter"
-              type="text"
-              value={accountFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="accountFilter"
+            label="Filter by GL Account:"
+            placeholder="Enter part of number or name to filter"
+            setTextFieldFilter={setAccountFilter}
+            textFieldFilter={accountFilter}
+          />
         </Col>
+
       </Row>
 
       <DataTable

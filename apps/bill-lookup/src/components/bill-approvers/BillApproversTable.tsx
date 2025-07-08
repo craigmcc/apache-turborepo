@@ -6,6 +6,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -22,12 +24,10 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
 import { BillApproversCsvExport } from "@/components/bill-approvers/BillApproversCsvExport";
 import { BillApproverMoreInfo } from "@/components/bill-approvers/BillApproverMoreInfo";
 import {
@@ -138,7 +138,6 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     ),
 
     columnHelper.accessor(
-//      row => formatBillInvoiceDate(row.bill),
       row => row.bill?.invoiceDate,
       {
         cell: info => {
@@ -257,62 +256,59 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
+
         <Col>
-          <Form.Group controlId="vendorNameFilter">
-            <span>Filter by Vendor Name:</span>
-            <Form.Control
-              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={vendorNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="vendorNameFilter"
+            label="Filter by Vendor Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setVendorNameFilter}
+            textFieldFilter={vendorNameFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={fromInvoiceDateFilter}>
-            <span>Filter by From Invoice Date:</span>
-            <Form.Control
-              onChange={e => setFromInvoiceDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={fromInvoiceDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="fromInvoiceDateFilter"
+            label="Filter by From Invoice Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setFromInvoiceDateFilter}
+            textFieldFilter={fromInvoiceDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId={toInvoiceDateFilter}>
-            <span>Filter by To Invoice Date:</span>
-            <Form.Control
-              onChange={e => setToInvoiceDateFilter(e.target.value.toLowerCase())}
-              placeholder="Enter YYYYMMDD"
-              type="text"
-              value={toInvoiceDateFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="toInvoiceDateFilter"
+            label="Filter by To Invoice Date:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setToInvoiceDateFilter}
+            textFieldFilter={toInvoiceDateFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId="accountFilter">
-            <span>Filter by GL Account:</span>
-            <Form.Control
-              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of number or name to filter"
-              type="text"
-              value={accountFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="accountFilter"
+            label="Filter by GL Account:"
+            placeholder="Enter partof number or name"
+            setTextFieldFilter={setAccountFilter}
+            textFieldFilter={accountFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId="userNameFilter">
-            <span>Filter by Approver Name:</span>
-            <Form.Control
-              onChange={e => setUserNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={userNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="userNameFilter"
+            label="Filter by Approver Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setUserNameFilter}
+            textFieldFilter={userNameFilter}
+          />
         </Col>
+
       </Row>
 
       <DataTable

@@ -6,6 +6,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -21,12 +23,10 @@ import { BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
 import { AccountPlus } from "@/types/types";
 import Button from "react-bootstrap/Button";
 import { AccountsCsvExport } from "@/components/accounts/AccountsCsvExport";
@@ -108,19 +108,22 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
 
   // Column definitions for the Accounts table
   const columns = useMemo(() => [
-    columnHelper.accessor("accountNumber", {
+
+    columnHelper.accessor(row => row.accountNumber, {
       header: "GL Account",
-      cell: info => info.getValue(),
       id: "accountNumber",
     }),
-    columnHelper.accessor("name", {
+
+    columnHelper.accessor(row => row.name, {
       header: "Account Name",
-      cell: info => info.getValue(),
+      id: "name",
     }),
-    columnHelper.accessor("accountType", {
+
+    columnHelper.accessor(row => row.accountType, {
       header: "Account Type",
-      cell: info => info.getValue(),
+      id: "accountType",
     }),
+
     columnHelper.display({
       cell: info => {
         const active = info.row.original.isActive;
@@ -136,12 +139,14 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
       header: "Active",
       id: "isActive",
     }),
+
     columnHelper.display({
       header: "#Bills",
       cell: info => {
         return info.row.original.billClassifications?.length || 0;
       },
     }),
+
     columnHelper.display({
       cell: info => {
         return (
@@ -156,6 +161,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
       header: "Info",
       id: "moreInfo",
     }),
+
   ], []);
 
   const table = useReactTable({
@@ -190,40 +196,39 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
+
         <Col>
-          <Form.Group controlId="accountFilter">
-            <span>Filter by Account Number:</span>
-            <Form.Control
-              onChange={e => setAccountFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a number to filter"
-              type="text"
-              value={accountFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="accountFilter"
+            label="Filter by Account Number:"
+            placeholder="Enter YYYYMMDD"
+            setTextFieldFilter={setAccountFilter}
+            textFieldFilter={accountFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by Account Name:</span>
-            <Form.Control
-              onChange={e => setNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={nameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="nameFilter"
+            label="Filter by Account Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setNameFilter}
+            textFieldFilter={nameFilter}
+          />
         </Col>
+
         <Col>
-          <Form.Group controlId="typeFilter">
-            <span>Filter by Account Type:</span>
-            <Form.Control
-              onChange={e => setTypeFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a type to filter"
-              type="text"
-              value={typeFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="typeFilter"
+            label="Filter by Account Type:"
+            placeholder="Enter part of type"
+            setTextFieldFilter={setTypeFilter}
+            textFieldFilter={typeFilter}
+          />
         </Col>
+
       </Row>
 
       <DataTable

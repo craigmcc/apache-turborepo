@@ -6,6 +6,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { DataTable } from "@repo/shared-components/DataTable";
+import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -22,12 +24,10 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
-import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 
 // Internal Imports ----------------------------------------------------------
 
-import { DataTable } from "@/components/tables/DataTable";
 import { VendorsCsvExport } from "@/components/vendors/VendorsCsvExport";
 import { VendorMoreInfo } from "@/components/vendors/VendorMoreInfo";
 import {
@@ -98,13 +98,12 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
 
   // Column definitions for the Users table
   const columns = useMemo(() => [
+
     columnHelper.accessor(row => formatVendorName(row), {
-      cell: info => {
-        return <span>{formatVendorName(info.row.original)}</span>;
-      },
       header: "Vendor Name",
       id: "name",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{formatVendorEmail(info.row.original)}</span>
@@ -112,6 +111,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Vendor Email",
       id: "email",
     }),
+
     columnHelper.display({
       cell: info => {
         const archived = info.row.original.archived;
@@ -128,6 +128,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Archived",
       id: "archived",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.accountType || "n/a"}</span>
@@ -135,6 +136,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Account Type",
       id: "accountType",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.paymentInformation?.payByType || "n/a"}</span>
@@ -142,6 +144,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Pay By Type",
       id: "payByType",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.paymentInformation?.payBySubType || "n/a"}</span>
@@ -149,6 +152,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Pay By SubType",
       id: "payBySubtype",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.balance_amount || "n/a"}</span>
@@ -156,6 +160,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Balance Amount",
       id: "balance_amount",
     }),
+
     columnHelper.display({
       cell: info => {
         return <span>{info.row.original.balance_lastUpdatedDate || "n/a"}</span>
@@ -163,6 +168,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Balance Last Updated",
       id: "balance_lastUpdatedDate",
     }),
+
     columnHelper.display({
       cell: info => {
         return (
@@ -177,6 +183,7 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
       header: "Info",
       id: "moreInfo",
     }),
+
   ], []);
 
   // Overall table instance
@@ -212,18 +219,19 @@ export function VendorsTable({ allVendors }: VendorsTableProps) {
           </Button>
         </h1>
       </Row>
+
       <Row className="mb-2">
+
         <Col>
-          <Form.Group controlId="nameFilter">
-            <span>Filter by Vendor Name:</span>
-            <Form.Control
-              onChange={e => setVendorNameFilter(e.target.value.toLowerCase())}
-              placeholder="Enter part of a name to filter"
-              type="text"
-              value={vendorNameFilter}
-            />
-          </Form.Group>
+          <TextFieldFilter
+            controlId="nameFilter"
+            label="Filter by Vendor Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setVendorNameFilter}
+            textFieldFilter={vendorNameFilter}
+          />
         </Col>
+
       </Row>
 
       <DataTable
