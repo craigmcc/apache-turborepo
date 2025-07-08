@@ -231,7 +231,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       header: () => <span>GL Account</span>,
       id: "gl_account",
     }),
-    columnHelper.accessor(row => "", {
+    columnHelper.accessor(row => row.id, {
       enableSorting: false,
       filterFn: accountGroupFilterFn,
       header: () => <span>Account Group</span>,

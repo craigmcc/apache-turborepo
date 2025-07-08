@@ -367,6 +367,7 @@ const columnHelper = createColumnHelper<BillPlus>();
  * Note that the field value is in the format "YYYY-MM-DD", so we need to
  * adjust the comparison value accordingly.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
 
   if (!value || (value === "|")) {
