@@ -25,10 +25,14 @@ export type UserMoreInfoProps = {
   // Current "show" state of the modal
   show: boolean;
   // User to display more information about
-  user: UserPlus;
+  user: UserPlus | null;
 }
 
 export function UserMoreInfo({ hide, show, user }: UserMoreInfoProps) {
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Modal
