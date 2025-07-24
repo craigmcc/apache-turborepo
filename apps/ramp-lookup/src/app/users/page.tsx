@@ -26,6 +26,7 @@ export default async function UsersPage() {
           },
         },
       },
+      manager: true,
     },
     orderBy: [
       { last_name: "asc" },

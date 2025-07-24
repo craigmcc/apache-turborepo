@@ -45,6 +45,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentUser, setCurrentUser] = useState<UserPlus | null>(null);
   const [departmentNameFilter, setDepartmentNameFilter] = useState<string>("");
+  const [managerNameFilter, setManagerNameFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -68,6 +69,13 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       });
     }
 
+    if (managerNameFilter.length > 0) {
+      filters.push({
+        id: "manager_name",
+        value: managerNameFilter,
+      });
+    }
+
     if (userNameFilter.length > 0) {
       filters.push({
         id: "user_name",
@@ -77,7 +85,7 @@ export function UsersTable({ allUsers }: UsersTableProps) {
 
     setColumnFilters(filters);
 
-  }, [departmentNameFilter, userNameFilter]);
+  }, [departmentNameFilter, managerNameFilter, userNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -123,6 +131,14 @@ export function UsersTable({ allUsers }: UsersTableProps) {
       header: "User Email",
       id: "email_address",
     }),
+
+    columnHelper.accessor(
+      row => formatUserName(row.manager),
+      {
+        enableSorting: false,
+        header: "Card Manager Name",
+        id: "manager_name",
+      }),
 
     columnHelper.display({
       cell: info => info.row.original.role?.split("_")[1] || "n/a",
@@ -231,7 +247,16 @@ export function UsersTable({ allUsers }: UsersTableProps) {
             setTextFieldFilter={setUserNameFilter}
             textFieldFilter={userNameFilter}
           />
+        </Col>
 
+        <Col>
+          <TextFieldFilter
+            controlId="managerFilter"
+            label="Filter by Card Manager Name:"
+            placeholder="Enter part of name"
+            setTextFieldFilter={setManagerNameFilter}
+            textFieldFilter={managerNameFilter}
+          />
         </Col>
 
       </Row>

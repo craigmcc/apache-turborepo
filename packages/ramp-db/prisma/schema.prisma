@@ -678,6 +678,10 @@ model User {
   department    Department?   @relation(fields: [department_id], references: [id])
   /// Limits this User belongs to
   limit_users   LimitUser[]
+  /// Users managed by this User (1:N relationship)
+  managees      User[]        @relation("UserManagement")
+  /// This user's manager
+  manager       User?         @relation("UserManagement", fields: [manager_id], references: [id], onDelete: Cascade)
   /// Transactions this User is the cardholder for
   transactions  Transaction[]
 
