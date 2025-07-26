@@ -36,7 +36,7 @@ export function UsersCsvExport({ hide, show, users }: UsersCsvExportProps) {
   const [filename, setFilename] = useState<string>("Ramp-Users.csv");
 
   const data = [
-    [ "Department Name", "User Name", "User Email", "Role", "State",
+    [ "Department Name", "User Name", "User Email", "Manager", "Role", "State",
       "#Cards", "#Limits" ],
   ];
   for (const user of users) {
@@ -44,6 +44,7 @@ export function UsersCsvExport({ hide, show, users }: UsersCsvExportProps) {
       formatDepartmentName(user.department),
       formatUserName(user),
       user.email,
+      formatUserName(user.manager),
       user.role?.split("_")[1] || "n/a",
       user.status?.split("_")[1] || "n/a",
       user.cards?.length.toString() || "n/a",
