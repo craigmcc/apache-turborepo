@@ -10,7 +10,8 @@
     "build": "tsc",
     "bill-db:deploy": "prisma migrate deploy",
     "bill-db:generate" : "prisma generate",
-    "bill-db:migrate": "prisma migrate dev --skip-generate"
+    "bill-db:migrate": "prisma migrate dev --skip-generate",
+    "bill-db:studio": "prisma studio"
   },
   "type": "module",
   "version": "0.0.0",

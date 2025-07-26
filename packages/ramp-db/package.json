@@ -10,7 +10,8 @@
     "build": "tsc",
     "ramp-db:deploy": "prisma migrate deploy",
     "ramp-db:generate" : "prisma generate",
-    "ramp-db:migrate": "prisma migrate dev --skip-generate"
+    "ramp-db:migrate": "prisma migrate dev --skip-generate",
+    "ramp-db:studio": "prisma studio"
   },
   "type": "module",
   "version": "0.0.0",
