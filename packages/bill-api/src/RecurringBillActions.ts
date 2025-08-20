@@ -1,7 +1,7 @@
 "use server";
 
 /**
- * Server Actions for Bills.
+ * Server Actions for Recurring Bills.
  */
 
 // External Modules ----------------------------------------------------------
@@ -9,7 +9,7 @@
 // Internal Modules ----------------------------------------------------------
 
 import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
-import type { BillBill, BillListResponse } from "./Models";
+import type { BillRecurringBill, BillListResponse } from "./Models";
 
 // Private Objects ------------------------------------------------------------
 
@@ -29,7 +29,7 @@ if (!BILL_PROD_API_BASE_URL) {
 /**
  * Query parameters for fetchUsers().
  */
-export type FetchBillsParams = {
+export type FetchRecurringBillsParams = {
   // TODO: support filtering and sorting options.
   // Number of results to return on each page (2-100). [20]
   max?: number;
@@ -38,16 +38,16 @@ export type FetchBillsParams = {
 }
 
 /**
- * Fetch all or selected Bills from the Bill API.
+ * Fetch all or selected Recurring Bills from the Bill API.
  */
-export async function fetchBills(
+export async function fetchRecurringBills(
   // The session ID to use for authentication
   sessionId: string,
   // Optional query parameters for filtering and pagination
-  params: FetchBillsParams
-): Promise<BillListResponse<BillBill>> {
+  params: FetchRecurringBillsParams
+): Promise<BillListResponse<BillRecurringBill>> {
 
-  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/bills`);
+  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/recurringBills`);
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
       url.searchParams.append(key, value.toString());
@@ -66,14 +66,14 @@ export async function fetchBills(
   if (!response.ok) {
     const body = await response.json();
     logger.error({
-      context: "fetchBills",
-      message: "Failed to fetch bills",
+      context: "fetchRecurringBills",
+      message: "Failed to fetch recurring bills",
       status: response.status,
       url: url.toString(),
       body,
     });
     const text = JSON.stringify(body, null, 2);
-    throw new Error(`Error fetching bills: ${text}`);
+    throw new Error(`Error fetching recurring bills: ${text}`);
   } else {
     return await response.json();
   }

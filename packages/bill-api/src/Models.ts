@@ -296,6 +296,104 @@ export type BillLoginResponse = {
 }
 
 /**
+ * A Bill Recurring Bill object (V3).
+ */
+export type BillRecurringBill = {
+  // The Bill-generated ID of the recurring bill (begins with "0rb")
+  id: string;
+  // Has this recurring bill been archived?
+  archived?: boolean;
+  // Date/time the recurring bill was created
+  createdTime?: string;
+  // Description of the recurring bill
+  description?: string;
+  // Payment information for the recurring bill
+  paymentInformation?: BillRecurringBillPaymentInformation;
+  // Processing options for the recurring bill
+  processingOptions?: BillRecurringBillProcessingOptions;
+  // Line items for the recurring bill
+  recurringBillLineItems?: BillRecurringBillLineItem[];
+  // Scheduling information for the recurring bill
+  schedule?: BillRecurringBillSchedule;
+  // The date/time the recurring bill was last updated
+  updatedTime?: string;
+  // The Bill-generated ID of the vendor for this recurring bill (begins with "009")
+  vendorId: string;
+}
+
+/**
+ * A Bill Recurring Bill Line Item object (V3).
+ */
+export type BillRecurringBillLineItem = {
+  // The Bill-generated ID of the recurring bill line item (begins with "tli")
+  id: string;
+  // Amount for this line item (local currency)
+  amount?: number;
+  // Classifications for this recurring bill line item
+  classifications?: BillRecurringBillLineItemClassifications;
+  // Description of this recurring bill line item
+  description?: string;
+}
+
+/**
+ * General ledger classifications for a bill.
+ */
+export type BillRecurringBillLineItemClassifications = {
+  // The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId?: string;
+  // The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId: string;
+  // The Bill-generated ID of the department (begins with "0de")
+  departmentId?: string;
+  // The Bill-generated ID of the employee (begins with "emp")
+  employeeId?: string;
+  // The Bill-generated ID of the item (begins with "0ii")
+  itemId?: string;
+  // The Bill-generated ID of the job (begins with "job")
+  jobId?: string;
+  // The Bill-generated ID of the location (begins with "loc")
+  locationId?: string;
+}
+
+/**
+ * A Bill Recurring Bill Payment Information object (v3)
+ */
+export type BillRecurringBillPaymentInformation = {
+  // BILL-generated ID of the bank account used for recurring bill payments (begins with "bac")
+  bankAccountId?: string;
+}
+
+/**
+ * A Bill Recurring Bill Processing Options object (V3).
+ */
+export type BillRecurringBillProcessingOptions = {
+  // Should this bill be auto-paid?
+  autoPay?: boolean;
+}
+
+/**
+ * A Bill Recurring Bill Schedule object (V3).
+ */
+export type BillRecurringBillSchedule = {
+  // Number of days in advance to create the recurring bill
+  daysInAdvance?: number;
+  // Date after which no more recurring bills will be created (yyyy-MM-dd)
+  endDate?: string;
+  // Frequency for the recurring bill (for example 3 with period MONTHLY means every 3 months)
+  frequency?: number;
+  // Due date for the next bill (yyyy-MM-dd)
+  // Time period for setting up the recurring bill
+  period?: BillRecurringBillSchedulePeriod;
+}
+
+/**
+ * A Bill Recurring Bill Schedule Period (V3).
+ */
+export type BillRecurringBillSchedulePeriod =
+  "DAILY" | "MONTHLY" | "NONE" | "UNDEFINED" | "WEEKLY" | "YEARLY";
+
+
+/**
  * A Bill User object (V3).
  */
 export type BillUser = {
