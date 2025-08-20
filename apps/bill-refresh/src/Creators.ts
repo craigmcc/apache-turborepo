@@ -11,6 +11,8 @@ import {
   BillBill,
   BillBillApprover,
   BillBillLineItem,
+  BillRecurringBill,
+  BillRecurringBillLineItem,
   BillUser,
   BillVendor,
   BillVendorCredit,
@@ -25,6 +27,10 @@ import {
   BillClassifications,
   BillLineItem,
   BillLineItemClassifications,
+  RecurringBill,
+  RecurringBillLineItem,
+  RecurringBillLineItemClassifications,
+  RecurringBillSchedule,
   User,
   Vendor,
   VendorAdditionalInfo,
@@ -131,6 +137,50 @@ export function createBillLineItemClassifications(bill: BillBill, billLineItem: 
     jobId: billLineItem.classifications?.jobId || null,
     locationId: billLineItem.classifications?.locationId || null,
   };
+}
+
+export function createRecurringBill(bill: BillRecurringBill): RecurringBill {
+  return {
+    id: bill.id,
+    archived: bill.archived || null,
+    createdTime: bill.createdTime || null,
+    description: bill.description || null,
+    paymentInformationBankAccountId: bill.paymentInformation?.bankAccountId || null,
+    processingOptionsAutoPay: bill.processingOptions?.autoPay || null,
+    updatedTime: bill.updatedTime || null,
+    vendorId: bill.vendorId,
+  };
+}
+
+export function createRecurringBillLineItem(bill: BillRecurringBill, billLineItem: BillBillLineItem): RecurringBillLineItem {
+  return {
+    id: billLineItem.id,
+    amount: billLineItem.amount || null,
+    description: billLineItem.description || null,
+  };
+}
+
+export function createRecurringBillLineItemClassifications(bill: BillRecurringBill, billLineItem: BillRecurringBillLineItem): RecurringBillLineItemClassifications {
+  return {
+    id: billLineItem.id,
+    accountingClassId: billLineItem.classifications?.accountingClassId || null,
+    chartOfAccountId: billLineItem.classifications?.chartOfAccountId || null,
+    departmentId: billLineItem.classifications?.departmentId || null,
+    employeeId: billLineItem.classifications?.employeeId || null,
+    itemId: billLineItem.classifications?.itemId || null,
+    jobId: billLineItem.classifications?.jobId || null,
+    locationId: billLineItem.classifications?.locationId || null,
+  };
+}
+
+export function createRecurringBillSchedule(bill: BillRecurringBill): RecurringBillSchedule {
+  return {
+    id: bill.id,
+    daysInAdvance: bill.schedule?.daysInAdvance || null,
+    endDate: bill.schedule?.endDate || null,
+    frequency: bill.schedule?.frequency || null,
+    period: bill.schedule?.period || null,
+  }
 }
 
 export function createUser(billUser: BillUser): User {
