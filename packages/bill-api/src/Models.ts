@@ -336,7 +336,7 @@ export type BillRecurringBillLineItem = {
 }
 
 /**
- * General ledger classifications for a bill.
+ * General ledger classifications for a recurring bill.
  */
 export type BillRecurringBillLineItemClassifications = {
   // The Bill-generated ID of the accounting class (begins with "cls")

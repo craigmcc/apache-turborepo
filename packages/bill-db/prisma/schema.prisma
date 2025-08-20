@@ -47,11 +47,12 @@ model Account {
 
   // Actual Relationships ----------------------------------------------------
 
-  bills                               Bill[]
-  billClassifications                 BillClassifications[]
-  billLineItemClassifications         BillLineItemClassifications[]
-  vendorCredits                       VendorCredit[]
-  VendorCreditLineItemClassifications VendorCreditLineItemClassifications[]
+  bills                                Bill[]
+  billClassifications                  BillClassifications[]
+  billLineItemClassifications          BillLineItemClassifications[]
+  RecurringBillLineItemClassifications RecurringBillLineItemClassifications[]
+  vendorCredits                        VendorCredit[]
+  VendorCreditLineItemClassifications  VendorCreditLineItemClassifications[]
 
   @@map("accounts")
 }
@@ -207,6 +208,8 @@ model BillLineItemClassifications {
 
   /// The Bill-generated ID of the accounting class (begins with "cls")
   accountingClassId String?
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId  String?
   /// The Bill-generated ID of the customer (begins with "0cu")
   customerId        String?
   /// The Bill-generated ID of the department (begins with "dep")
@@ -222,10 +225,8 @@ model BillLineItemClassifications {
 
   // Actual Relationships ----------------------------------------------------
 
-  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
-  chartOfAccountId String?
-  account          Account?     @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
-  billLineItem     BillLineItem @relation(fields: [billLineItemId], references: [id], onDelete: Cascade)
+  account      Account?     @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
+  billLineItem BillLineItem @relation(fields: [billLineItemId], references: [id], onDelete: Cascade)
 
   @@map("bills_line_items_classifications")
 }
@@ -238,6 +239,121 @@ enum BillPaymentStatus {
   SCHEDULED
   UNDEFINED
   UNPAID
+}
+
+// Recurring Bills (https://developer.bill.com/reference/listrecurringbills)
+model RecurringBill {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Recurring Bill (begins with "0rb")
+  id                       String   @id
+  /// Has this Recurring Bill been archived?
+  archived                 Boolean?
+  /// Date/time when this Recurring Bill was created
+  createdTime              String?
+  /// Description of this Recurring Bill
+  description              String?
+  /// Processing options for this Recurring Bill from BillRecurringBillProcessingOptions
+  processingOptionsAutoPay Boolean?
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Bank account ID for this Recurring Bill (begins with "bac") from BillRecurringBillPaymentInformation
+  paymentInformationBankAccountId String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  lineItems RecurringBillLineItem[]
+  schedule  RecurringBillSchedule?
+
+  @@map("recurring_bills")
+}
+
+/// Recurring Bill Line Items
+model RecurringBillLineItem {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Recurring Bill Line Item (begins with "tli")
+  id          String  @id
+  /// Amount for this Recurring Bill Line Item (local currency)
+  amount      Float?
+  /// Description of this Recurring Bill Line Item
+  description String?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  classifications RecurringBillLineItemClassifications?
+  recurringBill   RecurringBill                         @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("recurring_bills_line_items")
+}
+
+/// Classifications for a RecurringBillLineItem
+model RecurringBillLineItemClassifications {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Recurring Bill Line Item (begins with "bli")
+  id String @id
+
+  // Potential Relationships -------------------------------------------------
+
+  /// The Bill-generated ID of the accounting class (begins with "cls")
+  accountingClassId String?
+  /// The Bill-generated ID of the chart of accounts (begins with "0ca")
+  chartOfAccountId  String?
+  /// The Bill-generated ID of the department (begins with "dep")
+  departmentId      String?
+  /// The Bill-generated ID of the employee (begins with "emp")
+  employeeId        String?
+  /// The Bill-generated ID of the item (begins with "0ii")
+  itemId            String?
+  /// The Bill-generated ID of the jog (begins with "job")
+  jobId             String?
+  /// The Bill-generated ID of the location (begins with "loc")
+  locationId        String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  account  Account?              @relation(fields: [chartOfAccountId], references: [id], onDelete: Cascade)
+  lineItem RecurringBillLineItem @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("recurring_bills_line_items_classifications")
+}
+
+/// Recurring Bill Schedule Information
+model RecurringBillSchedule {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Recurring Bill (begins with "0rb")
+  id            String                       @id
+  /// Number of days in advance to create the recurring bill
+  daysInAdvance Int?
+  /// Date after which no more recurring bills will be created (yyyy-MM-dd)
+  endDate       String?
+  /// Frequency for the recurring bill (for example 3 with period MONTHLY means every 3 months)
+  frequency     Int?
+  /// Time period for setting up the recurring bill
+  period        RecurringBillSchedulePeriod?
+
+  // Potential Relationships -------------------------------------------------
+
+  // Actual Relationships ----------------------------------------------------
+
+  recurringBill RecurringBill @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("recurring_bills_schedule")
+}
+
+// Schedule Period of a Recurring Bill
+enum RecurringBillSchedulePeriod {
+  DAILY
+  MONTHLY
+  NONE
+  UNDEFINED
+  WEEKLY
+  YEARLY
 }
 
 /// Users (https://developer.bill.com/reference/listorganizationusers)
