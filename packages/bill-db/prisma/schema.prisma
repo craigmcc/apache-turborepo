@@ -279,18 +279,20 @@ model RecurringBillLineItem {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this Recurring Bill Line Item (begins with "tli")
-  id          String  @id
+  id              String  @id
   /// Amount for this Recurring Bill Line Item (local currency)
-  amount      Float?
+  amount          Float?
   /// Description of this Recurring Bill Line Item
-  description String?
+  description     String?
+  /// ID of the Recurring Bill this line item belongs to (begins with "0rb")
+  recurringBillId String
 
   // Potential Relationships -------------------------------------------------
 
   // Actual Relationships ----------------------------------------------------
 
   classifications RecurringBillLineItemClassifications?
-  recurringBill   RecurringBill                         @relation(fields: [id], references: [id], onDelete: Cascade)
+  recurringBill   RecurringBill                         @relation(fields: [recurringBillId], references: [id], onDelete: Cascade)
 
   @@map("recurring_bills_line_items")
 }

@@ -47,7 +47,7 @@ export async function fetchRecurringBills(
   params: FetchRecurringBillsParams
 ): Promise<BillListResponse<BillRecurringBill>> {
 
-  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/recurringBills`);
+  const url = new URL(`${BILL_PROD_API_BASE_URL}/v3/recurringbills`);
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
       url.searchParams.append(key, value.toString());

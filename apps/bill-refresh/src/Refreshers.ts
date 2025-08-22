@@ -11,6 +11,8 @@ import { fetchAccounts } from "@repo/bill-api/AccountActions";
 import { fetchSessionIdV2, fetchSessionIdV3 } from "@repo/bill-api/AuthActions";
 import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchBillApprovers } from "@repo/bill-api/BillApproverActions";
+import { fetchRecurringBills } from "@repo/bill-api/RecurringBillActions";
+// import { fetchRecurringBillApprovers } from "@repo/bill-api/RecurringBillApproverActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
 import { fetchVendorCredits } from "@repo/bill-api/VendorCreditActions";
@@ -18,6 +20,7 @@ import { fetchVendorCreditApprovers } from "@repo/bill-api/VendorCreditApproverA
 import {
   dbBill,
   BillApprover,
+  // RecurringBillApprover,
   User,
   Vendor,
   VendorCreditApprover,
@@ -29,6 +32,10 @@ import {
   createBillApprover,
   createBillLineItem,
   createBillLineItemClassifications,
+  createRecurringBill,
+  createRecurringBillLineItem,
+  createRecurringBillLineItemClassifications,
+  createRecurringBillSchedule,
   createUser,
   createVendor,
   createVendorAdditionalInfo,
@@ -150,6 +157,80 @@ export async function refreshBillApprovers(sessionId: string): Promise<void> {
   console.log("Bill approvers refreshed:", result.length);
 
 }
+
+export async function refreshRecurringBills(sessionId: string): Promise<void> {
+
+  console.log("Fetching recurring bills...");
+  let count = 0;
+  let nextPage: string | null = "";
+
+  while (nextPage !== null) {
+
+    const result = await fetchRecurringBills(sessionId,
+      {
+        max: 100,
+        page: nextPage && nextPage.length > 0 ? nextPage : undefined,
+      });
+
+    for (const billRecurringBill of result.results) {
+
+      const recurringBill = createRecurringBill(billRecurringBill);
+      await dbBill.recurringBill.upsert({
+        where: { id: recurringBill.id },
+        create: recurringBill,
+        update: recurringBill,
+      });
+
+      const recurringBillSchedule = createRecurringBillSchedule(billRecurringBill);
+      if (recurringBillSchedule) {
+        await dbBill.recurringBillSchedule.upsert({
+          where: {id: recurringBill.id},
+          create: recurringBillSchedule,
+          update: recurringBillSchedule,
+        });
+      } else {
+          await dbBill.recurringBillSchedule.deleteMany({
+            where: { id: recurringBill.id },
+        });
+      }
+
+      for (const billRecurringBillLineItem of billRecurringBill.recurringBillLineItems || []) {
+
+        const recurringBillLineItem = createRecurringBillLineItem(billRecurringBill, billRecurringBillLineItem);
+        await dbBill.recurringBillLineItem.upsert({
+          where: { id: recurringBillLineItem.id },
+          create: recurringBillLineItem,
+          update: recurringBillLineItem,
+        });
+
+        const recurringBillLineItemClassifications = createRecurringBillLineItemClassifications(billRecurringBill, billRecurringBillLineItem);
+        if (recurringBillLineItemClassifications) {
+          await dbBill.recurringBillLineItemClassifications.upsert({
+            where: { id: recurringBillLineItemClassifications.id },
+            create: recurringBillLineItemClassifications,
+            update: recurringBillLineItemClassifications,
+          });
+        } else {
+          await dbBill.billLineItemClassifications.deleteMany({
+            where: { billLineItemId: recurringBillLineItem.id },
+          });
+        }
+
+      }
+
+      count++;
+    }
+
+    nextPage = result.nextPage || null;
+
+  }
+
+  console.log("Recurring Bills refreshed:", count);
+
+}
+
+// TODO: export async function refreshRecurringBillApprovers(sessionId: string): Promise<void> {}
+
 export async function refreshSessionIdV2(): Promise<string> {
   console.log("Fetching session ID V2...");
   return await fetchSessionIdV2();

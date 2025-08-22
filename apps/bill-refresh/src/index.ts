@@ -12,6 +12,8 @@ import {
   refreshAccounts,
   refreshBills,
   refreshBillApprovers,
+  refreshRecurringBills,
+  // refreshRecurringBillApprovers,
   refreshSessionIdV2,
   refreshSessionIdV3,
   refreshUsers,
@@ -32,6 +34,8 @@ export async function main() {
   await refreshVendors(sessionId);
   await refreshBills(sessionId);
   await refreshBillApprovers(sessionIdV2);
+  await refreshRecurringBills(sessionId);
+  // await refreshRecurringBillApprovers(sessionIdV2);
   await refreshVendorCredits(sessionId);
   await refreshVendorCreditApprovers(sessionIdV2);
   console.log("Done with refreshing data");

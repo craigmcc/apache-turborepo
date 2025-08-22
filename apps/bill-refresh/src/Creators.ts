@@ -157,6 +157,7 @@ export function createRecurringBillLineItem(bill: BillRecurringBill, billLineIte
     id: billLineItem.id,
     amount: billLineItem.amount || null,
     description: billLineItem.description || null,
+    recurringBillId: bill.id,
   };
 }
 
