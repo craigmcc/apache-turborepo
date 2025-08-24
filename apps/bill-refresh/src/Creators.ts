@@ -12,6 +12,7 @@ import {
   BillBillApprover,
   BillBillLineItem,
   BillRecurringBill,
+  BillRecurringBillApprover,
   BillRecurringBillLineItem,
   BillUser,
   BillVendor,
@@ -28,6 +29,7 @@ import {
   BillLineItem,
   BillLineItemClassifications,
   RecurringBill,
+  RecurringBillApprover,
   RecurringBillLineItem,
   RecurringBillLineItemClassifications,
   RecurringBillSchedule,
@@ -149,6 +151,19 @@ export function createRecurringBill(bill: BillRecurringBill): RecurringBill {
     processingOptionsAutoPay: bill.processingOptions?.autoPay || null,
     updatedTime: bill.updatedTime || null,
     vendorId: bill.vendorId,
+  };
+}
+
+export function createRecurringBillApprover(billRecurringBillApprover: BillRecurringBillApprover): RecurringBillApprover {
+  return {
+    id: billRecurringBillApprover.id,
+    entity: billRecurringBillApprover.entity || null,
+    isActive: billRecurringBillApprover.isActive === "1",
+    sortOrder: billRecurringBillApprover.sortOrder || null,
+    recurringBillId: billRecurringBillApprover.recurringBillId,
+    recurringBillLineItemId: billRecurringBillApprover.recurringBillLineItemId || null,
+    replaceUserId: billRecurringBillApprover.replacedUsersId || null,
+    userId: billRecurringBillApprover.usersId,
   };
 }
 

@@ -322,6 +322,29 @@ export type BillRecurringBill = {
 }
 
 /**
+ * A Bill Recurring Bill Approver (V2).
+ * NOTE: This is not documented, but the V2 API endpoint seems to exist.
+ */
+export type BillRecurringBillApprover = {
+  // The Bill-generated ID of the vendor credit approver (begins with "0ba")
+  id: string;
+  // Object type (should be "RecurringBillApprover")
+  entity?: string;
+  // Is this approver active? (1=yes, 2=no)
+  isActive?: string;
+  // The Bill-generated ID of the bill being approved (begins with "btp")
+  recurringBillId: string;
+  // ID of the recurring bill line item (or all zeros)
+  recurringBillLineItemId?: string;
+  // ID of the replacement user (or all zeros)
+  replacedUsersId?: string
+  // Zero-relative index of this approver in the approval chain
+  sortOrder?: number;
+  // Bill-generated ID of the User that is the approver (begins with "006")
+  usersId: string;
+}
+
+/**
  * A Bill Recurring Bill Line Item object (V3).
  */
 export type BillRecurringBillLineItem = {

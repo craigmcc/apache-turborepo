@@ -12,7 +12,7 @@ import { fetchSessionIdV2, fetchSessionIdV3 } from "@repo/bill-api/AuthActions";
 import { fetchBills } from "@repo/bill-api/BillActions";
 import { fetchBillApprovers } from "@repo/bill-api/BillApproverActions";
 import { fetchRecurringBills } from "@repo/bill-api/RecurringBillActions";
-// import { fetchRecurringBillApprovers } from "@repo/bill-api/RecurringBillApproverActions";
+import { fetchRecurringBillApprovers } from "@repo/bill-api/RecurringBillApproverActions";
 import { fetchUsers } from "@repo/bill-api/UserActions";
 import { fetchVendors } from "@repo/bill-api/VendorActions";
 import { fetchVendorCredits } from "@repo/bill-api/VendorCreditActions";
@@ -20,7 +20,7 @@ import { fetchVendorCreditApprovers } from "@repo/bill-api/VendorCreditApproverA
 import {
   dbBill,
   BillApprover,
-  // RecurringBillApprover,
+  RecurringBillApprover,
   User,
   Vendor,
   VendorCreditApprover,
@@ -33,6 +33,7 @@ import {
   createBillLineItem,
   createBillLineItemClassifications,
   createRecurringBill,
+  createRecurringBillApprover,
   createRecurringBillLineItem,
   createRecurringBillLineItemClassifications,
   createRecurringBillSchedule,
@@ -229,7 +230,24 @@ export async function refreshRecurringBills(sessionId: string): Promise<void> {
 
 }
 
-// TODO: export async function refreshRecurringBillApprovers(sessionId: string): Promise<void> {}
+export async function refreshRecurringBillApprovers(sessionId: string): Promise<void> {
+
+  console.log("Fetching recurring bill approvers...");
+
+  const result = await fetchRecurringBillApprovers(sessionId);
+
+  for (const billRecurringBillApprover of result) {
+    const approver: RecurringBillApprover = createRecurringBillApprover(billRecurringBillApprover);
+    await dbBill.recurringBillApprover.upsert({
+      where: { id: approver.id },
+      create: approver,
+      update: approver,
+    });
+  }
+
+  console.log("Recurring bill approvers refreshed:", result.length);
+
+}
 
 export async function refreshSessionIdV2(): Promise<string> {
   console.log("Fetching session ID V2...");

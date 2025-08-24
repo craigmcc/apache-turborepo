@@ -268,10 +268,43 @@ model RecurringBill {
 
   // Actual Relationships ----------------------------------------------------
 
+  approvers RecurringBillApprover[]
   lineItems RecurringBillLineItem[]
   schedule  RecurringBillSchedule?
 
   @@map("recurring_bills")
+}
+
+// Recurring Bill Approvers
+model RecurringBillApprover {
+  // Scalar Fields -----------------------------------------------------------
+
+  /// Primary key for this Recurring Bill Approver (begins with "bta")
+  id              String   @id
+  /// Object type (should be "RecurringBillApprover")
+  entity          String?
+  /// Is this approver active?
+  isActive        Boolean?
+  /// ID of the Recurring Bill this approver belongs to (begins with "btp")
+  recurringBillId String
+  /// Zero-relative index of this approver in the list of approvers for this Vendor Credit
+  sortOrder       Int?
+  /// ID of the User that is this approver (begins with "006")
+  userId          String
+
+  // Potential Relationships -------------------------------------------------
+
+  /// Line item ID (or all zeros)
+  recurringBillLineItemId String?
+  /// Replace users id (or all zeros)
+  replaceUserId           String?
+
+  // Actual Relationships ----------------------------------------------------
+
+  recurringBill RecurringBill @relation(fields: [recurringBillId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recurring_bills_approvers")
 }
 
 /// Recurring Bill Line Items
@@ -393,9 +426,11 @@ model User {
   // Actual Relationships ----------------------------------------------------
 
   /// Bill approvers for this User
-  billApprovers         BillApprover[]
+  billApprovers          BillApprover[]
+  /// Recurring Bill approvers for this User
+  recurringBillApprovers RecurringBillApprover[]
   /// Vendor Credit approvers for this User
-  vendorCreditApprovers VendorCreditApprover[]
+  vendorCreditApprovers  VendorCreditApprover[]
 
   @@map("users")
 }
