@@ -257,11 +257,10 @@ model RecurringBill {
   processingOptionsAutoPay Boolean?
   /// Date/time when this Recurring Bill was last updated
   updatedTime              String?
+  /// Bill-generated ID of the vendor (begins with "009")
+  vendorId                 String
 
   // Potential Relationships -------------------------------------------------
-
-  /// Bill-generated ID of the vendor (begins with "009")
-  vendorId String?
 
   /// Bank account ID for this Recurring Bill (begins with "bac") from BillRecurringBillPaymentInformation
   paymentInformationBankAccountId String?
@@ -271,6 +270,7 @@ model RecurringBill {
   approvers RecurringBillApprover[]
   lineItems RecurringBillLineItem[]
   schedule  RecurringBillSchedule?
+  vendor    Vendor                  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@map("recurring_bills")
 }
@@ -499,6 +499,7 @@ model Vendor {
   autoPay            VendorAutoPay?
   bills              Bill[]
   paymentInformation VendorPaymentInformation?
+  recurringBills     RecurringBill[]
   vendorCredits      VendorCredit[]
   virtualCard        VendorVirtualCard? // Lifted from paymentInformation
 

@@ -11,6 +11,11 @@ import {
   BillClassifications,
   BillLineItem,
   BillLineItemClassifications,
+  RecurringBill,
+  RecurringBillApprover,
+  RecurringBillLineItem,
+  RecurringBillLineItemClassifications,
+  RecurringBillSchedule,
   User,
   Vendor,
   VendorAdditionalInfo,
@@ -53,6 +58,32 @@ export type BillLineItemPlus = BillLineItem & {
 export type BillLineItemClassificationsPlus = BillLineItemClassifications & {
   account?: Account | null;
   billLineItem?: BillLineItemPlus | null;
+}
+
+export type RecurringBillPlus = RecurringBill & {
+  approvers?: RecurringBillApproverPlus[] | null;
+  lineItems?: RecurringBillLineItemPlus[] | null;
+  schedule?: RecurringBillSchedulePlus | null;
+  vendor?: VendorPlus | null;
+}
+
+export type RecurringBillApproverPlus = RecurringBillApprover & {
+  recurringBill?: RecurringBillPlus | null;
+  user?: UserPlus | null;
+}
+
+export type RecurringBillLineItemPlus = RecurringBillLineItem & {
+  classifications?: RecurringBillLineItemClassificationsPlus | null;
+  recurringBill?: RecurringBillPlus | null;
+}
+
+export type RecurringBillLineItemClassificationsPlus = RecurringBillLineItemClassifications & {
+  account?: Account | null;
+  lineItem?: RecurringBillLineItemPlus | null;
+}
+
+export type RecurringBillSchedulePlus = RecurringBillSchedule & {
+  recurringBill?: RecurringBillPlus | null;
 }
 
 export type UserPlus = User & {

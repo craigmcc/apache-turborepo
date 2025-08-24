@@ -7,6 +7,7 @@
 import {
   AccountPlus,
   BillPlus,
+  RecurringBillPlus,
   UserPlus,
   VendorPlus,
 } from "@/types/types";
@@ -68,6 +69,27 @@ export function formatBillInvoiceNumber(bill: BillPlus | null | undefined): stri
  */
 export function formatBillPaidAmount(bill: BillPlus | null | undefined): string {
   return bill?.paidAmount?.toFixed(2) || "n/a";
+}
+
+/**
+ * Format a generic date/time string
+ */
+export function formatGenericDateTime(dateString: string | null | undefined): string {
+  return dateString ? new Date(dateString).toLocaleString() : "n/a";
+}
+
+/**
+ * Format a Recurring Bill amount
+ */
+export function formatRecurringBillAmount(bill: RecurringBillPlus | null | undefined): string {
+  if (!bill) return "n/a";
+  let amount = 0;
+  if (bill.lineItems && bill.lineItems.length > 0) {
+    for (const item of bill.lineItems) {
+      amount += item.amount || 0;
+    }
+  }
+  return amount.toFixed(2);
 }
 
 /**
