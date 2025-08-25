@@ -15,6 +15,14 @@ export default async function BillsPage() {
 
   const allBills = await dbBill.bill.findMany({
     include: {
+      approvers: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          sortOrder: "asc",
+        },
+      },
       classifications: {
         include: {
           account: true,

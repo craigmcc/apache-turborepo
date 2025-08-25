@@ -35,6 +35,7 @@ export type AccountPlus = Account & {
 
 export type BillPlus = Bill & {
   account?: AccountPlus | null;
+  approvers?: BillApproverPlus[] | null;
   classifications?: BillClassificationsPlus | null;
   lineItems?: BillLineItemPlus[] | null;
   vendor?: VendorPlus | null;

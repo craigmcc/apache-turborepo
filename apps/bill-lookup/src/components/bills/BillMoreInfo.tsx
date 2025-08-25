@@ -21,7 +21,7 @@ import {
   formatBillExchangeRate,
   formatBillInvoiceDate,
   formatBillInvoiceNumber,
-  formatBillPaidAmount,
+  formatBillPaidAmount, formatUserName,
   formatVendorName
 } from "@/lib/Formatters";
 import { BillPlus } from "@/types/types";
@@ -141,7 +141,37 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
           <Row>
 
             <Col xs={12} md={12}>
-              <h5 className="bg-primary-subtle text-center">Line Items</h5>
+              <h5 className="bg-primary-subtle text-center">Bill Approvers</h5>
+              { bill.approvers && bill.approvers.length > 0 ? (
+                <Table size="sm" bordered>
+                  <tr>
+                    <th>ID</th>
+                    <th>Active</th>
+                    <th>Sort Order</th>
+                    <th>User Name</th>
+                  </tr>
+                  <tbody>
+                  {bill.approvers!.map(approver => (
+                    <tr key={approver.id}>
+                      <td>{approver.id}</td>
+                      <td>{approver.isActive ? "Yes" : "No"}</td>
+                      <td className="text-end">{approver.sortOrder || "n/a"}</td>
+                      <td>{formatUserName(approver.user)}</td>
+                    </tr>
+                  ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p className="text-center">No approvers available for this recurring bill.</p>
+              )}
+            </Col>
+
+          </Row>
+
+          <Row>
+
+            <Col xs={12} md={12}>
+              <h5 className="bg-primary-subtle text-center">Bill Line Items</h5>
               { bill.lineItems && bill.lineItems.length > 0 ? (
                 <Table size="sm" bordered>
                   <tr>
