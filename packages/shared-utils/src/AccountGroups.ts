@@ -49,7 +49,7 @@ export const ACCOUNT_GROUPS: ReadonlyArray<AccountGroup> = [
     ],
     groupType: "All",
   },
-  // Departmental Account Groups
+  // Departmental Account Groups (name must be a single word without spaces)
   {
     groupName: "Board",
     groupRanges: [
@@ -98,7 +98,7 @@ export const ACCOUNT_GROUPS: ReadonlyArray<AccountGroup> = [
     groupType: "Departmental",
   },
   {
-    groupName: "Gov Affairs",
+    groupName: "GovAffairs",
     groupRanges: [
       { start: "7100", end: "7199" },
     ],
@@ -112,7 +112,7 @@ export const ACCOUNT_GROUPS: ReadonlyArray<AccountGroup> = [
     groupType: "Departmental",
   },
   {
-    groupName: "Legal Affairs",
+    groupName: "LegalAffairs",
     groupRanges: [
       { start: "7200", end: "7299" },
     ],
