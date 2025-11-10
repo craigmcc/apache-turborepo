@@ -7,10 +7,13 @@
 // External Imports ----------------------------------------------------------
 
 import { DataTable } from "@repo/shared-components/DataTable";
+import { isAccountInGroup } from "@repo/shared-utils/dist";
+import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
 import {
   ColumnFiltersState,
   createColumnHelper,
+  FilterFn,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -52,6 +55,7 @@ export type BillsTableProps = {
 export function BillsTable({ allBills }: BillsTableProps) {
 
   const [accountFilter, setAccountFilter] = useState<string>("");
+  const [accountGroupFilter, setAccountGroupFilter] = useState<string>("All");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [currentBill, setCurrentBill] = useState<BillPlus | null>(null);
   const [fromDueDateFilter, setFromDueDateFilter] = useState<string>("");
@@ -82,6 +86,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
       });
     }
 
+    if (accountGroupFilter !== "All") {
+      filters.push({
+        id: "account_group",
+        value: accountGroupFilter,
+      });
+    }
+
     const dueDateFilter = fromDueDateFilter + "|" + toDueDateFilter;
     if (dueDateFilter.length > 1) {
       filters.push({
@@ -107,7 +118,7 @@ export function BillsTable({ allBills }: BillsTableProps) {
 
     setColumnFilters(filters);
 
-  }, [accountFilter, fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
+  }, [accountFilter, accountGroupFilter, fromDueDateFilter, fromInvoiceDateFilter, toDueDateFilter, toInvoiceDateFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -215,6 +226,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "archived",
     }),
 
+    columnHelper.accessor(row => row.id, {
+      enableSorting: false,
+      filterFn: accountGroupFilterFn,
+      header: () => <span>Account Group</span>,
+      id: "account_group",
+    }),
+
     columnHelper.display({
       cell: info => {
         return (
@@ -240,6 +258,11 @@ export function BillsTable({ allBills }: BillsTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility: {
+        account_group: false,
+      }
+    },
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -328,6 +351,13 @@ export function BillsTable({ allBills }: BillsTableProps) {
           />
         </Col>
 
+        <Col>
+          <AccountGroupFilter
+            accountGroupFilter={accountGroupFilter}
+            setAccountGroupFilter={setAccountGroupFilter}
+          />
+        </Col>
+
       </Row>
 
       <DataTable
@@ -359,7 +389,25 @@ export function BillsTable({ allBills }: BillsTableProps) {
 const columnHelper = createColumnHelper<BillPlus>();
 
 /**
- * Daet range filter function for the Bills table.  The filter "value"
+ * Account group filter function for the Bills table.  The filter "value"
+ * should be the name of an account group, such as "ComDev" or "Marketing", that must
+ * be matched by the current row.
+ */
+const accountGroupFilterFn: FilterFn<BillPlus> = (row, columnId, value) => {
+  if (!value || (value === "All")) {
+    return true; // If no value is provided, do not filter out any rows
+  } else {
+    const account = row.original.classifications?.account;
+    if (account && account.accountNumber && (account.accountNumber.length >= 4)) {
+      return isAccountInGroup(account.accountNumber.substring(0, 4), value);
+    } else {
+      return false;
+    }
+  }
+}
+
+/**
+ * Date range filter function for the Bills table.  The filter "value"
  * should be a string in the format "YYYYMMDD|YYYYMMDD", where the first date
  * is the "from" date, and the second date is the "to" date.  If either or both
  * filters are empty, then that filter is not applied for the date.
