@@ -123,15 +123,15 @@ function returnData(headers: string[], bills: BillPlus[], accountGroup: string, 
   let csvContent: string = headers.map(header => header).join(",") + "\n";
   for (const bill of bills) {
     const row: string[] = [];
-    row.push(enquote(formatVendorName(bill.vendor))),
-    row.push(enquote(formatBillInvoiceDate(bill))),
-    row.push(enquote(formatBillInvoiceNumber(bill))),
-    row.push(enquote(formatBillDueDate(bill))),
-    row.push(enquote(formatBillAmount(bill))),
-    row.push(enquote(formatBillPaidAmount(bill))),
-    row.push(enquote(formatBillExchangeRate(bill))),
-    row.push(enquote(formatAccountNumberAndName(bill.classifications?.account))),
-    row.push(enquote(bill.archived ? "Yes" : "No")),
+    row.push(enquote(formatVendorName(bill.vendor)));
+    row.push(enquote(formatBillInvoiceDate(bill)));
+    row.push(enquote(formatBillInvoiceNumber(bill)));
+    row.push(enquote(formatBillDueDate(bill)));
+    row.push(enquote(formatBillAmount(bill)));
+    row.push(enquote(formatBillPaidAmount(bill)));
+    row.push(enquote(formatBillExchangeRate(bill)));
+    row.push(enquote(formatAccountNumberAndName(bill.classifications?.account)));
+    row.push(enquote(bill.archived ? "Yes" : "No"));
     csvContent += row.join(",") + "\n";
   }
   return new Response(csvContent, {
