@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
   if (!toDate) {
     errors.push("Missing required parameter: toDate");
   }
-  // TODO: Validate fromDate and toDate parameters formats?
 
   // If we have errors so far, return them
   if (errors.length > 0) {
@@ -119,7 +118,13 @@ async function lookupBillsByInvoiceDate(fromDate: string, toDate: string): Promi
 /**
  * Return a completed CSV response with the filtered data.
  */
-function returnData(headers: string[], bills: BillPlus[], accountGroup: string, fromDate: string, toDate: string): Response {
+function returnData(
+  headers: string[],
+  bills: BillPlus[],
+  accountGroup: string,
+  fromDate: string,
+  toDate: string
+): Response {
   let csvContent: string = headers.map(header => header).join(",") + "\n";
   for (const bill of bills) {
     const row: string[] = [];
