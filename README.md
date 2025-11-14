@@ -157,7 +157,9 @@ as of the moment you ran this application.  It can be run again at any time
 without problems, because it uses Prisma's `upsert` functionality to insert new
 rows or update existing rows, based on the unique primary key for each table.
 
-### 2.6 Running the Lookup Application to View the Bill Local Database Content
+### 2.6 Running the Lookup Application to View and Download the Bill Local Database Content
+
+#### 2.6.1 Initial Setup
 
 Next, set up a `.env` file in the `apps/bill-lookup/` directory, with only the
 DATABASE_URL variable, which should point to the same local database file.  Now,
@@ -169,12 +171,40 @@ turbo run build
 pnpm run dev
 ```
 
-Then point your browser at `http://localhost:3001`.  When you want to stop the
+Running in development mode will automatically reload the application when you make
+changes to the source code, so you can easily make changes and see the results.
+
+#### 2.6.2 Using the Application to View Content
+
+Point your browser at `http://localhost:3001`.  When you want to stop the
 app, you can cancel it with Ctrl-C in the terminal window where it is running
 and return to the repo's root directory.
 
-Running in development mode will automatically reload the application when you make
-changes to the source code, so you can easily make changes and see the results.
+The application has a set of tabs that lets you view the content of each major table.
+By default, you will see a paginated list of all rows from the selected table.
+To refine the visible information, you can do one of two things:
+* Some columns have sorting indicators next to the column name, so you can sort in
+  ascending or descending order by clicking on the column name.
+* You can enter information into one or more of the filter boxes at the top of the table,
+  and the displayed data will be filtered (via an AND operation if there is more than one),
+  which will immediately reduce the number of rows shown.
+
+#### 2.6.3 Using the Application to Download Bills
+
+This application also includes an API endpoint that allows you to download the bills
+from the local database as a CSV file.  To do so, use your browser or a tool like `curl` or
+`Postman` to make a GET request to the following URL:
+
+```bash
+curl http://localhost:3001/api/bills.csv?accountGroup={accountGroup}/fromDate={fromDate}&toDate={toDate}
+```
+
+The available account groups will match the ones in the *Filter by Account Group* dropdown.
+Dates should be specified in `YYYY-MM-DD` format.
+
+The response will be a CSV file, which you can save to your local machine (the filename
+will default to `Bill-{accountGroup)-{fromDate}-{toDate}.csv`).  Or, if you are using
+a script to do the download, you can simply redirect the output to a file.
 
 ### 2.7 Create the Local Database for Ramp Content
 
@@ -243,7 +273,9 @@ as of the moment you ran this application.  It can be run again at any time
 without problems, because it uses Prisma's `upsert` functionality to insert new
 rows or update existing rows, based on the unique primary key for each table.
 
-### 2.9 Running the Lookup Application to View the Ramp Local Database Content
+### 2.9 Running the Lookup Application to View and Download the Ramp Local Database Content
+
+#### 2.9.1 Initial Setup
 
 Next, set up a `.env` file in the `apps/ramp-lookup/` directory, with only the
 DATABASE_URL variable, which should point to the same local database file.  Now,
@@ -255,12 +287,40 @@ turbo run build
 pnpm run dev
 ```
 
-Then point your browser at `http://localhost:3000`.  When you want to stop the
+Running in development mode will automatically reload the application when you make
+changes to the source code, so you can easily make changes and see the results.
+
+#### 2.9.2 Using the Application to View Content
+
+Point your browser at `http://localhost:3000`.  When you want to stop the
 app, you can cancel it with Ctrl-C in the terminal window where it is running
 and return to the repo's root directory.
 
-Running in development mode will automatically reload the application when you make
-changes to the source code, so you can easily make changes and see the results.
+The application has a set of tabs that lets you view the content of each major table.
+By default, you will see a paginated list of all rows from the selected table.
+To refine the visible information, you can do one of two things:
+* Some columns have sorting indicators next to the column name, so you can sort in
+  ascending or descending order by clicking on the column name.
+* You can enter information into one or more of the filter boxes at the top of the table,
+  and the displayed data will be filtered (via an AND operation if there is more than one),
+  which will immediately reduce the number of rows shown.
+
+#### 2.9.3 Using the Application to Download Transactions
+
+This application also includes an API endpoint that allows you to download the transactions
+from the local database as a CSV file.  To do so, use your browser or a tool like `curl` or
+`Postman` to make a GET request to the following URL:
+
+```bash
+curl http://localhost:3000/api/transactions.csv?accountGroup={accountGroup}/fromDate={fromDate}&toDate={toDate}
+```
+
+The available account groups will match the ones in the *Filter by Account Group* dropdown.
+Dates should be specified in `YYYY-MM-DD` format.
+
+The response will be a CSV file, which you can save to your local machine (the filename
+will default to `Ramp-{accountGroup)-{fromDate}-{toDate}.csv`).  Or, if you are using
+a script to do the download, you can simply redirect the output to a file.
 
 ## 3. Regular Usage
 
