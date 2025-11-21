@@ -1,0 +1,37 @@
+{
+  "api_base_url": "http://localhost:3000",
+  "output_dir": "./statements",
+  "department_emails": {
+    "Board": "board@apache.org",
+    "Brand": "brand@apache.org",
+    "ComDev": "comdev@apache.org",
+    "Conferences": "conferences@apache.org",
+    "Diversity": "diversity@apache.org",
+    "Fundraising": "fundraising@apache.org",
+    "GovAffairs": "govaffairs@apache.org",
+    "Infrastructure": "infrastructure@apache.org",
+    "LegalAffairs": "legalaffairs@apache.org",
+    "Marketing": "marketing@apache.org",
+    "Privacy": "privacy@apache.org",
+    "Programs": "programs@apache.org",
+    "Reserve": "reserve@apache.org",
+    "Security": "security@apache.org",
+    "Staffing": "staffing@apache.org",
+    "TAC": "tac@apache.org",
+    "Tooling": "tooling@apache.org",
+    "Treasury": "treasury@apache.org"
+  },
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "use_tls": true,
+    "from_address": "treasury@apache.org",
+    "username": "treasury@apache.org",
+    "password": "your-smtp-password-here"
+  },
+  "email_template": {
+    "subject": "Ramp Credit Card Activity - {department} - {month}",
+    "body": "Dear {department} Team,\n\nPlease find attached your monthly credit card activity statement for {month} (covering {from_date} to {to_date}).\n\nIf you have any questions or concerns about the transactions listed, please contact the Treasury team.\n\nBest regards,\nApache Software Foundation Treasury"
+  }
+}
+
