@@ -1,6 +1,6 @@
 /**
  * Type definitions for QuickBooks Online API interactions.
- * These are derived from QBO XSD file IntuitBaseTypes.xsd for minversion 75.
+ * These are derived from QBO file IntuitBaseTypes.xsd for minversion 75.
  */
 
 // TODO: Line 158
@@ -338,16 +338,26 @@ export type ExternalKey = {
 export type EmailMessage = {
 }
 
-// TODO: Line 1167
-export type Gender = {
+// Line 1167 - Gender of a person enumeration.
+export enum Gender {
+  Female = "Female",
+  Male = "Male",
 }
 
 // TODO: Line 958
 export type GenericContactType = {
 }
 
-// TODO: Line 1797
-export type IdDomainEnum = {
+// Line 1797 - Enumeration of possible Id Domains. NG- next gen (int);
+// QB - Provisional DB id (string); QBO; BM (Billing Manager);
+// QBSDK - ListID, TxnID, or TxnLineId.
+export enum IdDomainEnum {
+  BM = "BM",
+  NG = "NG",
+  PMT = "PMT",
+  QB = "QB",
+  QBO = "QBO",
+  QBSDK = "QBSDK",
 }
 
 // TODO: Line 1066
@@ -393,8 +403,11 @@ export type ObjectNameEnumType = {
 export type PhysicalAddress = {
 }
 
-// TODO: Line 1123
-export type PhysicalAddressTypeEnum = {
+// Line 1123 - Enumeration of type of addresses that the data sync
+// process understands.
+export enum PhysicalAddressTypeEnum {
+  Billing = "Billing",
+  Shipping = "Shipping",
 }
 
 // TODO: Line 1093
@@ -407,11 +420,12 @@ export type Ratio = {
 
 // TODO: Line 1813
 export type ReferenceType = {
-  // TODO - IntuitBaseTypes.xsd line 1813+
 }
 
-// TODO: Line 1897
-export type ReportBasisEnum = {
+// Line 1897 - Enumeration of Summary Report basis.
+export enum ReportBasisEnum {
+  Accrual = "Accrual",
+  Cash = "Cash",
 }
 
 // TODO: Line 265
@@ -422,16 +436,29 @@ export type StringTypeCustomFieldDefinition = {
 export type SyncToken = {
 }
 
-// TODO: Line 1153
-export type TelephoneDeviceTypeEnum = {
+// Line 1153 - Telephone device type enumeration.
+export enum TelephoneDeviceTypeEnum {
+  Fax = "Fax",
+  LandLine = "LandLine",
+  Mobile = "Mobile",
+  Pager = "Pager",
 }
 
 // TODO: Line 746
 export type TelephoneNumber = {
 }
 
-// TODO: Line 1135
-export type TelephoneNumberTypeEnum = {
+// Line 1135 - Enumeration of type of phones that the data sync
+// process understands.
+export enum TelephoneNumberTypeEnum {
+  Business = "Business",
+  Fax = "Fax",
+  Home = "Home",
+  Mobile = "Mobile",
+  Other = "Other",
+  Pager = "Pager",
+  Primary = "Primary",
+  Secondary = "Secondary",
 }
 
 // TODO: Line 924
