@@ -1,65 +1,67 @@
 /**
- * Type definitions for QuickBooks Online API interactions.  These are derived
- * from the QBO XSD files for minversion 75.
+ * Type definitions for QuickBooks Online API interactions.
+ * These are derived from QBO XSD file IntuitBaseTypes.xsd for minversion 75.
  */
 
+// TODO: Line 158
 export type AttachableRef = {
-  // TODO
-//  attachableRefEx?: IntuitAnyType;
+  attachableRefEx?: IntuitAnyType;
   customField?: CustomField[];
   entityRef?: ReferenceType;
   includeOnSend?: boolean;
   lineInfo?: string;
 }
 
+// TODO: Line 379
 export type BooleanTypeCustomFieldDefinition = {
-  // TODO - IntuitBaseTypes.xsd line 379+
 }
 
+// TODO: Line 1203
 export type CCAVSMatchEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1203+
 }
 
+// TODO: Line 1216
 export type CCPaymentStatusEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1216+
 }
 
+// TODO: Line 1190
 export type CCSecurityCodeMatchEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1190+
 }
 
+// TODO: Line 1229
 export type CCTxnModeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1229+
 }
 
+// TODO: Line 1241
 export type CCTxnTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1241+
 }
 
+// TODO: Line 516
 export type ContactTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 516+
 }
 
+// TODO: Line 530
 export type ContactInfo = {
-  // TODO - IntuitBaseTypes.xsd line 530+
 }
 
+// TODO: Line 1256
 export type CreditCardTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1256+
 }
 
+// TODO: Line 1273
 export type CreditChargeInfo = {
-  // TODO - IntuitBaseTypes.xsd line 1273+
 }
 
+// TODO: Line 1395
 export type CreditChargeResponse = {
-  // TODO - IntuitBaseTypes.xsd line 1395+
 }
 
+// TODO: Line 1598
 export type CurrencyCode = {
-  // TODO - IntuitBaseTypes.xsd line 1598+
 }
 
+
+// Line 47
 export type CustomField = {
   booleanValue?: boolean;
   dateValue?: string;
@@ -71,62 +73,64 @@ export type CustomField = {
   value?: string;
 }
 
+// TODO: Line 207
 export type CustomFieldDefinition = {
-  // TODO - IntuitBaseTypes.xsd line 207+
 }
 
+// TODO: Line 1539
 export enum CustomFieldTypeEnum {
-  // TODO - IntuitBaseTypes.xsd line 1539+
 }
 
+// TODO: Line 341
 export type DateTypeCustomFieldDefinition = {
-  // TODO - IntuitBaseTypes.xsd line 341+
 }
 
+// TODO: Line 898
 export type DeliveryTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 898+
 }
 
+// TODO: Line 828
 export type EmailAddress = {
-  // TODO - IntuitBaseTypes.xsd line 828+
 }
 
+// TODO: Line 1111
 export type EmailAddressTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1111+
 }
 
+// TODO: Line 1553
 export type EntityStatusEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1553+
 }
 
+// TODO: Line 1057
 export type ExternalKey = {
-  // TODO - IntuitBaseTypes.xsd line 1057+
 }
 
+// TODO: Line 872
 export type EmailMessage = {
-  // TODO - IntuitBaseTypes.xsd line 872+
 }
 
+// TODO: Line 1167
 export type Gender = {
-  // TODO - IntuitBaseTypes.xsd line 1167+
 }
 
+// TODO: Line 958
 export type GenericContactType = {
-  // TODO - IntuitBaseTypes.xsd line 958+
 }
 
+// TODO: Line 1797
 export type IdDomainEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1797+
 }
 
+// TODO: Line 1066
 export type IdType = {
-  // TODO - IntuitBaseTypes.xsd line 1066+
 }
 
+// TODO: Line 1179
 export type IntuitAnyType = {
   // TODO - IntuitBaseTypes.xsd line 1179+
 }
 
+// Line 12
 export type IntuitEntity = {
   id?: string;
   domain?: string;
@@ -136,74 +140,75 @@ export type IntuitEntity = {
   syncToken?: string;
 }
 
+// TODO: Line 427
 export type ModificationMetaData = {
-  // TODO - IntuitBaseTypes.xsd line 427+
 }
 
+// TODO: Line 490
 export type Money = {
-  // TODO - IntuitBaseTypes.xsd line 490+
 }
 
+// TODO: Line 401
 export type NameValue = {
-  // TODO - IntuitBaseTypes.xsd line 401+
 }
 
+// TODO: Line 303
 export type NumberTypeCustomFieldDefinition = {
-  // TODO - IntuitBaseTypes.xsd line 303+
 }
 
+// TODO: Line 1827
 export type ObjectNameEnumType = {
-  // TODO - IntuitBaseTypes.xsd line 1827+
 }
 
+// TODO: Line 582
 export type PhysicalAddress = {
-  // TODO - IntuitBaseTypes.xsd line 582+
 }
 
+// TODO: Line 1123
 export type PhysicalAddressTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1123+
 }
 
+// TODO: Line 1093
 export type Quantity = {
-  // TODO - IntuitBaseTypes.xsd line 1093+
 }
 
+// TODO: Line 1102
 export type Ratio = {
-  // TODO - IntuitBaseTypes.xsd line 1102+
 }
 
+// TODO: Line 1813
 export type ReferenceType = {
   // TODO - IntuitBaseTypes.xsd line 1813+
 }
 
+// TODO: Line 1897
 export type ReportBasisEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1897+
 }
 
+// TODO: Line 265
 export type StringTypeCustomFieldDefinition = {
-  // TODO - IntuitBaseTypes.xsd line 265+
 }
 
+// TODO: Line 1084
 export type SyncToken = {
-  // TODO - IntuitBaseTypes.xsd line 1084+
 }
 
+// TODO: Line 1153
 export type TelephoneDeviceTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1153+
 }
 
+// TODO: Line 746
 export type TelephoneNumber = {
-  // TODO - IntuitBaseTypes.xsd line 746+
 }
 
+// TODO: Line 1135
 export type TelephoneNumberTypeEnum = {
-  // TODO - IntuitBaseTypes.xsd line 1135+
 }
 
+// TODO: Line 924
 export type TransactionDeliveryInfo = {
-  // TODO - IntuitBaseTypes.xsd line 924+
 }
 
+// TODO: Line 1015
 export type WebsiteAddress = {
-  // TODO - IntuitBaseTypes.xsd line 1015+
 }

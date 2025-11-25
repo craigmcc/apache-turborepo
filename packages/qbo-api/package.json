@@ -13,7 +13,7 @@
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "dev": "tsc --watch",
-    "lint": "eslint . --max-warnings 0"
+    "lintx": "eslint . --max-warnings 0"
   },
   "type": "module",
   "version": "0.0.0",
