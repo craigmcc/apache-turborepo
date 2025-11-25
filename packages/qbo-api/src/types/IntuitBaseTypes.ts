@@ -16,36 +16,69 @@ export type AttachableRef = {
 export type BooleanTypeCustomFieldDefinition = {
 }
 
-// TODO: Line 1203
-export type CCAVSMatchEnum = {
+// Line 1203 - Enumeration of AVSStreet and AVSZip match used in Credit Card
+// payment transactions.
+export enum CCAVSMatchEnum {
+  Fail = "Fail",
+  NotAvailable = "NotAvailable",
+  Pass = "Pass",
 }
 
-// TODO: Line 1216
-export type CCPaymentStatusEnum = {
+// Line 1216 - Enumeration of the status of the Credit Card
+// payment transaction.
+export enum CCPaymentStatusEnum {
+  Completed = "Completed",
+  Unknown = "Unknown",
+  Voided = "Voided",
 }
 
-// TODO: Line 1190
-export type CCSecurityCodeMatchEnum = {
+// Line 1190 - Enumeration of Credit Card security code match used in
+// Credit Card payment transactions.
+export enum CCSecurityCodeMatchEnum {
+  Fail = "Fail",
+  NotAvailable = "NotAvailable",
+  Pass = "Pass",
 }
 
-// TODO: Line 1229
-export type CCTxnModeEnum = {
+// Line 1229 = Enumeration of Credit Card transaction modes used in
+// Credit Card payment transactions.
+export enum CCTxnModeEnum {
+  CardNotPresent = "CardNotPresent",
+  CardPresent = "CardPresent",
 }
 
-// TODO: Line 1241
-export type CCTxnTypeEnum = {
+// Line 1241 - Enumeration of Credit Card transaction types used in
+// Credit Card payment transactions.
+export enum CCTxnTypeEnum {
+  Authorization = "Authorization",
+  Capture = "Capture",
+  Charge = "Charge",
+  Refund = "Refund",
+  VoiceAuthorization = "VoiceAuthorization",
 }
 
-// TODO: Line 516
-export type ContactTypeEnum = {
+// Line 516 = Types of ContactInfo entities.
+export enum ContactTypeEnum {
+  EmailAddress = "EmailAddress",
+  GenericContactType = "GenericContactType",
+  TelephoneNumber = "TelephoneNumber",
+  WebsiteAddress = "WebsiteAddress",
 }
 
 // TODO: Line 530
 export type ContactInfo = {
 }
 
-// TODO: Line 1256
-export type CreditCardTypeEnum = {
+// Line 1256 - Enumeration of Credit Card types used in Credit Card
+// payment transactions.
+export enum CreditCardTypeEnum {
+  Amex = "Amex",
+  DebitCard = "DebitCard",
+  Discover = "Discover",
+  GiftCard = "GiftCard",
+  MasterCard = "MasterCard",
+  OtherCreditCard = "OtherCreditCard",
+  Visa = "Visa",
 }
 
 // TODO: Line 1273
@@ -56,10 +89,189 @@ export type CreditChargeInfo = {
 export type CreditChargeResponse = {
 }
 
-// TODO: Line 1598
-export type CurrencyCode = {
+// Line 1598 - ISO 4217 Currency Code enumeration.
+export enum CurrencyCode {
+  AED = "AED",
+  AFA = "AFA",
+  ALL = "ALL",
+  ANG = "ANG",
+  AOA = "AOA",
+  AOK = "AOK",
+  ARP = "ARP",
+  ARS = "ARS",
+  AMD = "AMD",
+  ATS = "ATS",
+  AUD = "AUD",
+  AWF = "AWF",
+  AWG = "AWG",
+  AZM = "AZM",
+  BAM = "BAM",
+  BBD = "BBD",
+  BDT = "BDT",
+  BEF = "BEF",
+  BGL = "BGL",
+  BHD = "BHD",
+  BIF = "BIF",
+  BMD = "BMD",
+  BND = "BND",
+  BOB = "BOB",
+  BRC = "BRC",
+  BRL = "BRL",
+  BSD = "BSD",
+  BTN = "BTN",
+  BUK = "BUK",
+  BWP = "BWP",
+  BYR = "BYR",
+  BZD = "BZD",
+  CAD = "CAD",
+  CDF = "CDF",
+  CHF = "CHF",
+  CLP = "CLP",
+  CNY = "CNY",
+  COP = "COP",
+  CRC = "CRC",
+  CZK = "CZK",
+  DDM = "DDM",
+  DEM = "DEM",
+  DJF = "DJF",
+  DKK = "DKK",
+  DOP = "DOP",
+  DZD = "DZD",
+  ECS = "ECS",
+  EEK = "EEK",
+  EGP = "EGP",
+  ERN = "ERN",
+  ESP = "ESP",
+  ETB = "ETB",
+  EUR = "EUR",
+  FIM = "FIM",
+  FJD = "FJD",
+  FKP = "FKP",
+  FRF = "FRF",
+  GBP = "GBP",
+  GEL = "GEL",
+  GHC = "GHC",
+  GIP = "GIP",
+  GMD = "GMD",
+  GNF = "GNF",
+  GRD = "GRD",
+  GTQ = "GTQ",
+  GWP = "GWP",
+  GYD = "GYD",
+  HKD = "HKD",
+  HNL = "HNL",
+  HRK = "HRK",
+  HTG = "HTG",
+  HUF = "HUF",
+  IDR = "IDR",
+  IEP = "IEP",
+  ILS = "ILS",
+  INR = "INR",
+  IQD = "IQD",
+  IRR = "IRR",
+  ISK = "ISK",
+  ITL = "ITL",
+  JMD = "JMD",
+  JOD = "JOD",
+  KES = "KES",
+  KGS = "KGS",
+  KHR = "KHR",
+  KMF = "KMF",
+  KPW = "KPW",
+  KRW = "KRW",
+  KWD = "KWD",
+  KYD = "KYD",
+  KZT = "KZT",
+  LAK = "LAK",
+  LBP = "LBP",
+  LKR = "LKR",
+  LRD = "LRD",
+  LSL = "LSL",
+  LTL = "LTL",
+  LUF = "LUF",
+  LVL = "LVL",
+  LYD = "LYD",
+  MAD = "MAD",
+  MDL = "MDL",
+  MGF = "MGF",
+  MKD = "MKD",
+  MMK = "MMK",
+  MNT = "MNT",
+  MOP = "MOP",
+  MRO = "MRO",
+  MUR = "MUR",
+  MVR = "MVR",
+  MWK = "MWK",
+  NAD = "NAD",
+  NGN = "NGN",
+  NIC = "NIC",
+  NIO = "NIO",
+  NLG = "NLG",
+  NOK = "NOK",
+  NPR = "NPR",
+  NZD = "NZD",
+  OMR = "OMR",
+  PAB = "PAB",
+  PEN = "PEN",
+  PES = "PES",
+  PGK = "PGK",
+  PHP = "PHP",
+  PKR = "PKR",
+  PLN = "PLN",
+  PLZ = "PLZ",
+  PTE = "PTE",
+  PYG = "PYG",
+  QAR = "QAR",
+  ROL = "ROL",
+  RUR = "RUR",
+  RWF = "RWF",
+  SAR = "SAR",
+  SBD = "SBD",
+  SCR = "SCR",
+  SDD = "SDD",
+  SEK = "SEK",
+  SGD = "SGD",
+  SHP = "SHP",
+  SIT = "SIT",
+  SKK = "SKK",
+  SLL = "SLL",
+  SOS = "SOS",
+  SRG = "SRG",
+  STD = "STD",
+  SUR = "SUR",
+  SVC = "SVC",
+  SYP = "SYP",
+  SZL = "SZL",
+  THB = "THB",
+  TMM = "TMM",
+  TND = "TND",
+  TOP = "TOP",
+  TRL = "TRL",
+  TTD = "TTD",
+  TWD = "TWD",
+  TZS = "TZS",
+  UAH = "UAH",
+  UGS = "UGS",
+  UGX = "UGX",
+  USD = "USD",
+  UYP = "UYP",
+  UYU = "UYU",
+  UZS = "UZS",
+  VND = "VND",
+  VUV = "VUV",
+  VAL = "VAL",
+  WST = "WST",
+  XAF = "XAF",
+  XCD = "XCD",
+  XOF = "XOF",
+  XPF = "XPF",
+  YER = "YER",
+  YUD = "YUD",
+  ZAR = "ZAR",
+  ZMK = "ZMK",
+  ZRZ = "ZRZ",
+  ZWD = "ZWD",
 }
-
 
 // Line 47
 export type CustomField = {
@@ -77,28 +289,45 @@ export type CustomField = {
 export type CustomFieldDefinition = {
 }
 
-// TODO: Line 1539
+// Line 1539 - Possible supported CustomFieldTypes.
 export enum CustomFieldTypeEnum {
+  BooleanType = "BooleanType",
+  DateType = "DateType",
+  NumberType = "NumberType",
+  StringType = "StringType",
 }
 
 // TODO: Line 341
 export type DateTypeCustomFieldDefinition = {
 }
 
-// TODO: Line 898
-export type DeliveryTypeEnum = {
+// Line 898 - Enum of different delivery types. Supports Email
+// and Tradeshift delivery.
+export enum DeliveryTypeEnum {
+  Email = "Email",
+  Tradeshift = "Tradeshift",
 }
 
 // TODO: Line 828
 export type EmailAddress = {
 }
 
-// TODO: Line 1111
-export type EmailAddressTypeEnum = {
+// Line 1111 - Enumeration of type of email addresses that the data sync
+// process understands.
+export enum EmailAddressTypeEnum {
+  CC = "CC",
+  Primary = "Primary",
 }
 
-// TODO: Line 1553
-export type EntityStatusEnum = {
+// Line 1553 - Possible Status of an Entity.
+export enum EntityStatusEnum {
+  Deleted = "Deleted", // Object has been deleted but not yet purged from database
+  Draft = "Draft", // Object has been voided from an accounting perspective
+  InTransit = "InTransit", // Object is currently being written to QuickBooks during an active synchronization, cloud will not permit writes to the entity
+  Pending = "Pending", // Object has been written to the cloud but is pending sync to QuickBooks Desktop
+  SyncError = "SyncError", // Object failed to sync to QuickBooks
+  Synchronized = "Synchronized", // Object is synchronized with QuickBooks data, this is the normal state in QBO as there is no synchronization needed in QBO
+  Voided = "Voided", // Object has been voided from an accounting perspective
 }
 
 // TODO: Line 1057
