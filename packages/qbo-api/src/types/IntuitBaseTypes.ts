@@ -330,9 +330,9 @@ export enum EntityStatusEnum {
   Voided = "Voided", // Object has been voided from an accounting perspective
 }
 
-// TODO: Line 1057
-export type ExternalKey = {
-}
+// Line 1057 - ExternalKey type allows an associated external ID
+// like QuickBooks ID to be represented in Data Services.
+export type ExternalKey = string;
 
 // TODO: Line 872
 export type EmailMessage = {
@@ -360,9 +360,10 @@ export enum IdDomainEnum {
   QBSDK = "QBSDK",
 }
 
-// TODO: Line 1066
-export type IdType = {
-}
+// Line 1066 - Allows for strong-typing of Ids and qualifying the
+// domain origin of the Id.  The valid values for the domain are
+// defined in the idDomainEnum.
+export type IdType = string;
 
 // TODO: Line 1179
 export type IntuitAnyType = {
@@ -395,8 +396,65 @@ export type NameValue = {
 export type NumberTypeCustomFieldDefinition = {
 }
 
-// TODO: Line 1827
-export type ObjectNameEnumType = {
+// Line 1827 - Supported Intuit entity/object names.
+export enum ObjectNameEnumType {
+  Account = "Account",
+  All = "All",
+  Attachable = "Attachable",
+  Bill = "Bill",
+  BillPayment = "BillPayment",
+  BOMComponent = "BOMComponent",
+  ChangeOrder = "ChangeOrder",
+  ChargeCredit = "ChargeCredit",
+  Company = "Company",
+  CompanyInfo = "CompanyInfo",
+  CreditCardPaymentTxn = "CreditCardPaymentTxn",
+  CreditMemo = "CreditMemo",
+  Customer = "Customer",
+  CustomFieldDefinition = "CustomFieldDefinition",
+  Department = "Department",
+  Deposit = "Deposit",
+  Discount = "Discount",
+  Employee = "Employee",
+  Estimate = "Estimate",
+  FixedAsset = "FixedAsset",
+  InventoryAdjustment = "InventoryAdjustment",
+  InventorySite = "InventorySite",
+  Invoice = "Invoice",
+  Item = "Item",
+  ItemReceipt = "ItemReceipt",
+  JournalEntry = "JournalEntry",
+  ListObjectType = "ListObjectType",
+  Names = "Names",
+  OtherName = "OtherName",
+  Payment = "Payment",
+  PaymentMethod = "PaymentMethod",
+  Preferences = "Preferences",
+  PriceLevel = "PriceLevel",
+  Purchase = "Purchase",
+  PurchaseOrder = "PurchaseOrder",
+  RecurringTransaction = "RecurringTransaction",
+  RefundReceipt = "RefundReceipt",
+  Report = "Report",
+  SalesOrder = "SalesOrder",
+  SalesReceipt = "SalesReceipt",
+  SalesRep = "SalesRep",
+  ShipMethod = "ShipMethod",
+  StatementCharge = "StatementCharge",
+  Tag = "Tag",
+  TaxCode = "TaxCode",
+  TaxClassification = "TaxClassification",
+  TaxPayment = "TaxPayment",
+  TaxRate = "TaxRate",
+  TaxReturn = "TaxReturn",
+  Term = "Term",
+  TimeActivity = "TimeActivity",
+  Transaction = "Transaction",
+  Transfer = "Transfer",
+  TxnLocation = "TxnLocation",
+  UOM = "UOM",
+  Vendor = "Vendor",
+  VendorCredit = "VendorCredit",
 }
 
 // TODO: Line 582
