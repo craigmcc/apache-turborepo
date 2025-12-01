@@ -2,6 +2,8 @@
  * Type definitions for QuickBooks Online API interactions.
  * These are derived from QBO file Finance.xsd for minversion 75.
  *
+ * NOTE:  Names of top level entities prefixed with "Qbo" to avoid
+ * conflicts with internal Prisma model names.
  * NOTE:  Only the relevant types from this file will be included here.
  */
 
@@ -19,7 +21,7 @@ import {
 // part of a Ledger. Used to record a total monetary amount allocated
 // against a specific use.  Accounts are one of five basic types: asset,
 // liability, revenue (income),	expenses, or equity.
-export type Account = IntuitEntity & {
+export type QboAccount = IntuitEntity & {
   // Display Name of the account that will be shown in Transaction Forms
   // based on Account	Category.
   AccountAlias?: string;
