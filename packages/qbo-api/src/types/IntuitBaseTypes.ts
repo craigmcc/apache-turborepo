@@ -365,31 +365,86 @@ export enum IdDomainEnum {
 // defined in the idDomainEnum.
 export type IdType = string;
 
-// TODO: Line 1179
-export type IntuitAnyType = {
-  // TODO - IntuitBaseTypes.xsd line 1179+
-}
+// Line 1179 - Definition of IntuitAnyType to add and extend new
+// elements to the existing entities.
+export type IntuitAnyType = never;
 
-// Line 12
+// For IntuitEntity:
+// TODO: skipping AttachableRef property for now.
+// TODO: skipping BooleanTypeCustomFieldDefinition type for now.
+// TODO: skipping CustomField property for now.
+// TODO: skipping CustomFieldDefinition property for now.
+// TODO: skipping DateTypeCustomFieldDefinition type for now.
+// TODO: skipping NumberTypeCustomFieldDefinition type for now.
+// TODO: skipping StringTypeCustomFieldDefinition type for now.
+type Foo = {};
+
+// Line 12 - Base type of any top level Intuit Entity of small business type.
 export type IntuitEntity = {
-  id?: string;
+  // Domain in which the entity belongs.
   domain?: string;
-  metaData?: ModificationMetaData;
+  // Unique Identifier for an Intuit entity (object).
+  // Required for the update operation.
+  Id?: string;
+  // Descriptive information about the entity.  The MetaData values are set
+  // by Data Services and are read only for all applications.
+  MetaData?: ModificationMetaData;
+  // True if the entity representation has a partial set of elements. Output only field.
   sparse?: boolean;
-  status?: string;
-  syncToken?: string;
+  // System status of the entity. Output only field.
+  status?: EntityStatusEnum;
+  // Version number of the entity.  The SyncToken is used to lock the entity
+  // for use by one application at a time. As soon as an application modifies
+  // an entity, its SyncToken is incremented; another application's request
+  // to modify the entity with the same SyncToken will fail. Only the latest
+  // version of the entity is maintained by Data Services.  An attempt to
+  // modify an entity specifying an older SyncToken will fail.
+  //
+  // Required for the update operation.
+  SyncToken?: string;
 }
 
-// TODO: Line 427
+// Line 427 - Metadata for the instance of the entity.
+// All properties are read only.
 export type ModificationMetaData = {
+  // Reference to the user who created the data. Read only property.
+  CreatedByRef?: ReferenceType;
+  // Time the entity was created in the source domain (QBD or QBO).
+  // Read only property.
+  CreateTime?: Date;
+  //Time the entity was last updated in QB. Read only property.
+  LastChangedInQB?: Date;
+  // Reference to the user who last modified the entity.
+  // Read only property.
+  LastModifiedByRef?: ReferenceType;
+  // Time the entity was last updated in the source domain (QBD or QBO).
+  // Read only property.
+  LastUpdatedTime?: Date;
+  // If true, the data on the cloud has been synchronized with QuickBooks
+  // for Windows. If false, the data has been created or updated on the
+  // cloud but has not been synchronized with QuickBooks for Windows.
+  // Read-only field.
+  Synchronized?: boolean;
 }
 
-// TODO: Line 490
+// Line 490 - Monetary value represented with as a currency code and
+// decimal value. Money is always associated with another IntuitEntity
+// and will not be manipulated as a standalone hence it is not extended
+// from IntuitEntity.
 export type Money = {
+  // Monetary value.
+  Amount?: number;
+  // Monetary unit as described by the ISO 4217 three letter currency code.
+  CurCode?: string;
 }
 
-// TODO: Line 401
+// Line 401 - A name/value pair that allows the client to include data that is
+// meaningful in the domain of origin, outside of the Intuit domain.
 export type NameValue = {
+  // Name of the element.
+  Name?: string;
+  // Value of the element.
+  Value?: string;
 }
 
 // TODO: Line 303
@@ -476,8 +531,10 @@ export type Quantity = {
 export type Ratio = {
 }
 
-// TODO: Line 1813
+// Line 1813 - Reference type of all IDs that are taken as input or output.
 export type ReferenceType = {
+  name?: string;
+  type?: string;
 }
 
 // Line 1897 - Enumeration of Summary Report basis.
