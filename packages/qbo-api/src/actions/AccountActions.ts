@@ -6,9 +6,10 @@
 
 // External Modules ----------------------------------------------------------
 
+import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+
 // Internal Modules ----------------------------------------------------------
 
-import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
 import type { QboAccount } from "@/types/Finance";
 
 // Private Objects -----------------------------------------------------------
