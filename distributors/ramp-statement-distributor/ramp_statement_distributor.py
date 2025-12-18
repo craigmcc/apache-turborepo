@@ -6,9 +6,9 @@ This script generates monthly credit card activity statements for each departmen
 by calling the ramp-lookup API and distributes them via email.
 
 Usage:
-    python statement_distributor.py --config config.json
-    python statement_distributor.py --config config.json --month 2024-11
-    python statement_distributor.py --config config.json --dry-run
+    python ramp_statement_distributor.py --config config.json
+    python ramp_statement_distributor.py --config config.json --month 2024-11
+    python ramp_statement_distributor.py --config config.json --dry-run
 """
 
 import argparse

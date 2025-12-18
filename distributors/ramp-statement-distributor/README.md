@@ -12,25 +12,93 @@ This tool:
 
 ## Prerequisites
 
-- Python 3.8 or higher
+- [pyenv](https://github.com/pyenv/pyenv) - Python version management
+- Python 3.11+ (managed via pyenv)
 - The `ramp-lookup` service running (default: `http://localhost:3000`)
 - Access to an SMTP server for sending emails
 
 ## Installation
 
-1. Install the required dependencies:
+### Quick Setup (Recommended)
+
+Run the automated setup script:
 
 ```bash
+cd distributors/ramp-statement-distributor
+./setup.sh
+```
+
+This script will:
+- Check for pyenv installation
+- Install Python 3.11.0 if needed
+- Create a virtual environment
+- Install all dependencies
+
+### Manual Setup
+
+If you prefer to set up manually:
+
+#### 1. Install pyenv (if not already installed)
+
+On macOS:
+```bash
+brew install pyenv
+```
+
+On Linux:
+```bash
+curl https://pyenv.run | bash
+```
+
+Add pyenv to your shell configuration (e.g., `~/.bashrc` or `~/.zshrc`):
+```bash
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+```
+
+### 2. Install Python 3.11 and set up the environment
+
+```bash
+cd distributors/ramp-statement-distributor
+
+# Install Python 3.11 (pyenv will use .python-version file)
+pyenv install 3.11.0
+
+# Verify the correct Python version is active
+python --version  # Should show Python 3.11.0
+```
+
+### 3. Create and activate a virtual environment
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source .venv/bin/activate
+
+# On Windows:
+# .venv\Scripts\activate
+```
+
+### 4. Install dependencies
+
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-2. Create your configuration file:
+### 5. Create your configuration file
 
 ```bash
 cp config.example.json config.json
 ```
 
-3. Edit `config.json` with your specific settings (see Configuration section below).
+### 6. Edit configuration
+
+Edit `config.json` with your specific settings (see Configuration section below).
 
 ## Configuration
 
@@ -68,8 +136,8 @@ Configure your email server settings:
   "host": "smtp.example.com",
   "port": 587,
   "use_tls": true,
-  "from_address": "treasury@apache.org",
-  "username": "treasury@apache.org",
+  "from_address": "treasurer@apache.org",
+  "username": "treasurer@apache.org",
   "password": "your-smtp-password-here"
 }
 ```
@@ -101,12 +169,19 @@ Available placeholders:
 
 ## Usage
 
+**Note:** Always activate the virtual environment before running the tool:
+```bash
+source .venv/bin/activate  # On macOS/Linux
+# or
+.venv\Scripts\activate     # On Windows
+```
+
 ### Basic Usage (Previous Month)
 
 By default, the tool processes the previous month's data:
 
 ```bash
-python statement_distributor.py --config config.json
+python ramp_statement_distributor.py --config config.json
 ```
 
 ### Specify a Specific Month
@@ -114,7 +189,7 @@ python statement_distributor.py --config config.json
 To process a specific month:
 
 ```bash
-python statement_distributor.py --config config.json --month 2024-11
+python ramp_statement_distributor.py --config config.json --month 2024-11
 ```
 
 ### Custom AccountGroups.json Location
@@ -122,7 +197,7 @@ python statement_distributor.py --config config.json --month 2024-11
 By default, the tool looks for `AccountGroups.json` at `../../packages/shared-utils/src/AccountGroups.json`. To use a different location:
 
 ```bash
-python statement_distributor.py --config config.json --account-groups /path/to/AccountGroups.json
+python ramp_statement_distributor.py --config config.json --account-groups /path/to/AccountGroups.json
 ```
 
 ### Dry Run Mode
@@ -130,13 +205,13 @@ python statement_distributor.py --config config.json --account-groups /path/to/A
 Test the tool without sending emails (statements will still be downloaded):
 
 ```bash
-python statement_distributor.py --config config.json --dry-run
+python ramp_statement_distributor.py --config config.json --dry-run
 ```
 
 ### Full Options
 
 ```bash
-python statement_distributor.py --config config.json --month 2024-11 --dry-run
+python ramp_statement_distributor.py --config config.json --month 2024-11 --dry-run
 ```
 
 ## Automation with Cron
@@ -146,15 +221,17 @@ To run this tool automatically on the first day of each month:
 1. Make the script executable:
 
 ```bash
-chmod +x statement_distributor.py
+chmod +x ramp_statement_distributor.py
 ```
 
 2. Add a cron job (run `crontab -e`):
 
 ```cron
 # Run on the 1st of each month at 9:00 AM
-0 9 1 * * cd /path/to/statement-distributor && /usr/bin/python3 statement_distributor.py --config config.json >> /var/log/statement-distributor.log 2>&1
+0 9 1 * * cd /path/to/distributors/ramp-statement-distributor && source .venv/bin/activate && python ramp_statement_distributor.py --config config.json >> /var/log/ramp-statement-distributor.log 2>&1
 ```
+
+**Note:** The cron job activates the virtual environment before running the script to ensure all dependencies are available.
 
 ## Output
 
@@ -229,12 +306,4 @@ If the tool says "No departments configured with email addresses":
    ```
 3. **HTTPS**: In production, use HTTPS for the `api_base_url`
 4. **TLS**: Always use `use_tls: true` for SMTP connections
-
-## License
-
-Apache License 2.0
-
-## Support
-
-For issues or questions, please contact the Apache Software Foundation Treasury team.
 

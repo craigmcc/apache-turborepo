@@ -19,14 +19,14 @@
     "Staffing": "staffing@apache.org",
     "TAC": "tac@apache.org",
     "Tooling": "tooling@apache.org",
-    "Treasury": "treasury@apache.org"
+    "Treasury": "treasurer@apache.org"
   },
   "smtp": {
     "host": "smtp.example.com",
     "port": 587,
     "use_tls": true,
-    "from_address": "treasury@apache.org",
-    "username": "treasury@apache.org",
+    "from_address": "treasurer@apache.org",
+    "username": "treasurer@apache.org",
     "password": "your-smtp-password-here"
   },
   "email_template": {
