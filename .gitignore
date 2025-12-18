@@ -36,24 +36,28 @@ yarn-error.log*
 .DS_Store
 *.pem
 
+# Python virtual environments
+distributors/ramp-statement-distributor/.venv/
+distributors/ramp-statement-distributor/venv/
+
 # Configuration files with sensitive data
-apps/statement-distributor/config.json
+distributors/ramp-statement-distributor/config.json
 
 # Output directory with statements
-apps/statement-distributor/statements
-apps/statement-distributor/statements/*.csv
+distributors/ramp-statement-distributor/statements/
+distributors/ramp-statement-distributor/*.csv
 
-# Python
-apps/statement-distributor/__pycache__/
-apps/statement-distributor/*.py[cod]
-apps/statement-distributor/*.pyc
-apps/statement-distributor/*.pyo
-apps/statement-distributor/*.pyd
-apps/statement-distributor/*.pyw
-apps/statement-distributor/*.pyz
+# Python cache and bytecode
+distributors/ramp-statement-distributor/__pycache__/
+distributors/ramp-statement-distributor/*.py[cod]
+distributors/ramp-statement-distributor/*.pyc
+distributors/ramp-statement-distributor/*.pyo
+distributors/ramp-statement-distributor/*.pyd
+distributors/ramp-statement-distributor/*.pyw
+distributors/ramp-statement-distributor/*.pyz
 
 # Logs
-apps/statement-distributor/*.log
+distributors/ramp-statement-distributor/*.log
 
 # IDE
 .vscode/
