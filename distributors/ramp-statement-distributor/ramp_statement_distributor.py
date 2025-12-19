@@ -8,6 +8,7 @@ by calling the ramp-lookup API and distributes them via email.
 Usage:
     python ramp_statement_distributor.py --config config.json
     python ramp_statement_distributor.py --config config.json --month 2024-11
+    python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-12
     python ramp_statement_distributor.py --config config.json --dry-run
 """
 
@@ -136,36 +137,78 @@ class StatementDistributor:
         logger.info(f"Loaded {len(departments)} departments from AccountGroups.json")
         return departments
 
-    def _get_date_range(self, month: Optional[str] = None) -> tuple[str, str]:
+    def _parse_month(self, month_str: str) -> datetime:
         """
-        Calculate the date range for the statement.
+        Parse a month string in YYYY-MM format.
 
         Args:
-            month: Optional month in YYYY-MM format. If None, uses previous month.
+            month_str: Month in YYYY-MM format
 
         Returns:
-            Tuple of (from_date, to_date) in YYYY-MM-DD format
+            datetime object set to the first day of the month
         """
-        if month:
-            try:
-                year, month_num = map(int, month.split('-'))
-                first_day = datetime(year, month_num, 1)
-            except ValueError:
-                logger.error(f"Invalid month format: {month}. Use YYYY-MM")
-                sys.exit(1)
+        try:
+            year, month_num = map(int, month_str.split('-'))
+            return datetime(year, month_num, 1)
+        except ValueError:
+            logger.error(f"Invalid month format: {month_str}. Use YYYY-MM")
+            sys.exit(1)
+
+    def _get_month_range(
+        self,
+        from_month: Optional[str] = None,
+        to_month: Optional[str] = None
+    ) -> List[tuple[str, str]]:
+        """
+        Generate a list of (from_date, to_date) tuples for each month in the range.
+
+        Args:
+            from_month: Start month in YYYY-MM format (inclusive)
+            to_month: End month in YYYY-MM format (inclusive)
+
+        Returns:
+            List of tuples, each containing (from_date, to_date) in YYYY-MM-DD format
+        """
+        # Determine start month
+        if from_month:
+            start_date = self._parse_month(from_month)
         else:
             # Default to previous month
             today = datetime.now()
-            first_day = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+            start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
 
-        # Calculate last day of the month
-        next_month = first_day.replace(day=28) + timedelta(days=4)
-        last_day = next_month - timedelta(days=next_month.day)
+        # Determine end month
+        if to_month:
+            end_date = self._parse_month(to_month)
+        else:
+            # Default to same as start month
+            end_date = start_date
 
-        from_date = first_day.strftime('%Y-%m-%d')
-        to_date = last_day.strftime('%Y-%m-%d')
+        # Validate that from_month is not after to_month
+        if start_date > end_date:
+            logger.error(
+                f"Invalid month range: from_month ({from_month}) is after to_month ({to_month})"
+            )
+            sys.exit(1)
 
-        return from_date, to_date
+        # Generate list of months
+        month_ranges = []
+        current = start_date
+
+        while current <= end_date:
+            # Calculate last day of current month
+            next_month = current.replace(day=28) + timedelta(days=4)
+            last_day = next_month - timedelta(days=next_month.day)
+
+            from_date = current.strftime('%Y-%m-%d')
+            to_date = last_day.strftime('%Y-%m-%d')
+
+            month_ranges.append((from_date, to_date))
+
+            # Move to next month
+            current = next_month.replace(day=1)
+
+        return month_ranges
 
     def download_statement(
         self,
@@ -354,12 +397,18 @@ class StatementDistributor:
 
         return success
 
-    def run(self, month: Optional[str] = None, dry_run: bool = False) -> int:
+    def run(
+        self,
+        from_month: Optional[str] = None,
+        to_month: Optional[str] = None,
+        dry_run: bool = False
+    ) -> int:
         """
         Run the statement generation and distribution process.
 
         Args:
-            month: Optional month in YYYY-MM format
+            from_month: Optional start month in YYYY-MM format
+            to_month: Optional end month in YYYY-MM format
             dry_run: If True, download statements but don't send emails
 
         Returns:
@@ -370,24 +419,36 @@ class StatementDistributor:
         if dry_run:
             logger.info("Running in DRY RUN mode - emails will not be sent")
 
-        # Get date range
-        from_date, to_date = self._get_date_range(month)
-        logger.info(f"Processing statements for {from_date} to {to_date}")
+        # Get month ranges
+        month_ranges = self._get_month_range(from_month, to_month)
 
-        # Process each department
-        results = []
-        for department in self.departments:
-            success = self.process_department(
-                department,
-                from_date,
-                to_date,
-                dry_run
+        if len(month_ranges) == 1:
+            logger.info(
+                f"Processing statements for {month_ranges[0][0]} to {month_ranges[0][1]}"
             )
-            results.append(success)
+        else:
+            logger.info(
+                f"Processing statements for {len(month_ranges)} months: "
+                f"{month_ranges[0][0]} to {month_ranges[-1][1]}"
+            )
+
+        # Process each month and department
+        all_results = []
+        for from_date, to_date in month_ranges:
+            logger.info(f"Processing month: {from_date} to {to_date}")
+
+            for department in self.departments:
+                success = self.process_department(
+                    department,
+                    from_date,
+                    to_date,
+                    dry_run
+                )
+                all_results.append(success)
 
         # Summary
-        total = len(results)
-        successful = sum(results)
+        total = len(all_results)
+        successful = sum(all_results)
         failed = total - successful
 
         logger.info(
@@ -412,9 +473,23 @@ def main():
         '--account-groups',
         help='Path to AccountGroups.json (default: ../../packages/shared-utils/src/AccountGroups.json)'
     )
-    parser.add_argument(
+    
+    # Month specification options
+    month_group = parser.add_mutually_exclusive_group()
+    month_group.add_argument(
         '--month',
-        help='Month to process in YYYY-MM format (default: previous month)'
+        help='Single month to process in YYYY-MM format (default: previous month)'
+    )
+    month_group.add_argument(
+        '--from-month',
+        dest='from_month',
+        help='Start month for range in YYYY-MM format (use with --to-month)'
+    )
+    
+    parser.add_argument(
+        '--to-month',
+        dest='to_month',
+        help='End month for range in YYYY-MM format (use with --from-month)'
     )
     parser.add_argument(
         '--dry-run',
@@ -424,8 +499,26 @@ def main():
 
     args = parser.parse_args()
 
+    # Handle month arguments
+    if args.month:
+        # Single month specified
+        from_month = args.month
+        to_month = args.month
+    elif args.from_month:
+        # Range specified
+        from_month = args.from_month
+        to_month = args.to_month if args.to_month else args.from_month
+    elif args.to_month:
+        # Only to_month specified (error)
+        parser.error("--to-month requires --from-month")
+        sys.exit(1)
+    else:
+        # No month specified, use default
+        from_month = None
+        to_month = None
+
     distributor = StatementDistributor(args.config, args.account_groups)
-    exit_code = distributor.run(args.month, args.dry_run)
+    exit_code = distributor.run(from_month, to_month, args.dry_run)
     sys.exit(exit_code)
 
 

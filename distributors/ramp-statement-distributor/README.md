@@ -197,6 +197,16 @@ To process a specific month:
 python ramp_statement_distributor.py --config config.json --month 2024-11
 ```
 
+### Specify a Month Range
+
+To process multiple months at once:
+
+```bash
+python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-12
+```
+
+This will generate and distribute statements for each month in the range (January through December 2024).
+
 ### Custom AccountGroups.json Location
 
 By default, the tool looks for `AccountGroups.json` at `../../packages/shared-utils/src/AccountGroups.json`. To use a different location:
@@ -215,8 +225,14 @@ python ramp_statement_distributor.py --config config.json --dry-run
 
 ### Full Options
 
+Single month with dry-run:
 ```bash
 python ramp_statement_distributor.py --config config.json --month 2024-11 --dry-run
+```
+
+Month range with custom AccountGroups location:
+```bash
+python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-03 --account-groups /path/to/AccountGroups.json
 ```
 
 ## Automation with Cron
