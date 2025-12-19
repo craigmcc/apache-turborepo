@@ -7,8 +7,8 @@ settings:
 catalogs:
   bootstrap5:
     bootstrap:
-      specifier: ^5.3.6
-      version: 5.3.6
+      specifier: ^5.3.8
+      version: 5.3.8
     react-bootstrap:
       specifier: ^2.10.10
       version: 2.10.10
@@ -144,7 +144,7 @@ importers:
         version: 2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       bootstrap:
         specifier: catalog:bootstrap5
-        version: 5.3.6(@popperjs/core@2.11.8)
+        version: 5.3.8(@popperjs/core@2.11.8)
       clsx:
         specifier: catalog:clsx
         version: 2.1.1
@@ -272,7 +272,7 @@ importers:
         version: link:../../packages/shared-utils
       bootstrap:
         specifier: catalog:bootstrap5
-        version: 5.3.6(@popperjs/core@2.11.8)
+        version: 5.3.8(@popperjs/core@2.11.8)
       clsx:
         specifier: catalog:clsx
         version: 2.1.1
@@ -354,7 +354,7 @@ importers:
         version: 2.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       bootstrap:
         specifier: catalog:bootstrap5
-        version: 5.3.6(@popperjs/core@2.11.8)
+        version: 5.3.8(@popperjs/core@2.11.8)
       clsx:
         specifier: catalog:clsx
         version: 2.1.1
@@ -660,7 +660,7 @@ importers:
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       bootstrap:
         specifier: catalog:bootstrap5
-        version: 5.3.6(@popperjs/core@2.11.8)
+        version: 5.3.8(@popperjs/core@2.11.8)
       lucide-react:
         specifier: catalog:lucide-react
         version: 0.511.0(react@19.1.0)
@@ -2018,8 +2018,8 @@ packages:
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
-  bootstrap@5.3.6:
-    resolution: {integrity: sha512-jX0GAcRzvdwISuvArXn3m7KZscWWFAf1MKBcnzaN02qWMb3jpMoUX4/qgeiGzqyIb4ojulRzs89UCUmGcFSzTA==}
+  bootstrap@5.3.8:
+    resolution: {integrity: sha512-HP1SZDqaLDPwsNiqRqi5NcP0SSXciX2s9E+RyqJIIqGo+vJeN5AJVM98CXmW/Wux0nQ5L7jeWUdplCEf0Ee+tg==}
     peerDependencies:
       '@popperjs/core': ^2.11.8
 
@@ -5880,7 +5880,7 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 3.6.2
 
-  bootstrap@5.3.6(@popperjs/core@2.11.8):
+  bootstrap@5.3.8(@popperjs/core@2.11.8):
     dependencies:
       '@popperjs/core': 2.11.8
 
@@ -8063,7 +8063,7 @@ snapshots:
 
   react-bootstrap-toasts@0.2.0(@popperjs/core@2.11.8)(react-bootstrap@2.10.10(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
     dependencies:
-      bootstrap: 5.3.6(@popperjs/core@2.11.8)
+      bootstrap: 5.3.8(@popperjs/core@2.11.8)
       react: 18.3.1
       react-bootstrap: 2.10.10(@types/react@19.1.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-dom: 18.3.1(react@18.3.1)

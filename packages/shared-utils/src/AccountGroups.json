@@ -7,6 +7,7 @@
     "groupType": "All"
   },
   {
+    "groupEmail": "striker@apache.org",
     "groupName": "Board",
     "groupRanges": [
       { "start": "6000", "end": "6099" }
@@ -14,6 +15,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "bkp@apache.org",
     "groupName": "Brand",
     "groupRanges": [
       { "start": "6100", "end": "6149" }
@@ -28,6 +30,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "bkp@apache.org",
     "groupName": "Conferences",
     "groupRanges": [
       { "start": "4000", "end": "4099" },
@@ -43,6 +46,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "bob@apache.org",
     "groupName": "Fundraising",
     "groupRanges": [
       { "start": "4150", "end": "4199" },
@@ -59,6 +63,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "cml@apache.org",
     "groupName": "Infrastructure",
     "groupRanges": [
       { "start": "6400", "end": "6499" }
@@ -73,6 +78,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "bkp@apache.org",
     "groupName": "Marketing",
     "groupRanges": [
       { "start": "6600", "end": "6699" }
@@ -109,6 +115,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "engelen@apache.org",
     "groupName": "Security",
     "groupRanges": [
       { "start": "7300", "end": "7399" }
@@ -123,6 +130,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "ipv6guru@gmail.com",
     "groupName": "TAC",
     "groupRanges": [
       { "start": "6800", "end": "6899" }
@@ -130,6 +138,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "wave@apache.org",
     "groupName": "Tooling",
     "groupRanges": [
       { "start": "7400", "end": "7499" }
@@ -137,6 +146,7 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "treasurer@apache.org",
     "groupName": "Treasury",
     "groupRanges": [
       { "start": "6700", "end": "6799" }
