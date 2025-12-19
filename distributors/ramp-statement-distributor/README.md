@@ -176,6 +176,11 @@ source .venv/bin/activate  # On macOS/Linux
 .venv\Scripts\activate     # On Windows
 ```
 
+When you're done, deactivate the virtual environment:
+```bash
+deactivate
+```
+
 ### Basic Usage (Previous Month)
 
 By default, the tool processes the previous month's data:

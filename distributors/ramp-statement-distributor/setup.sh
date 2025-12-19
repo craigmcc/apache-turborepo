@@ -33,14 +33,18 @@ fi
 # Set local Python version
 pyenv local $PYTHON_VERSION
 
+# Reload pyenv to ensure the new Python version is available
+eval "$(pyenv init -)"
+export PYENV_VERSION=$PYTHON_VERSION
+
 # Verify Python version
-CURRENT_VERSION=$(python --version | cut -d' ' -f2)
+CURRENT_VERSION=$(pyenv exec python --version | cut -d' ' -f2)
 echo "Active Python version: $CURRENT_VERSION"
 
 # Create virtual environment if it doesn't exist
 if [ ! -d ".venv" ]; then
     echo "Creating virtual environment..."
-    python -m venv .venv
+    pyenv exec python -m venv .venv
     echo "✓ Virtual environment created"
 else
     echo "✓ Virtual environment already exists"
@@ -61,11 +65,16 @@ pip install -r requirements.txt --quiet
 echo ""
 echo "✓ Setup complete!"
 echo ""
-echo "To activate the virtual environment in the future, run:"
-echo "  source .venv/bin/activate"
+echo "To use the tool:"
+echo "  1. Activate the virtual environment:"
+echo "     source .venv/bin/activate"
+echo ""
+echo "  2. When done, deactivate with:"
+echo "     deactivate"
 echo ""
 echo "Next steps:"
 echo "  1. Copy config.example.json to config.json"
 echo "  2. Edit config.json with your settings"
-echo "  3. Run the tool: python ramp_statement_distributor.py --config config.json"
+echo "  3. Activate the virtual environment"
+echo "  4. Run the tool: python ramp_statement_distributor.py --config config.json"
 
