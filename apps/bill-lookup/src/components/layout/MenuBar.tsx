@@ -62,12 +62,10 @@ export function MenuBar() {
               eventKey="Bills"
               title="Bills"
             />
-{/*
             <Tab
               eventKey="Bill-Approvers"
               title="Bill Approvers"
             />
-*/}
             <Tab
               eventKey="Recurring-Bills"
               title="Recurring Bills"
