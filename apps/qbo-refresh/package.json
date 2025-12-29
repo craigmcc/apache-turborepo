@@ -1,0 +1,31 @@
+{
+  "description": "Stand alone Node application that refreshes the QBO database",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/qbo-refresh",
+  "private": true,
+  "scripts": {
+    "dotenv": "dotenvx",
+    "build": "dotenvx -f .env.sandbox run --quiet -- tsc",
+    "check-types": "dotenvx run --quiet -- tsc --noEmit",
+    "dev": "dotenvx run -f .env.sandbox --quiet -- tsc --watch",
+    "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
+    "start": "dotenvx run -f .env.sandbox --quiet -- tsx ./dist/index.js"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@types/node": "catalog:node22",
+    "eslint": "catalog:eslint",
+    "tsx": "catalog:tsx",
+    "typescript": "catalog:typescript5"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qbo-api": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  }
+}

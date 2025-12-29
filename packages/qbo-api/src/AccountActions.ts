@@ -6,7 +6,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -29,23 +29,13 @@ if (!QBO_REALM_ID) {
 // Public Objects ------------------------------------------------------------
 
 /**
- * Query parameters for fetchAccounts().
- */
-export type FetchAccountsParams = {
-  // Access token for authentication
-  accessToken: string;
-  // Maximum number of results to return (max 1000)
-  maxResults?: number;
-  // Starting position for pagination (1-based)
-  startPosition?: number;
-}
-
-/**
  * Fetch Accounts from the QBO API.
  */
-export async function fetchAccounts(
-  { accessToken, maxResults, startPosition }: FetchAccountsParams,
-): Promise<QboAccount[]> {
+export async function fetchAccounts(accessToken: string): Promise<QboAccount[]> {
+
+  // TODO: turn this logic into a paginated fetch to get all accounts
+  const startPosition = 1;
+  const maxResults = 1000;
 
   const url =
     new URL(`${QBO_BASE_URL}/v3/company/${QBO_REALM_ID}/query?minorversion=${QBO_MINOR_VERSION}`);
