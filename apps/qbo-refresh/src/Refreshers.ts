@@ -5,22 +5,24 @@
 
 // External Modules ----------------------------------------------------------
 
-// Internal Modules ----------------------------------------------------------
-
 import {
   fetchAccounts
 } from "@repo/qbo-api/AccountActions";
+import { QboApiInfo } from "@repo/qbo-api/types/Types";
+
+// Internal Modules ----------------------------------------------------------
+
 import {
   createAccount
 } from "./Creators";
 
 // Public Objects ------------------------------------------------------------
 
-export async function refreshAccounts(accessToken: string): Promise<void> {
+export async function refreshAccounts(apiInfo: QboApiInfo): Promise<void> {
 
   console.log("Fetching accounts...");
 
-  const qboAccounts = await fetchAccounts(accessToken);
+  const qboAccounts = await fetchAccounts(apiInfo);
 
   console.log("Fetched accounts: ", JSON.stringify(qboAccounts, null, 2));
   for (const qboAccount of qboAccounts) {
