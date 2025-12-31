@@ -62,35 +62,39 @@ model Bill {
   // Scalar Fields -----------------------------------------------------------
 
   /// Primary key for this Bill (begins with "00n")
-  id            String   @id
+  id             String   @id
   /// Bill total amount (local currency)
-  amount        Float?
+  amount         Float?
+  /// Bill approval status
+  approvalStatus String?
   /// Has this Bill been archived?
-  archived      Boolean?
+  archived       Boolean?
   /// Date/time when this Bill was created
-  createdTime   String?
+  createdTime    String?
   /// Credit amount applied to this Bill
-  creditAmount  Float?
+  creditAmount   Float?
   /// Description of this Bill
-  description   String?
+  description    String?
   /// Amount still due (after subtracting credits, scheduled payments, and cleared payments)
-  dueAmount     Float?
+  dueAmount      Float?
   /// Due date for the bill payment (yyyy-MM-dd)
-  dueDate       String?
+  dueDate        String?
   /// Exchange rate for this Bill (may differ at settlement time)
-  exchangeRate  Float?
+  exchangeRate   Float?
   /// Bill total amount (USD)
-  fundingAmount Float?
+  fundingAmount  Float?
   /// Date of this invoice (yyyy-MM-dd)
-  invoiceDate   String?
+  invoiceDate    String?
   /// User-generated invoice number
-  invoiceNumber String?
+  invoiceNumber  String?
   /// Amount that has been paid minus any credits
-  paidAmount    Float?
+  paidAmount     Float?
+  /// Payment status of this Bill
+  paymentStatus  String?
   /// Date/time when this Bill was last updated
-  updatedTime   String?
+  updatedTime    String?
   /// Name of the bill vendor
-  vendorName    String?
+  vendorName     String?
 
   // Potential Relationships -------------------------------------------------
 

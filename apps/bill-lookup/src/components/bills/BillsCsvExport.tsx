@@ -46,7 +46,8 @@ export function BillsCsvExport({ bills, hide, show }: BillsCsvExportProps) {
 
   const data = [
     [ "Vendor Name", "Invoice Date", "Invoice Number", "Due Date",
-      "Total (USD)", "Paid (Local)", "Exchange Rate", "GL Account", "Archived"],
+      "Total (USD)", "Paid (Local)", "Exchange Rate", "Approval Status",
+      "Payment Status", "GL Account", "Archived"],
   ];
 
   for (const bill of bills) {
@@ -58,6 +59,8 @@ export function BillsCsvExport({ bills, hide, show }: BillsCsvExportProps) {
       formatBillAmount(bill),
       formatBillPaidAmount(bill),
       formatBillExchangeRate(bill),
+      bill.approvalStatus || "n/a",
+      bill.paymentStatus || "n/a",
       formatAccountNumberAndName(bill.classifications?.account),
       bill.archived ? "Yes" : "No",
     ]);

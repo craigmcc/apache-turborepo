@@ -137,6 +137,10 @@ export function BillApproverMoreInfo({ billApprover, hide, show }: BillApproverM
                   <td>{formatBillAmount(billApprover.bill)}</td>
                 </tr>
                 <tr>
+                  <td>approvalStatus</td>
+                  <td>{billApprover.bill?.approvalStatus || "n/a"}</td>
+                </tr>
+                <tr>
                   <td>archived</td>
                   <td>{billApprover.bill?.archived ? "Yes" : "No"}</td>
                 </tr>
@@ -159,6 +163,10 @@ export function BillApproverMoreInfo({ billApprover, hide, show }: BillApproverM
                 <tr>
                   <td>paidAmount</td>
                   <td>{formatBillPaidAmount(billApprover.bill)}</td>
+                </tr>
+                <tr>
+                  <td>paymentStatus</td>
+                  <td>{billApprover.bill?.paymentStatus || "n/a"}</td>
                 </tr>
                 <tr>
                   <td>GL Account</td>
