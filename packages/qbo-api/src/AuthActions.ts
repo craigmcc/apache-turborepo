@@ -25,7 +25,7 @@ const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;
 const QBO_ENVIRONMENT = process.env.QBO_ENVIRONMENT;
 const QBO_MINOR_VERSION = process.env.QBO_MINOR_VERSION;
 const QBO_REALM_ID = process.env.QBO_REALM_ID;
-const QBO_REDIRECT_PORT = process.env.QBO_REDIRECT_PORT;
+const QBO_REDIRECT_URL = process.env.QBO_REDIRECT_URL;
 const QBO_WELL_KNOWN_URL = process.env.QBO_WELL_KNOWN_URL;
 
 // Validate presence of required environment variables
@@ -47,8 +47,8 @@ if (!QBO_MINOR_VERSION) {
 if (!QBO_REALM_ID) {
   throw new Error("QBO_REALM_ID is not set");
 }
-if (!QBO_REDIRECT_PORT) {
-  throw new Error("QBO_REDIRECT_PORT is not set");
+if (!QBO_REDIRECT_URL) {
+  throw new Error("QBO_REDIRECT_URL is not set");
 }
 if (!QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
@@ -68,10 +68,32 @@ const oauthState: string = crypto.randomBytes(32).toString("hex");
 
 export async function fetchApiInfo(): Promise<QboApiInfo> {
 
+  // Document environment variables
+
+  logger.info({
+    context: "AuthActions.fetchApiInfo",
+    message: "Environment Variables",
+    QBO_BASE_URL,
+    QBO_CLIENT_ID,
+    QBO_ENVIRONMENT,
+    QBO_MINOR_VERSION,
+    QBO_REALM_ID,
+    QBO_REDIRECT_URL,
+    QBO_WELL_KNOWN_URL,
+  });
+
   // Fetch Well Known Info
+
   const wellKnownUrl = new URL(QBO_WELL_KNOWN_URL!);
   const wellKnownResponse = await fetch(wellKnownUrl);
   if (!wellKnownResponse.ok) {
+    logger.error({
+      context: "AuthActions.fetchApiInfo",
+      message: "Failed to fetch Well Known Info",
+      status: wellKnownResponse.status,
+      statusText: wellKnownResponse.statusText,
+      url: wellKnownUrl.toString(),
+    });
     throw new Error(`Failed to fetch Well Known Info: ${wellKnownResponse.status} ${wellKnownResponse.statusText}`);
   }
   const wellKnownInfo: WellKnownInfo = await wellKnownResponse.json();
@@ -85,7 +107,7 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
 
   const authorizationRequest: OAuthAuthorizationRequest = {
     client_id: QBO_CLIENT_ID!,
-    redirect_uri: `http://localhost:${QBO_REDIRECT_PORT!}/callback`,
+    redirect_uri: QBO_REDIRECT_URL!,
     response_type: "code",
     scope: oauthScope,
     state: oauthState,
@@ -99,7 +121,7 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
   authorizationUrl.searchParams.set("state", authorizationRequest.state!);
   logger.info({
     context: "AuthActions.fetchApiInfo",
-    message: "Redirecting to authorization URL",
+    message: "Fetching from authorization URL",
     authorizationUrl: authorizationUrl.toString(),
   });
 
@@ -107,12 +129,27 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
     method: "GET",
     redirect: "manual"
   });
+  logger.info({
+    context: "AuthActions.fetchApiInfo",
+    message: "Received authorization response",
+    status: authorizationResponse.status,
+    headers: authorizationResponse.headers,
+    body: authorizationResponse.body,
+  });
   if (!authorizationResponse.ok) {
+    logger.error({
+      context: "AuthActions.fetchApiInfo",
+      message: "Failed to request authorization code",
+      status: authorizationResponse.status,
+      statusText: authorizationResponse.statusText,
+      authorizationUrl: authorizationUrl.toString(),
+      authorizationResponse
+    })
     throw new Error(`Failed to request authorization code: ${authorizationResponse.status} ${authorizationResponse.statusText}`);
   }
   logger.info({
     context: "AuthActions.fetchApiInfo",
-    message: "Authorization code requested, awaiting redirect",
+    message: "Authorization code received",
     status: authorizationResponse.status,
     headers: authorizationResponse.headers,
   });

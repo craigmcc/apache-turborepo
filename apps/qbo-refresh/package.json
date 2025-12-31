@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dotenv": "dotenvx",
-    "build": "dotenvx -f .env.sandbox run --quiet -- tsc",
+    "build": "tsc",
     "check-types": "dotenvx run --quiet -- tsc --noEmit",
     "dev": "dotenvx run -f .env.sandbox --quiet -- tsc --watch",
     "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
