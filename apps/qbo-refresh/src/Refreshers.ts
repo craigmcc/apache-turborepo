@@ -18,18 +18,37 @@ import {
 
 // Public Objects ------------------------------------------------------------
 
+const MAX_RESULTS = 100; // Maximum results per QBO API request
+
 export async function refreshAccounts(apiInfo: QboApiInfo): Promise<void> {
 
   console.log("Fetching accounts...");
 
-  const qboAccounts = await fetchAccounts(apiInfo);
+  let count = 0;
+  let startPosition = 1;
 
-  console.log("Fetched accounts: ", JSON.stringify(qboAccounts, null, 2));
-  for (const qboAccount of qboAccounts) {
-    const account = createAccount(qboAccount);
-    // TODO: Store in local database
+  while (true) {
+
+    const qboAccounts = await fetchAccounts(apiInfo, {
+      startPosition: startPosition,
+      maxResults: MAX_RESULTS,
+    });
+    console.log("Fetched accounts: ", JSON.stringify(qboAccounts, null, 2));
+
+    for (const qboAccount of qboAccounts) {
+      const account = createAccount(qboAccount);
+      // TODO: Store in local database
+      count++;
+    }
+
+    if (qboAccounts.length < MAX_RESULTS) {
+      break;
+    } else {
+      startPosition += MAX_RESULTS;
+    }
+
   }
 
-  console.log("Accounts refreshed: ", qboAccounts.length);
+  console.log("Accounts refreshed: ", count);
 
 }

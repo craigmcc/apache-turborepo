@@ -18,27 +18,32 @@ import type { QboApiInfo } from "@/types/Types";
 // Public Objects ------------------------------------------------------------
 
 /**
+ * Query parameters for fetchAccounts().
+ */
+export type FetchAccountsParams = {
+  startPosition?: number;
+  maxResults?: number;
+}
+
+/**
  * Fetch Accounts from the QBO API.
  */
-export async function fetchAccounts(apiInfo: QboApiInfo): Promise<QboAccount[]> {
+export async function fetchAccounts(apiInfo: QboApiInfo, params: FetchAccountsParams): Promise<QboAccount[]> {
 
-  // TODO: turn this logic into a paginated fetch to get all accounts
-  const startPosition = 1;
-  const maxResults = 1000;
+  const startPosition = params.startPosition || 1;
+  const maxResults = params.maxResults || 100;
 
-  const url =
-    new URL(`${apiInfo.baseUrl}/v3/company/${apiInfo.realmId}/query?minorversion=${apiInfo.minorVersion}`);
-  const body =
+  const query =
     `SELECT * FROM Account STARTPOSITION ${startPosition} MAXRESULTS ${maxResults}`;
+  const url = new URL(`${apiInfo.baseUrl}/v3/company/${apiInfo.realmId}/query?`);
+  url.searchParams.set("minversion", apiInfo.minorVersion);
+  url.searchParams.set("query", query);
 
   const response = await fetch(url, {
-    method: "POST",
     headers: {
       "Accept": "application/json",
       "Authorization": `Bearer ${apiInfo.accessToken}`,
-      "Content-Type": "application/text",
-    },
-    body: body,
+    }
   });
 
   if (!response.ok) {
@@ -46,7 +51,7 @@ export async function fetchAccounts(apiInfo: QboApiInfo): Promise<QboAccount[]> 
       context: "AccountActions.fetchAccounts",
       message: "Failed to fetch Accounts",
       url,
-      body,
+      body: response.body,
       status: response.status,
       response: response.body,
     });
