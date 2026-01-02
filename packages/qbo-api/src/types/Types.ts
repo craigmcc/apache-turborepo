@@ -38,7 +38,7 @@ export type QboApiInfo = {
 }
 
 // Information from QBO "Well Known Info" endpoints
-export type WellKnownInfo = {
+export type QboWellKnownInfo = {
   authorization_endpoint: string;
   claims_supported: string[];
   id_token_signing_alg_values_supported: string[];

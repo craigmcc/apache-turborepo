@@ -4,7 +4,6 @@
 
 // External Modules ----------------------------------------------------------
 
-import { QboApiInfo, WellKnownInfo } from "@repo/qbo-api/types/Types";
 import { serverLogger as logger } from "@repo/shared-utils/*";
 import * as crypto from "node:crypto";
 
@@ -14,6 +13,8 @@ import {
   OAuthAuthorizationRequest,
   OAuthTokenRequest,
   OAuthTokenResponse,
+  QboApiInfo,
+  QboWellKnownInfo
 } from "@/types/Types";
 
 // Private Objects -----------------------------------------------------------
@@ -57,12 +58,7 @@ if (!QBO_WELL_KNOWN_URL) {
 // Private Objects -----------------------------------------------------------
 
 // Information required for OAuth authorization request
-const oauthScope: string = "com.intuit.quickbooks.accounting";
 const oauthState: string = crypto.randomBytes(32).toString("hex");
-
-// Information to be returned from the OAuth token response
-//let accessToken: string = "";
-//let refreshToken: string = "";
 
 // Public Objects ------------------------------------------------------------
 
@@ -82,34 +78,113 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
     QBO_WELL_KNOWN_URL,
   });
 
-  // Fetch Well Known Info
+  // Perform authorization code flow
 
-  const wellKnownUrl = new URL(QBO_WELL_KNOWN_URL!);
-  const wellKnownResponse = await fetch(wellKnownUrl);
-  if (!wellKnownResponse.ok) {
-    logger.error({
-      context: "AuthActions.fetchApiInfo",
-      message: "Failed to fetch Well Known Info",
-      status: wellKnownResponse.status,
-      statusText: wellKnownResponse.statusText,
-      url: wellKnownUrl.toString(),
-    });
-    throw new Error(`Failed to fetch Well Known Info: ${wellKnownResponse.status} ${wellKnownResponse.statusText}`);
+  const wellKnownInfo = await fetchWellKnownInfo();
+  const { authorizationCode, redirectUrl } = await requestAuthorizationCode(wellKnownInfo);
+  const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
+    wellKnownInfo,
+    authorizationCode,
+    redirectUrl
+  );
+
+  // Construct and return our QboApiInfo
+
+  const qboApiInfo: QboApiInfo = {
+    accessToken: accessToken,
+    baseUrl: QBO_BASE_URL!,
+    minorVersion: QBO_MINOR_VERSION!,
+    realmId: QBO_REALM_ID!,
+    refreshToken: refreshToken,
   }
-  const wellKnownInfo: WellKnownInfo = await wellKnownResponse.json();
   logger.info({
     context: "AuthActions.fetchApiInfo",
+    message: "Constructed QboApiInfo",
+    qboApiInfo,
+  });
+  return qboApiInfo;
+
+}
+
+// Helper Functions ----------------------------------------------------------
+
+/**
+ * Exchange an authorization code for an access token and refresh token.
+ */
+export async function exchangeAuthorizationCodeForTokens(
+  wellKnownInfo: QboWellKnownInfo,
+  authorizationCode: string,
+  redirectUrl: string
+): Promise<{ accessToken: string; refreshToken: string }> {
+
+  const tokenRequest: OAuthTokenRequest = {
+    client_id: QBO_CLIENT_ID!,
+    client_secret: QBO_CLIENT_SECRET!,
+    code: authorizationCode,
+    grant_type: "authorization_code",
+    redirect_uri: redirectUrl,
+  };
+  logger.info({
+    context: "AuthActions.exchangeAuthorizationCodeForTokens",
+    message: "Exchanging authorization code for tokens",
+    tokenRequest
+  });
+
+  const tokenResponse = await fetch(wellKnownInfo.token_endpoint, {
+    method: "POST",
+    headers: {
+      "Authorization": "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64"),
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams(tokenRequest),
+  });
+  const tokenResponseData: OAuthTokenResponse = await tokenResponse.json();
+  logger.info({
+    context: "AuthActions.exchangeAuthorizationCodeForTokens",
+    message: "Received access token and refresh token",
+    tokenResponseData,
+  });
+
+  return {
+    accessToken: tokenResponseData.access_token,
+    refreshToken: tokenResponseData.refresh_token,
+  };
+
+}
+
+  /**
+ * Return the Well Known Information for QuickBooks Online OAuth.
+ */
+export async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
+
+  const wellKnownUrl = new URL(QBO_WELL_KNOWN_URL!);
+  const response = await fetch(wellKnownUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Well Known Info: ${response.status} ${response.statusText}`);
+  }
+
+  const wellKnownInfo: QboWellKnownInfo = await response.json();
+  logger.info({
+    context: "AuthActions.fetchWellKnownInfo",
     message: "Fetched Well Known Info",
     wellKnownInfo,
   });
+  return wellKnownInfo;
 
-  // Request an authorization code
+}
+
+/**
+ * Request an authorization code from QuickBooks Online OAuth.
+ */
+export async function
+  requestAuthorizationCode(wellKnownInfo: QboWellKnownInfo):
+  Promise<{ authorizationCode: string; redirectUrl: string }> {
 
   const authorizationRequest: OAuthAuthorizationRequest = {
     client_id: QBO_CLIENT_ID!,
     redirect_uri: QBO_REDIRECT_URL!,
     response_type: "code",
-    scope: oauthScope,
+    scope: "com.intuit.quickbooks.accounting",
     state: oauthState,
   }
 
@@ -120,7 +195,7 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
   authorizationUrl.searchParams.set("scope", authorizationRequest.scope);
   authorizationUrl.searchParams.set("state", authorizationRequest.state!);
   logger.info({
-    context: "AuthActions.fetchApiInfo",
+    context: "AuthActions.requestAuthorizationCode",
     message: "Fetching from authorization URL",
     authorizationUrl: authorizationUrl.toString(),
   });
@@ -130,7 +205,7 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
     redirect: "manual"
   });
   logger.info({
-    context: "AuthActions.fetchApiInfo",
+    context: "AuthActions.requestAuthorizationCode",
     message: "Received authorization response",
     status: authorizationResponse.status,
     headers: authorizationResponse.headers,
@@ -148,14 +223,13 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
     throw new Error(`Failed to request authorization code: ${authorizationResponse.status} ${authorizationResponse.statusText}`);
   }
   logger.info({
-    context: "AuthActions.fetchApiInfo",
+    context: "AuthActions.requestAuthorizationCode",
     message: "Authorization code received",
     status: authorizationResponse.status,
     headers: authorizationResponse.headers,
   });
 
   // Extract code and state from redirect URL
-
   const redirectUrl = authorizationResponse.headers.get("location");
   if (!redirectUrl) {
     throw new Error("No redirect URL found in authorization response");
@@ -170,53 +244,11 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
     throw new Error("No authorization code found in redirect URL");
   }
   logger.info({
-    context: "AuthActions.fetchApiInfo",
+    context: "AuthActions.requestAuthorizationCode",
     message: "Received authorization code",
-    redirectUrl,
     authorizationCode,
+    redirectUrl,
   });
-
-  // Use authorization code to request access token and refresh token
-
-  const tokenRequest: OAuthTokenRequest = {
-    client_id: QBO_CLIENT_ID!,
-    client_secret: QBO_CLIENT_SECRET!,
-    code: authorizationCode,
-    grant_type: "authorization_code",
-    redirect_uri: authorizationRequest.redirect_uri,
-  };
-
-  const tokenResponse = await fetch(wellKnownInfo.token_endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams(tokenRequest),
-  });
-  if (!tokenResponse.ok) {
-    throw new Error(`Failed to request access token: ${tokenResponse.status} ${tokenResponse.statusText}`);
-  }
-  const tokenResponseData: OAuthTokenResponse = await tokenResponse.json();
-  logger.info({
-    context: "AuthActions.fetchApiInfo",
-    message: "Received access token and refresh token",
-    tokenResponseData,
-  });
-
-  // Construct and return our QboApiInfo
-
-  const qboApiInfo: QboApiInfo = {
-    accessToken: tokenResponseData.access_token,
-    baseUrl: QBO_BASE_URL!,
-    minorVersion: QBO_MINOR_VERSION!,
-    realmId: QBO_REALM_ID!,
-    refreshToken: tokenResponseData.refresh_token,
-  }
-  logger.info({
-    context: "AuthActions.fetchApiInfo",
-    message: "Constructed QboApiInfo",
-    qboApiInfo,
-  });
-  return qboApiInfo;
+  return { authorizationCode, redirectUrl };
 
 }
