@@ -11,6 +11,8 @@ import * as crypto from "node:crypto";
 
 import {
   OAuthAuthorizationRequest,
+  OAuthRefreshRequest,
+  OAuthRefreshResponse,
   OAuthTokenRequest,
   OAuthTokenResponse,
   QboApiInfo,
@@ -57,30 +59,97 @@ if (!QBO_WELL_KNOWN_URL) {
 
 // Private Objects -----------------------------------------------------------
 
-// Information required for OAuth authorization request
+// Information shared between authorization steps
+const cachedRefreshToken: string | null = await fetchCachedRefreshToken();
+const credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
 const oauthState: string = crypto.randomBytes(32).toString("hex");
+const wellKnownInfo: QboWellKnownInfo = await fetchWellKnownInfo();
 
 // Public Objects ------------------------------------------------------------
 
-export async function fetchApiInfo(): Promise<QboApiInfo> {
+// Tokens MUST be filled in before this can be used!
+export const qboApiInfo: QboApiInfo = {
+  accessToken: "",
+  baseUrl: QBO_BASE_URL!,
+  minorVersion: QBO_MINOR_VERSION!,
+  realmId: QBO_REALM_ID!,
+  refreshToken: "",
+}
 
-  // Document environment variables
+// Document environment variables
+logger.info({
+  context: "AuthActions.environment",
+  message: "Environment Variables",
+  QBO_BASE_URL,
+  QBO_CLIENT_ID,
+  QBO_ENVIRONMENT,
+  QBO_MINOR_VERSION,
+  QBO_REALM_ID,
+  QBO_REDIRECT_URL,
+  QBO_WELL_KNOWN_URL,
+});
+
+// If we have a cached refresh token, try to use it directly
+if (cachedRefreshToken) {
 
   logger.info({
-    context: "AuthActions.fetchApiInfo",
-    message: "Environment Variables",
-    QBO_BASE_URL,
-    QBO_CLIENT_ID,
-    QBO_ENVIRONMENT,
-    QBO_MINOR_VERSION,
-    QBO_REALM_ID,
-    QBO_REDIRECT_URL,
-    QBO_WELL_KNOWN_URL,
+    context: "AuthActions.attemptRefresh",
+    cachedRefreshToken,
   });
 
-  // Perform authorization code flow
+  const refreshRequest: OAuthRefreshRequest = {
+//    client_id: QBO_CLIENT_ID!,
+//    client_secret: QBO_CLIENT_SECRET!,
+    grant_type: "refresh_token",
+    refresh_token: cachedRefreshToken,
+  };
+  const refreshResponse = await fetch(wellKnownInfo.token_endpoint, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": credentials,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams(refreshRequest),
+  });
 
-  const wellKnownInfo = await fetchWellKnownInfo();
+  if (!refreshResponse.ok) {
+    logger.error({
+      context: "AuthActions.attemptRefresh.failure",
+      message: "Failed to refresh tokens",
+      status: refreshResponse.status,
+      statusText: refreshResponse.statusText,
+    });
+    // Fall through to full authorization code flow
+  } else {
+
+    const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
+    logger.info({
+      context: "AuthActions.attemptRefresh.success",
+      message: "Successfully refreshed tokens",
+      refreshResponseData,
+    });
+
+    // Set the tokens we need
+    qboApiInfo.accessToken = refreshResponseData.access_token;
+    qboApiInfo.refreshToken = refreshResponseData.refresh_token;
+
+    // Store the new refresh token
+    await storeCachedRefreshToken(refreshResponseData.refresh_token);
+
+    // TODO: go do the updates!
+  }
+
+}
+
+// TODO: Do the full authorization code flow, including storeRefreshToken().
+
+
+  export async function fetchApiInfo(): Promise<void> {
+
+
+
+  // Perform authorization code flow
   const { authorizationCode, redirectUrl } = await requestAuthorizationCode(wellKnownInfo);
   const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
     wellKnownInfo,
@@ -89,20 +158,7 @@ export async function fetchApiInfo(): Promise<QboApiInfo> {
   );
 
   // Construct and return our QboApiInfo
-
-  const qboApiInfo: QboApiInfo = {
-    accessToken: accessToken,
-    baseUrl: QBO_BASE_URL!,
-    minorVersion: QBO_MINOR_VERSION!,
-    realmId: QBO_REALM_ID!,
-    refreshToken: refreshToken,
-  }
-  logger.info({
-    context: "AuthActions.fetchApiInfo",
-    message: "Constructed QboApiInfo",
-    qboApiInfo,
-  });
-  return qboApiInfo;
+  // TODO - it'll be exported when we get the tokens
 
 }
 
@@ -152,7 +208,14 @@ export async function exchangeAuthorizationCodeForTokens(
 
 }
 
-  /**
+/**
+ * Fetch the cached refresh token, if there is one.
+ */
+async function fetchCachedRefreshToken(): Promise<string | null> {
+  return "RT1-9-H0-1776308828253480qvlv4o20ja3izh"; // TODO - get a real one
+}
+
+/**
  * Return the Well Known Information for QuickBooks Online OAuth.
  */
 export async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
@@ -251,4 +314,11 @@ export async function
   });
   return { authorizationCode, redirectUrl };
 
+}
+
+/**
+ * Store the cached refresh token.
+ */
+async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
+  // TODO - implement real storage
 }

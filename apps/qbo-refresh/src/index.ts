@@ -5,7 +5,7 @@
 // External Modules ----------------------------------------------------------
 
 import { exit } from "node:process";
-import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
+import { qboApiInfo as apiInfo } from "@repo/qbo-api/AuthActions";
 
 // Internal Modules -----------------------------------------------------------
 
@@ -17,7 +17,6 @@ import {
 
 export async function main() {
 
-  const apiInfo = await fetchApiInfo();
   console.log("QBO Refresh started at ", new Date().toLocaleString());
   await refreshAccounts(apiInfo);
   console.log("Done with refreshing data");

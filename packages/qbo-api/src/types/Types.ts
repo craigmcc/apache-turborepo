@@ -11,6 +11,22 @@ export type OAuthAuthorizationRequest = {
   state?: string;
 }
 
+// OAuth Refresh Request
+export type OAuthRefreshRequest = {
+//  client_id: string;
+//  client_secret: string;
+  grant_type: "refresh_token";
+  refresh_token: string;
+}
+
+// OAuth Refresh Response
+export type OAuthRefreshResponse = {
+  access_token: string;
+  expires_in: number;
+  refresh_token: string;
+  token_type: string;
+}
+
 // OAuth Token Request
 export type OAuthTokenRequest = {
   client_id: string;

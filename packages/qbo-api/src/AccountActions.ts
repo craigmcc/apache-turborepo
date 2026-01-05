@@ -58,7 +58,9 @@ export async function fetchAccounts(apiInfo: QboApiInfo, params: FetchAccountsPa
     const text = JSON.stringify(response.body, null, 2);
     throw new Error(`Error fetching accounts: ${text}`);
   } else {
-    return await response.json();
+    const json = await response.json();
+    const accounts: QboAccount[] = json.QueryResponse.Account || [];
+    return accounts;
   }
 
 }
