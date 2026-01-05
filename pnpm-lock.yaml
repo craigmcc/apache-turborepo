@@ -35,6 +35,9 @@ catalogs:
       specifier: ^15.3.2
       version: 15.3.2
   express:
+    '@types/express':
+      specifier: ^5.0.6
+      version: 5.0.6
     express:
       specifier: ^5.2.1
       version: 5.2.1
@@ -621,7 +624,7 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       '@types/express':
-        specifier: ^5.0.6
+        specifier: catalog:express
         version: 5.0.6
       '@types/jest':
         specifier: catalog:jest29
