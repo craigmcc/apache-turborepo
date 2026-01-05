@@ -6,6 +6,7 @@
 
 import { serverLogger as logger } from "@repo/shared-utils/*";
 import * as crypto from "node:crypto";
+import express from "express";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -162,6 +163,49 @@ if (cachedRefreshToken) {
 
 }
 
+// Express Server for Receiving Redirects ------------------------------------
+
+const app = express();
+const path = extractPathFromUrl(QBO_REDIRECT_URL!);
+const port = extractPortFromUrl(QBO_REDIRECT_URL!);
+
+app.get(path, async (req, res) => {
+
+  // Receive authorization code and check state for a match
+
+  const authorizationCode = req.query.code as string;
+  const state = req.query.state as string;
+
+  if (state !== oauthState) {
+    logger.error({
+      context: "AuthActions.expressCallback",
+      message: "State mismatch in OAuth callback",
+      expectedState: oauthState,
+      receivedState: state,
+    });
+    res.status(400).send("State mismatch");
+    return;
+  }
+
+  logger.info({
+    context: "AuthActions.expressCallback",
+    message: "Received OAuth callback",
+    authorizationCode,
+    state,
+  });
+
+  // TODO - exchange authorization code for tokens
+
+});
+
+// TODO - this will not work on production environment
+app.listen(port, () => {
+  logger.info({
+    context: "AuthActions.expressListen",
+    message: `OAuth Redirect Server listening at http://localhost:${port}${path}`,
+  });
+});
+
 // Helper Functions ----------------------------------------------------------
 
 /**
@@ -206,6 +250,42 @@ export async function exchangeAuthorizationCodeForTokens(
     refreshToken: tokenResponseData.refresh_token,
   };
 
+}
+
+/**
+ * Extract the path from a URL string.
+ */
+function extractPathFromUrl(urlString: string): string {
+  try {
+    const url = new URL(urlString);
+    return url.pathname;
+  } catch (error) {
+    logger.error({
+      context: "AuthActions.extractPathFromUrl",
+      message: "Invalid URL string",
+      urlString,
+      error,
+    });
+    throw new Error("Missing path in URL");
+  }
+}
+
+/**
+ * Extract the port number from a URL string.
+ */
+function extractPortFromUrl(urlString: string): number {
+  try {
+    const url = new URL(urlString);
+    return url.port ? parseInt(url.port, 10) : (url.protocol === "https:" ? 443 : 80);
+  } catch (error) {
+    logger.error({
+      context: "AuthActions.extractPortFromUrl",
+      message: "Invalid URL string",
+      urlString,
+      error,
+    });
+    throw new Error("Missing port in URL");
+  }
 }
 
 /**
