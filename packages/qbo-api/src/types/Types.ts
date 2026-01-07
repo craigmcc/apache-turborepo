@@ -29,8 +29,6 @@ export type OAuthRefreshResponse = {
 
 // OAuth Token Request
 export type OAuthTokenRequest = {
-  client_id: string;
-  client_secret: string;
   code?: string;           // Required for authorization_code grant type
   grant_type: "authorization_code" | "refresh_token";
   redirect_uri?: string;  // Required for authorization_code grant type

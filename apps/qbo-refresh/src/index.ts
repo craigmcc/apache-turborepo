@@ -5,7 +5,7 @@
 // External Modules ----------------------------------------------------------
 
 import { exit } from "node:process";
-import { qboApiInfo as apiInfo } from "@repo/qbo-api/AuthActions";
+import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
 
 // Internal Modules -----------------------------------------------------------
 
@@ -15,9 +15,14 @@ import {
 
 // Private Objects ------------------------------------------------------------
 
+// Timeout for API requests (in milliseconds) must allow enout time
+// for a user to manually authenticate if necessary.
+const API_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
 export async function main() {
 
   console.log("QBO Refresh started at ", new Date().toLocaleString());
+  const apiInfo = await fetchApiInfo(API_TIMEOUT);
   await refreshAccounts(apiInfo);
   console.log("Done with refreshing data");
 

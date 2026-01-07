@@ -5,6 +5,7 @@
 // External Modules ----------------------------------------------------------
 
 import { serverLogger as logger } from "@repo/shared-utils/*";
+import { exec } from "node:child_process";
 import * as crypto from "node:crypto";
 import express from "express";
 import { promises as fs } from "fs";
@@ -65,22 +66,29 @@ const REFRESH_TOKEN_PATH = path.join(process.cwd(), REFRESH_TOKEN_FILENAME);
 
 // Private Objects -----------------------------------------------------------
 
+// Deferred promise until we have QBO API Info
+let readyResolve!: (value?: void | PromiseLike<void>) => void;
+const readyPromise: Promise<void> = new Promise((resolve) => {
+  readyResolve = resolve;
+});
+
+
 // Information shared between authorization steps
 const cachedRefreshToken: string | null = await fetchCachedRefreshToken();
 const credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
 const oauthState: string = crypto.randomBytes(32).toString("hex");
 const wellKnownInfo: QboWellKnownInfo = await fetchWellKnownInfo();
 
-// Public Objects ------------------------------------------------------------
-
-// Tokens MUST be filled in before this can be used!
-export const qboApiInfo: QboApiInfo = {
+// Tokens MUST be filled in before this can be returned!
+const qboApiInfo: QboApiInfo = {
   accessToken: "",
   baseUrl: QBO_BASE_URL!,
   minorVersion: QBO_MINOR_VERSION!,
   realmId: QBO_REALM_ID!,
   refreshToken: "",
 }
+
+// Public Objects ------------------------------------------------------------
 
 // Document environment variables
 logger.info({
@@ -104,8 +112,6 @@ if (cachedRefreshToken) {
   });
 
   const refreshRequest: OAuthRefreshRequest = {
-//    client_id: QBO_CLIENT_ID!,
-//    client_secret: QBO_CLIENT_SECRET!,
     grant_type: "refresh_token",
     refresh_token: cachedRefreshToken,
   };
@@ -126,7 +132,8 @@ if (cachedRefreshToken) {
       status: refreshResponse.status,
       statusText: refreshResponse.statusText,
     });
-    // Fall through to full authorization code flow
+    // Refresh failed, so fall through to the full authorization code flow
+
   } else {
 
     const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
@@ -143,29 +150,53 @@ if (cachedRefreshToken) {
     // Store the new refresh token
     await storeCachedRefreshToken(refreshResponseData.refresh_token);
 
-    // TODO: go do the updates!
+    // Return the API info now that we have tokens
+    if (readyResolve) readyResolve();
+
+  }
+
+} else {
+
+  // No cached refresh token, so trigger the full authorization code flow
+  try {
+    const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
+    logger.info({
+      context: "AuthActions.startAuthFlow",
+      message: "Opening browser for QBO authorization",
+      authorizationUrl,
+    });
+    await openUrl(authorizationUrl);
+    // leave readyPromise unresolved until express callback receives tokens
+  } catch (err) {
+    logger.error({
+      context: "AuthActions.startAuthFlow",
+      message: "Failed to start authorization flow",
+      error: err,
+    });
   }
 
 }
 
-// TODO: Do the full authorization code flow, including storeRefreshToken().
-
-
-  export async function fetchApiInfo(): Promise<void> {
-
-
-
-  // Perform authorization code flow
-  const { authorizationCode, redirectUrl } = await requestAuthorizationCode(wellKnownInfo);
-  const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
-    wellKnownInfo,
-    authorizationCode,
-    redirectUrl
-  );
-
-  // Construct and return our QboApiInfo
-  // TODO - it'll be exported when we get the tokens
-
+/**
+ * Fetch the QBO API Information, waiting for authorization if necessary.
+ *
+ * @param timeoutMs Number of milliseconds to wait before timing out (0 = no timeout)
+ * @returns QboApiInfo object with access and refresh tokens
+ * @throws Error if timeout occurs before authorization is complete
+ *
+ * NOTE: The timeout should be sufficient for a user to manually authenticate
+ */
+export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
+  if (timeoutMs > 0) {
+    // race between readyPromise and a timeout
+    await Promise.race([
+      readyPromise,
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Timed out waiting for QBO auth info")), timeoutMs)),
+    ]);
+  } else {
+    await readyPromise;
+  }
+  return qboApiInfo;
 }
 
 // Express Server for Receiving Redirects ------------------------------------
@@ -199,7 +230,28 @@ app.get(web_path, async (req, res) => {
     state,
   });
 
-  // TODO - exchange authorization code for tokens
+  const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
+    wellKnownInfo,
+    authorizationCode,
+    QBO_REDIRECT_URL
+  );
+  logger.info({
+    context: "AuthActions.expressCallback",
+    message: "Exchanged authorization code for tokens",
+    accessToken,
+    refreshToken,
+  });
+
+  // Save the received tokens, and persist the refresh token
+  qboApiInfo.accessToken = accessToken;
+  qboApiInfo.refreshToken = refreshToken;
+  await storeCachedRefreshToken(refreshToken);
+
+  // Resolve waiting callers now that we have the tokens
+  if (readyResolve) readyResolve();
+
+  // Tell the user they can close the window now
+  res.status(200).send("Authorization successful! You can close this window.");
 
 });
 
@@ -211,20 +263,18 @@ app.listen(port, () => {
   });
 });
 
-// Helper Functions ----------------------------------------------------------
+// Private Objects -----------------------------------------------------------
 
 /**
  * Exchange an authorization code for an access token and refresh token.
  */
-export async function exchangeAuthorizationCodeForTokens(
+async function exchangeAuthorizationCodeForTokens(
   wellKnownInfo: QboWellKnownInfo,
   authorizationCode: string,
   redirectUrl: string
 ): Promise<{ accessToken: string; refreshToken: string }> {
 
   const tokenRequest: OAuthTokenRequest = {
-    client_id: QBO_CLIENT_ID!,
-    client_secret: QBO_CLIENT_SECRET!,
     code: authorizationCode,
     grant_type: "authorization_code",
     redirect_uri: redirectUrl,
@@ -235,15 +285,17 @@ export async function exchangeAuthorizationCodeForTokens(
     tokenRequest
   });
 
+  const token =
+    Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, "utf8").toString("base64");
   const tokenResponse = await fetch(wellKnownInfo.token_endpoint, {
     method: "POST",
     headers: {
-      "Authorization": "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64"),
+      "Authorization": `Basic ${token}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams(tokenRequest),
   });
-  const tokenResponseData: OAuthTokenResponse = await tokenResponse.json();
+  const tokenResponseData = await tokenResponse.json();
   logger.info({
     context: "AuthActions.exchangeAuthorizationCodeForTokens",
     message: "Received access token and refresh token",
@@ -312,7 +364,7 @@ async function fetchCachedRefreshToken(): Promise<string | null> {
 /**
  * Return the Well Known Information for QuickBooks Online OAuth.
  */
-export async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
+async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
 
   const wellKnownUrl = new URL(QBO_WELL_KNOWN_URL!);
   const response = await fetch(wellKnownUrl);
@@ -331,11 +383,10 @@ export async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
 }
 
 /**
- * Request an authorization code from QuickBooks Online OAuth.
+ * Request an authorization URL from QuickBooks Online OAuth.
  */
-export async function
-  requestAuthorizationCode(wellKnownInfo: QboWellKnownInfo):
-  Promise<{ authorizationCode: string; redirectUrl: string }> {
+async function
+  requestAuthorizationUrl(wellKnownInfo: QboWellKnownInfo): Promise<string> {
 
   const authorizationRequest: OAuthAuthorizationRequest = {
     client_id: QBO_CLIENT_ID!,
@@ -343,7 +394,12 @@ export async function
     response_type: "code",
     scope: "com.intuit.quickbooks.accounting",
     state: oauthState,
-  }
+  };
+  logger.info({
+    context: "AuthActions.requestAuthorizationCode",
+    message: "Constructing authorization URL",
+    authorizationRequest,
+  });
 
   const authorizationUrl = new URL(wellKnownInfo.authorization_endpoint);
   authorizationUrl.searchParams.set("client_id", authorizationRequest.client_id);
@@ -351,63 +407,53 @@ export async function
   authorizationUrl.searchParams.set("response_type", authorizationRequest.response_type);
   authorizationUrl.searchParams.set("scope", authorizationRequest.scope);
   authorizationUrl.searchParams.set("state", authorizationRequest.state!);
+
   logger.info({
     context: "AuthActions.requestAuthorizationCode",
-    message: "Fetching from authorization URL",
+    message: "Constructed authorization URL",
     authorizationUrl: authorizationUrl.toString(),
   });
 
-  const authorizationResponse = await fetch(authorizationUrl, {
-    method: "GET",
-    redirect: "manual"
-  });
-  logger.info({
-    context: "AuthActions.requestAuthorizationCode",
-    message: "Received authorization response",
-    status: authorizationResponse.status,
-    headers: authorizationResponse.headers,
-    body: authorizationResponse.body,
-  });
-  if (!authorizationResponse.ok) {
-    logger.error({
-      context: "AuthActions.fetchApiInfo",
-      message: "Failed to request authorization code",
-      status: authorizationResponse.status,
-      statusText: authorizationResponse.statusText,
-      authorizationUrl: authorizationUrl.toString(),
-      authorizationResponse
-    })
-    throw new Error(`Failed to request authorization code: ${authorizationResponse.status} ${authorizationResponse.statusText}`);
-  }
-  logger.info({
-    context: "AuthActions.requestAuthorizationCode",
-    message: "Authorization code received",
-    status: authorizationResponse.status,
-    headers: authorizationResponse.headers,
-  });
+  return authorizationUrl.toString();
 
-  // Extract code and state from redirect URL
-  const redirectUrl = authorizationResponse.headers.get("location");
-  if (!redirectUrl) {
-    throw new Error("No redirect URL found in authorization response");
-  }
-  const urlObj = new URL(redirectUrl);
-  const authorizationCode = urlObj.searchParams.get("code");
-  const returnedState = urlObj.searchParams.get("state");
-  if (returnedState !== oauthState) {
-    throw new Error("State mismatch in authorization response");
-  }
-  if (!authorizationCode) {
-    throw new Error("No authorization code found in redirect URL");
-  }
-  logger.info({
-    context: "AuthActions.requestAuthorizationCode",
-    message: "Received authorization code",
-    authorizationCode,
-    redirectUrl,
-  });
-  return { authorizationCode, redirectUrl };
+}
 
+/**
+ * Open a URL in the user's default browser in a cross-platform way.
+ * - macOS: `open`
+ * - Windows: `cmd /c start "" <url>`
+ * - Linux: `xdg-open` (falls back to `gio open`)
+ */
+function openUrl(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const p = process.platform;
+    const quoted = JSON.stringify(url); // safe quoting
+    let cmd: string;
+
+    if (p === "darwin") {
+      cmd = `open ${quoted}`;
+    } else if (p === "win32") {
+      // use cmd /c start "" "<url>" to avoid interpreting the first arg as a title
+      cmd = `cmd /c start "" ${quoted}`;
+    } else {
+      // assume linux / unix
+      cmd = `xdg-open ${quoted}`;
+    }
+
+    exec(cmd, (err) => {
+      if (!err) return resolve();
+
+      // On some Linux desktops xdg-open may not be available; try gio as fallback
+      if (p !== "darwin" && p !== "win32") {
+        exec(`gio open ${quoted}`, (err2) => {
+          return err2 ? reject(err2) : resolve();
+        });
+        return;
+      }
+
+      reject(err);
+    });
+  });
 }
 
 /**
