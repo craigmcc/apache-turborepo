@@ -7,6 +7,8 @@
 import { serverLogger as logger } from "@repo/shared-utils/*";
 import * as crypto from "node:crypto";
 import express from "express";
+import { promises as fs } from "fs";
+import path from "path";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -57,6 +59,9 @@ if (!QBO_REDIRECT_URL) {
 if (!QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
 }
+
+const REFRESH_TOKEN_FILENAME = `.env.${QBO_ENVIRONMENT}.qbo_refresh_token.txt`;
+const REFRESH_TOKEN_PATH = path.join(process.cwd(), REFRESH_TOKEN_FILENAME);
 
 // Private Objects -----------------------------------------------------------
 
@@ -166,10 +171,10 @@ if (cachedRefreshToken) {
 // Express Server for Receiving Redirects ------------------------------------
 
 const app = express();
-const path = extractPathFromUrl(QBO_REDIRECT_URL!);
+const web_path = extractPathFromUrl(QBO_REDIRECT_URL!);
 const port = extractPortFromUrl(QBO_REDIRECT_URL!);
 
-app.get(path, async (req, res) => {
+app.get(web_path, async (req, res) => {
 
   // Receive authorization code and check state for a match
 
@@ -202,7 +207,7 @@ app.get(path, async (req, res) => {
 app.listen(port, () => {
   logger.info({
     context: "AuthActions.expressListen",
-    message: `OAuth Redirect Server listening at http://localhost:${port}${path}`,
+    message: `OAuth Redirect Server listening at http://localhost:${port}${web_path}`,
   });
 });
 
@@ -292,7 +297,16 @@ function extractPortFromUrl(urlString: string): number {
  * Fetch the cached refresh token, if there is one.
  */
 async function fetchCachedRefreshToken(): Promise<string | null> {
-  return "RT1-9-H0-1776308828253480qvlv4o20ja3izh"; // TODO - get a real one
+  try {
+    const raw = await fs.readFile(REFRESH_TOKEN_PATH, "utf8");
+    const token = raw.trim();
+    return token.length ? token : null;
+  } catch (err : any) {
+    if (err.code === "ENOENT") return null;
+    throw err;
+  }
+
+//  return "RT1-9-H0-1776308828253480qvlv4o20ja3izh"; // TODO - get a real one
 }
 
 /**
@@ -400,5 +414,9 @@ export async function
  * Store the cached refresh token.
  */
 async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
-  // TODO - implement real storage
+  const tmpPath = REFRESH_TOKEN_PATH + ".tmp";
+  // ensure token ends with newline for readability
+  const payload = refreshToken.trim() + "\n";
+  await fs.writeFile(tmpPath, payload, { encoding: "utf8", mode: 0o600 });
+  await fs.rename(tmpPath, REFRESH_TOKEN_PATH);
 }
