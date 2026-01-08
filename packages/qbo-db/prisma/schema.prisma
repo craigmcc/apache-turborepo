@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// QBO API Models (Database Schema) ------------------------------------------
+
+model Account {
+  /// Primary key for this Account
+  id                 String                 @id @unique
+  /// IntuitEntity Columns ---------------------------------------------------
+  /// Time this entity was created [Metadata->CreateTime]
+  createTime         DateTime?
+  /// Domain in which this entity belongs
+  domain             String?
+  /// Time this entity was last updated [Metadata->LastUpdatedTime]
+  lastUpdatedTime    DateTime?
+  /// Account Columns --------------------------------------------------------
+  /// Subtype of account
+  accountSubType     String?
+  /// Type of account
+  accountType        String?
+  /// Account number
+  acctNum            String?
+  /// Is this Account active?
+  active             Boolean?
+  /// Classification of this Account
+  classification     AccountClassification?
+  /// Currency reference name
+  currencyRefName    String?
+  /// Currency reference value
+  currencyRefValue   String?
+  /// Current balance (balance sheet accounts only)
+  currentBalance     Float?
+  /// Description of this Account
+  description        String?
+  /// Fully qualified name of this Account
+  fullyQualifiedName String?
+  /// Name of this Account
+  name               String?
+  /// Parent account ID if this is a subaccount [ParentRef.value]
+  parentId           String?
+  /// Is this a subaccount?
+  subAccount         Boolean?
+  /// Relationships ----------------------------------------------------------
+  /// Child accounts of this Account
+  childAccounts      Account[]              @relation("ParentChild")
+  /// Parent account of this Account
+  parentAccount      Account?               @relation("ParentChild", fields: [parentId], references: [id])
+
+  @@map("accounts")
+}
+
+enum AccountClassification {
+  Asset
+  Equity
+  Expense
+  Liability
+  Revenue
+}
