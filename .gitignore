@@ -44,7 +44,7 @@ distributors/ramp-statement-distributor/venv/
 distributors/ramp-statement-distributor/config.json
 
 # Output directory with statements
-distributors/ramp-statement-distributor/statements/
+distributors/ramp-statement-distributor/ramp_statements/
 distributors/ramp-statement-distributor/*.csv
 
 # Python cache and bytecode
