@@ -6,7 +6,7 @@ A Python tool for the Apache Software Foundation Treasury that automates the mon
 
 This tool:
 1. Loads department list from the shared `AccountGroups.json` configuration
-2. Calls the `ramp-lookup` API to download monthly credit card statements for each department
+2. Queries the ramp database directly to generate monthly credit card statements for each department
 3. Saves the statements as CSV files locally
 4. Distributes the statements via email to the appropriate department contacts
 
@@ -14,7 +14,7 @@ This tool:
 
 - [pyenv](https://github.com/pyenv/pyenv) - Python version management
 - Python 3.11+ (managed via pyenv)
-- The `ramp-lookup` service running (default: `http://localhost:3000`)
+- Access to the ramp database file at `packages/ramp-db/ramp-db.db`
 - Access to an SMTP server for sending emails
 
 ## Installation
@@ -104,28 +104,77 @@ Edit `config.json` with your specific settings (see Configuration section below)
 
 The `config.json` file contains all the settings for the tool:
 
-### API Settings
+### Database Settings
 
-- `api_base_url`: URL of the ramp-lookup service (default: `http://localhost:3000`)
-- `output_dir`: Directory where CSV statements will be saved (default: `./statements`)
+- `database_path`: Path to the ramp-db.db SQLite database (default: `../../packages/ramp-db/ramp-db.db`)
 
-### Department Emails
+### Output Settings
 
-The tool automatically loads departments from `packages/shared-utils/src/AccountGroups.json`. You only need to provide email mappings in the `department_emails` object:
+- `output_dir`: Directory where CSV statements will be saved (default: `./ramp_statements`)
+
+### Logging Settings
+
+The tool supports both console and file-based logging with automatic daily rotation.
+
+Configure logging in `config.json`:
 
 ```json
 {
-  "department_emails": {
-    "Board": "board@apache.org",
-    "Infrastructure": "infrastructure@apache.org",
-    "Marketing": "marketing@apache.org"
+  "logging": {
+    "log_dir": "./logs",
+    "log_file": "ramp_statement_distributor.log",
+    "retention_days": 30,
+    "log_level": "INFO"
   }
 }
 ```
 
-- Keys must match the `groupName` values from `AccountGroups.json`
-- Only departments of type "Departmental" are processed (excludes "All", "Other", and ledger accounts)
-- Departments without an email mapping will be skipped with a warning
+**Settings:**
+- `log_dir`: Directory where log files are stored (default: `./logs`)
+- `log_file`: Name of the current log file (default: `ramp_statement_distributor.log`)
+- `retention_days`: Number of days to keep old logs (default: 30)
+- `log_level`: One of DEBUG, INFO, WARNING, ERROR (default: INFO)
+
+**Log Files:**
+- **Current log**: `logs/ramp_statement_distributor.log` - Contains all log messages from the current and previous runs until midnight rotation
+- **Rotated logs**: `logs/ramp_statement_distributor.log.YYYY-MM-DD` - Previous days' logs are automatically renamed with a date suffix
+- **Rotation**: Daily at midnight
+- **Retention**: Automatically deletes logs older than configured days (default: 30)
+
+**Log Output:**
+
+Logs are written to both:
+1. **Console (stdout)**: For immediate feedback and monitoring
+2. **Log file**: For persistence and historical review
+
+Example log entry:
+```
+2026-01-07 22:30:15,123 - __main__ - INFO - Processing department: Infrastructure
+```
+
+### Department Configuration
+
+Departments are automatically loaded from `packages/shared-utils/src/AccountGroups.json`. 
+Each department must have:
+- `groupName`: The department name
+- `groupType`: Set to "Departmental"
+- `groupEmail`: Email address for statement distribution
+
+Only departments with a `groupEmail` field will receive statements. Departments without 
+email addresses will be skipped with a warning in the logs.
+
+To add email addresses, edit `AccountGroups.json` and add the `groupEmail` field:
+
+```json
+{
+  "groupName": "Infrastructure",
+  "groupType": "Departmental",
+  "groupEmail": "infrastructure@apache.org",
+  "groupRanges": [
+    { "start": "6400", "end": "6499" }
+  ]
+}
+```
 
 ### SMTP Settings
 
@@ -156,16 +205,42 @@ Customize the email subject and body:
 
 ```json
 {
-  "subject": "Monthly Credit Card Statement - {department} - {month}",
+  "subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date}",
   "body": "Dear {department} Team,\n\n..."
 }
 ```
 
 Available placeholders:
 - `{department}`: Department name
-- `{month}`: Month in "January 2024" format
 - `{from_date}`: Start date (YYYY-MM-DD)
 - `{to_date}`: End date (YYYY-MM-DD)
+
+**Note:** The `{month}` placeholder has been removed. Use `{from_date}` and `{to_date}` for explicit date ranges that work with any time period (monthly, multi-month, or ad-hoc ranges).
+
+### Summary Report
+
+The tool automatically sends a summary report after each execution (except in dry-run mode):
+
+```json
+{
+  "summary_report": {
+    "enabled": true,
+    "recipient": "treasurer@apache.org"
+  }
+}
+```
+
+- `enabled`: Whether to send summary reports (default: `true`)
+- `recipient`: Email address to receive summary reports (default: `treasurer@apache.org`)
+
+The summary report includes:
+- Date range processed
+- Total departments processed
+- Count of successes and failures
+- List of departments processed
+- List of any failures
+
+**Note:** Summary reports are not sent in dry-run mode.
 
 ## Usage
 
@@ -205,19 +280,72 @@ To process multiple months at once:
 python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-12
 ```
 
-This will generate and distribute statements for each month in the range (January through December 2024).
+**Automatic CSV Merging:** When a multi-month range is specified, the tool automatically merges all transactions into a single CSV file per department (instead of creating separate files for each month).
 
-### Custom AccountGroups.json Location
+**Single month behavior:**
+- Command: `--from-month 2024-10` or `--from-month 2024-10 --to-month 2024-10`
+- Output: `Ramp-Infrastructure-2024-10-01-2024-10-31.csv`
+- Emails: One per department
 
-By default, the tool looks for `AccountGroups.json` at `../../packages/shared-utils/src/AccountGroups.json`. To use a different location:
+**Multi-month behavior:**
+- Command: `--from-month 2024-10 --to-month 2024-12`
+- Output: `Ramp-Infrastructure-2024-10-01-2024-12-31.csv` (merged, contains Oct-Dec transactions)
+- Emails: One per department
+- Sorting: Transactions sorted by GL account, then date
+
+**Benefits of automatic merging:**
+- Fewer files to manage (one per department instead of one per department per month)
+- Fewer emails sent (one per department instead of multiple)
+- Easier for departments to process quarterly or annual statements
+
+### Filter by Department
+
+To process only specific departments instead of all departments:
 
 ```bash
-python ramp_statement_distributor.py --config config.json --account-groups /path/to/AccountGroups.json
+# Single department
+python ramp_statement_distributor.py --config config.json --departments Infrastructure
+
+# Multiple departments (comma-separated)
+python ramp_statement_distributor.py --config config.json --departments Infrastructure,Marketing,Security
 ```
+
+**Notes:**
+- Department names are case-insensitive
+- Invalid department names show a warning but don't stop execution
+- If no valid departments are found, the tool exits with an error
+- Can be combined with month filters and dry-run mode
+
+### List Available Departments
+
+To see all available departments that can be used with the `--departments` filter:
+
+```bash
+python ramp_statement_distributor.py --config config.json --list-departments
+```
+
+This will display all departments that have email addresses configured and exit without processing any statements.
+
+**Example output:**
+```
+Available departments (10):
+  Board
+  Brand
+  Conferences
+  Fundraising
+  Infrastructure
+  Marketing
+  Security
+  TAC
+  Tooling
+  Treasury
+```
+
+**Note:** This command exits immediately after displaying the list, regardless of other arguments provided.
 
 ### Dry Run Mode
 
-Test the tool without sending emails (statements will still be downloaded):
+Test the tool without sending emails (statements will still be generated):
 
 ```bash
 python ramp_statement_distributor.py --config config.json --dry-run
@@ -230,9 +358,19 @@ Single month with dry-run:
 python ramp_statement_distributor.py --config config.json --month 2024-11 --dry-run
 ```
 
-Month range with custom AccountGroups location:
+Month range:
 ```bash
-python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-03 --account-groups /path/to/AccountGroups.json
+python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-03
+```
+
+Filter departments with specific month:
+```bash
+python ramp_statement_distributor.py --config config.json --departments Infrastructure,Security --month 2024-11
+```
+
+Filter departments with month range and dry-run:
+```bash
+python ramp_statement_distributor.py --config config.json --departments Marketing --from-month 2024-01 --to-month 2024-12 --dry-run
 ```
 
 ## Automation with Cron
@@ -262,17 +400,27 @@ The tool creates:
    ```
    Ramp-{account_group}-{from_date}-{to_date}.csv
    ```
+   
+   **Note:** For multi-month ranges, the tool automatically merges transactions into a single CSV file per department:
+   - Single month: `Ramp-Infrastructure-2024-10-01-2024-10-31.csv`
+   - Multi-month (merged): `Ramp-Infrastructure-2024-10-01-2024-12-31.csv` (contains all transactions from Oct-Dec)
 
 2. **Logs**: Detailed logging to stdout showing:
-   - Download progress for each department
+   - Statement generation progress for each department
    - Email sending status
+   - Merge status for multi-month ranges
    - Summary of successes and failures
+
+3. **Summary Report**: A summary email sent to the configured recipient (default: treasurer@apache.org) showing:
+   - Processing statistics
+   - Success/failure counts
+   - List of departments processed
 
 ## Error Handling
 
 The tool includes robust error handling:
 
-- API connection failures are logged, and the process continues with the next department
+- Database query failures are logged, and the process continues with the next department
 - Email sending failures are logged, and the process continues
 - Final summary shows the count of successful and failed operations
 - Exit code 0 indicates all departments processed successfully
@@ -280,17 +428,14 @@ The tool includes robust error handling:
 
 ## Troubleshooting
 
-### API Connection Issues
+### Database Connection Issues
 
-If you see errors connecting to the API:
+If you see errors connecting to the database:
 
-1. Ensure the `ramp-lookup` service is running:
-   ```bash
-   cd apps/ramp-lookup
-   pnpm run dev
-   ```
-
-2. Verify the `api_base_url` in your config matches the service URL
+1. Verify the database file exists at the specified path
+2. Ensure the database is up to date by running `ramp-refresh`
+3. Check file permissions allow read access
+4. Use absolute path if relative path isn't working
 
 ### Email Sending Issues
 
@@ -313,18 +458,19 @@ If you receive empty CSV files or errors:
 
 If the tool says "No departments configured with email addresses":
 
-1. Ensure your `config.json` has a `department_emails` section
-2. Keys in `department_emails` must match `groupName` values from `AccountGroups.json` exactly (case-sensitive)
-3. At least one department must have an email configured
+1. Check that departments in `packages/shared-utils/src/AccountGroups.json` have a `groupEmail` field
+2. Verify `groupType` is set to "Departmental"
+3. Check logs for warnings about missing email addresses
+4. At least one department must have a `groupEmail` configured
 
 ## Security Considerations
 
-1. **Credentials**: Store sensitive credentials (SMTP password, API keys) in environment variables or a secure secrets manager
-2. **File Permissions**: Restrict access to `config.json` and the `statements` directory:
+1. **Credentials**: Store sensitive credentials (SMTP password) in environment variables or a secure secrets manager
+2. **File Permissions**: Restrict access to `config.json`, the database file, and the `statements` directory:
    ```bash
    chmod 600 config.json
+   chmod 600 ../../packages/ramp-db/ramp-db.db
    chmod 700 statements/
    ```
-3. **HTTPS**: In production, use HTTPS for the `api_base_url`
-4. **TLS**: Always use `use_tls: true` for SMTP connections
+3. **TLS**: Always use `use_tls: true` for SMTP connections
 

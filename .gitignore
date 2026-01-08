@@ -57,7 +57,9 @@ distributors/ramp-statement-distributor/*.pyw
 distributors/ramp-statement-distributor/*.pyz
 
 # Logs
+distributors/ramp-statement-distributor/logs/
 distributors/ramp-statement-distributor/*.log
+distributors/ramp-statement-distributor/*.log.*
 
 # IDE
 .vscode/
