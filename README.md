@@ -11,8 +11,6 @@ The relevant applications (in the *apps* directory) are:
 |---------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
 | bill-lookup   | Application for looking up information about Bill content, using the local database.                                                              |
 | bill-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
-| ramp-download | **UNNEEDED** NextJS based application for downloading contet from the Ramp API and storing it in a local database when ramp-refresh did not work. |
-| ramp-info     | **OBSOLETE** Application originally intended to display information directly from the Ramp APIs.  Superceded by ramp-lookup.                      |
 | ramp-lookup   | Application for looking up information about Ramp content, using the local database.                                                              |
 | ramp-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
 
