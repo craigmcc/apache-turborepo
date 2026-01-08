@@ -16,6 +16,7 @@ export type AccountGroupRange = {
 }
 
 export type AccountGroup = {
+  groupEmail?: string;
   groupName: string;
   groupRanges: AccountGroupRange[];
   groupType: string;

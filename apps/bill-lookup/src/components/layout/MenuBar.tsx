@@ -39,7 +39,7 @@ export function MenuBar() {
             <Images className="pe-2" size={38}/>
             BILL Lookup
         </Col>
-        <Col className="w-100">
+        <Col className="w-200">
           <Tabs
             activeKey={key ? key : undefined}
             fill
@@ -62,12 +62,10 @@ export function MenuBar() {
               eventKey="Bills"
               title="Bills"
             />
-{/*
             <Tab
               eventKey="Bill-Approvers"
-              title="Bill Approvers"
+              title="Approvers"
             />
-*/}
             <Tab
               eventKey="Recurring-Bills"
               title="Recurring Bills"

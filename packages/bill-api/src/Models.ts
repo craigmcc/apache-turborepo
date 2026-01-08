@@ -111,6 +111,8 @@ export type BillBill = {
   id: string;
   // Bill total amount (local currency)
   amount?: number;
+  // Bill approval status
+  approvalStatus?: BillBillApprovalStatus;
   // Has this bill been archived?
   archived?: boolean;
   // Line items on this bill
@@ -177,6 +179,8 @@ export type BillBillClassifications = {
 export type BillBillApprover = {
   // The Bill-generated ID of the vendor credit approver (begins with "0ba")
   id: string;
+  /// Zero-relative index of this approver in the approval chain
+  approverOrder?: number;
   // The Bill-generated ID of the bill being approved (begins with "00n")
   billId: string;
   // Object type (should be "BillApprover")
@@ -235,6 +239,9 @@ export type BillBillLineItemClassifications = {
   // The Bill-generated ID of the location (begins with "loc")
   locationId?: string;
 }
+
+export type BillBillApprovalStatus =
+  "APPROVED" | "APPROVING" | "ASSIGNED" | "DENIED" | "UNDEFINED";
 
 export type BillBillPaymentStatus =
   "IN_PROCESS" | "PAID" | "PARTIALLY_PAID" |
