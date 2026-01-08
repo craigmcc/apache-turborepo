@@ -24,7 +24,7 @@ import {
   User,
   Vendor,
   VendorCreditApprover,
-} from "@repo/bill-db/Models";
+} from "@repo/bill-db/*";
 import {
   createAccount,
   createBill,

@@ -29,7 +29,7 @@ import {
   TransactionLineItem,
   User,
   Violation,
-} from "@repo/ramp-db/index.js";
+} from "@repo/ramp-db/*";
 import {
   createAccountingGLAccount,
   createCard,

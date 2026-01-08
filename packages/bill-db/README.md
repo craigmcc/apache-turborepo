@@ -1,10 +1,10 @@
-# packages/ramp-db
+# packages/bill-db
 
 A package that defines the Prisma database schema for information retrieved from
-the [Ramp API Platform](https://docs.ramp.com/developer-api/v1/introduction).
-The database schema focuses on the Ramp Card workflows that we currently use,
-and represents the stored version of material retrieved via the
-[ramp-api](../ramp-api/README.md) package.
+the [Bill API Platform](https://developer.bill.com/home).  The database schema
+focuses on the Accounts Payable workflows that we currently use, and represents
+the stored version of material retrieved via the [bill-api](../bill-api/README.md)
+package.
 
 ## Dependency Declaration
 
@@ -14,7 +14,7 @@ file as follows:
 ```json
 {
   "dependencies": {
-    "@repo/ramp-db": "workspace:*"
+    "@repo/bill-db": "workspace:*"
   }
 }
 ```
@@ -23,7 +23,7 @@ file as follows:
 
 This package only requires a reference to the *DATABASE_URL* environment variable,
 in the `.env` file, to perform its operations.  Applications that consume this package
-and the [ramp-api](../ramp-api/README.md) package will also need to set the environment
+and the [bill-api](../bill-api/README.md) package will also need to set the environment
 variables referenced in that package's documentation.
 
 The database URL should be a reference to a local SQLite database file.  This file
@@ -31,7 +31,7 @@ must NOT be committed to source control, as it contains sensitive information.  
 example, you might do this:
 
 ```dotenv
-DATABASE_URL="file:~/sqlite/db-ramp.db"
+DATABASE_URL="file:~/sqlite/db-bill.db"
 ```
 
 The structure of the database is defined by a [Prisma schema file](./prisma/schema.prisma).
@@ -45,68 +45,60 @@ or referenced by applications that need it.
 
 | Script Name        | Description                                                    |
 |--------------------|----------------------------------------------------------------|
-| `ramp-db:generate` | Generates the Prisma client code based on the database schema. |
-| `ramp-db:migrate`  | Applies any pending migrations to the database.                |                
+| `bill-db:generate` | Generates the Prisma client code based on the database schema. |
+| `bill-db:migrate`  | Applies any pending migrations to the database.                |                
 
 For example, you can run the following commands (starting from the monorepo root):
 
 ```bash
-cd packages/ramp-db
-pnpm run ramp-db:generate
-pnpm run ramp-db:migrate
+cd packages/bill-db
+pnpm run bill-db:generate
+pnpm run bill-db:migrate
 cd ../..
 ```
 In the application consuming this package, you can import the database client itself
-(*dbRamp*), and the desired models that are derived from the
+(*dbBill*), and the desired models that are derived from the
 [database schema](./prisma/schema.prisma), as follows:
 
 ```ts
 // Import the database client and whatever models you need
-import { dbRamp, Card, User } from '@repo/ramp-db/*';
+import { dbBill, User, Vendor } from '@repo/bill-db/*';
 ```
 
-Then, *dbRamp* can be used to perform database operations, such as upserting
+Then, *dbBill* can be used to perform database operations, such as upserting
 (inserting if new or updating if existing) rows, as well as other operations.
 See the Prisma documentation for more information on how to use the Prisma client.
 
-For example, to upsert a *User* row:
+For example, to upsert a *Vendor* row:
 
 ```ts
-// Transform a RampUser object retrieved via ramp-api
-// into a User object for ramp-db
-const user = createUser(rampUser);
-// Insert or update the user into the database
-await dbRamp.user.upsert({
-  where: { id: user.id },
-  create: user,
-  update: user,
+// Transform a BillVendor object retrieved via bill-api
+// into a Vendor object for bill-db
+const vendor = createVendor(billVendor);
+// Insert or update the vendor into the database
+await dbBill.vendor.upsert({
+  where: { id: vendor.id },
+  create: vendor,
+  update: vendor,
 });
 ```
 
-Applications that render data from the database will also use *dbRamp* to query
+Applications that render data from the database will also use *dbBill* to query
 the local database for the desired rows.  For example, you might see a query
-like this to retrieve all users, including related information (performed
+like this to retrieve all vendors, including related information (performed
 via SQL join operations by Prisma), and sorting them in ascending order by name.
 
 ```ts
-  const users = await dbRamp.user.findMany({
+const vendors = await dbBill.vendor.findMany({
   include: {
-    cards: true,
-    department: true,
-    limit_users: {
-      include: {
-        limit: {
-          include: {
-            spending_restrictions: true,
-          },
-        },
-      },
-    },
-    manager: true,
+    additionalInfo: true,
+    address: true,
+    autoPay: true,
+    paymentInformation: true,
+    virtualCard: true,
   },
   orderBy: [
-    { last_name: "asc" },
-    { first_name: "asc" },
+    { name: "asc" },
   ],
 });
 ```
@@ -117,8 +109,8 @@ Primsa comes with a browser-based database viewer that can be used to inspect
 the contents of the database.  To launch the viewer, run the following command:
 
 ```bash
-cd packages/ramp-db
-pnpm run ramp-db:studio
+cd packages/bill-db
+pnpm run bill-db:studio
 // You will need to Control-C to terminate the viewer when done
 cd ../..
 ```

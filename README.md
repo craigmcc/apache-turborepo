@@ -7,23 +7,23 @@ and packages that are interdependent) managed by [Turborepo](https://turborepo.c
 
 The relevant applications (in the `apps` directory) are:
 
-| Application   | Description                                                                                                                                       |
-|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| bill-lookup   | Application for looking up information about Bill content, using the local database.                                                              |
-| bill-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
-| ramp-lookup   | Application for looking up information about Ramp content, using the local database.                                                              |
-| ramp-refresh  | Node-based Application to download content from the Ramp API and storing it in a local database.                              |
+| Application  | Description                                                                                      |
+|--------------|--------------------------------------------------------------------------------------------------|
+| bill-lookup  | Application for looking up information about Bill content, using the local database.             |
+| bill-refresh | Node-based Application to download content from the Ramp API and storing it in a local database. |
+| ramp-lookup  | Application for looking up information about Ramp content, using the local database.             |
+| ramp-refresh | Node-based Application to download content from the Ramp API and storing it in a local database. |
 
 The relevant packages (in the `packages` directory) are:
 
 | Package                                   | Description                                                                                                                                                             |
 |-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [bill-api](./packages/bill-api/README.md) | Server side logic to call the Bill APIs, which can be used to download content from Bill.                                                                               |
-| bill-db                                   | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Bill APIs, along with a generated Prisma client for that schema. |
+| [bill-db](./packages/bill-db/README.md)   | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Bill APIs, along with a generated Prisma client for that schema. |
 | eslint-config                             | ESLint configuration files, including `eslint-config-next` and `eslint-config-prettier`, which can be used by the applications and packages in this monorepo.           |
 | jest-presets                              | Jest configuration files, which can be used by the applications and packages in this monorepo.                                                                          |
 | [ramp-api](./packages/ramp-api/README.md) | Server side logic to call the Ramp APIs, which can be used to download content from Ramp.                                                                               |
-| ramp-db                                   | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Ramp APIs, along with a generated Prisma client for that schema. |
+| [ramp-db](./packages/ramp-db/README.md)   | Contains a Prisma schema for the local database, which contains tables for content downloaded with the Ramp APIs, along with a generated Prisma client for that schema. |
 | shared-components                         | Shared React components that can be used by the applications and packages in this monorepo.  Depends on React Boostrap and Tanstack Table.                              |
 | shared-utils                              | Shared utility functions that can be used by the applications and packages in this monorepo.                                                                            |
 | typescript-config                         | TypeScript configuration files, which can be used by the applications and packages in this monorepo.                                                                    |
