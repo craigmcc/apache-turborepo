@@ -1,7 +1,7 @@
 {
   "description": "Server-side actions that interact with the Ramp API directly",
   "exports": {
-    "./*": "./dist/index.js"
+    "./*": "./dist/*.js"
   },
   "jest": {
     "preset": "@repo/jest-presets/node"
