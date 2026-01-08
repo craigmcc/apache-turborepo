@@ -1,7 +1,7 @@
 # packages/bill-api
 
 A package of types and retrieval modules for retrieving information from
-the [Bill API Platform](https://developer.bill.com/home/).  Since we currently only use
+the [Bill API Platform](https://developer.bill.com/home).  Since we currently only use
 the Accounts Payable workflows, those are the focus of this package.
 
 ## Dependency Declaration
@@ -50,12 +50,19 @@ an exported function for each of the objects we use, following this pattern:
 
 ```ts
 import { fetchAccounts } from '@repo/bill-api/AccountActions';
+import { BillAccount } from '@repo/bill-api/Models';
 
-const accounts = await fetchAccounts(sessionId);
+const accounts: BillAccount[] = await fetchAccounts(sessionId);
+for (const account of accounts) {
+  // Process each account object
+}
 ```
 
 where *sessionId* is the appropriate V2 or V3 session ID retrieved as described above.
 
+Object types for values returned by the fetch functions is generally inferred automatically,
+so there is no need to explicitly declare the type of the returned objects, but you can
+do so if you wish.
 The following modules are provided:
 
 | Module Name                  | API Version | Description                                  |
@@ -69,17 +76,6 @@ The following modules are provided:
 | VendorActions                | V3          | Retrieve vendor information.                 |
 | VendorCreditActions          | V3          | Retrieve vendor credit information.          |
 | VendorCreditApproverActions  | V2          | Retrieve vendor credit approver information. |
-
-TypeScript types for the Bill API version of each of these objects are provided, and may be used
-as follows (although the object type is generally inferred automatically from the return value
-of the fetch methods):
-
-```ts
-import { fetchAccounts } from '@repo/bill-api/AccountActions';
-import { BillAccount } from '@repo/bill-api/Models';
-
-const accounts: BillAccount[] = await fetchAccounts(sessionId);  // V2 session ID in this case
-```
 
 Types for subordinate objects are also provided, for example, the *BillAddress* type.  Again,
 these types are generally inferred automatically, but may be imported explicitly if desired.
