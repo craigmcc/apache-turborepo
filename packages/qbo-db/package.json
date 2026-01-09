@@ -10,7 +10,7 @@
     "build": "tsc",
     "qbo-db:deploy": "prisma migrate deploy",
     "qbo-db:generate" : "prisma generate",
-    "qbo-db:migrate:ci": "dotenvx run -f .env --quiet -- prisma migrate dev --skip-generate",
+    "qbo-db:migrate:ci": "prisma migrate dev --skip-generate",
     "qbo-db:migrate:production": "dotenvx run -f .env.production --quiet -- prisma migrate dev --skip-generate",
     "qbo-db:migrate:sandbox": "dotenvx run -f .env.sandbox --quiet -- prisma migrate dev --skip-generate",
     "qbo-db:studio:production": "dotenvx run -f .env.production --quiet -- prisma studio",
