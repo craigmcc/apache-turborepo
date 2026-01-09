@@ -26,6 +26,8 @@
     "@dotenvx/dotenvx": "catalog:dotenvx",
     "@repo/eslint-config": "workspace:*",
     "@repo/qbo-api": "workspace:*",
+    "@repo/qbo-db": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   }
 }

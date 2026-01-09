@@ -277,6 +277,12 @@ importers:
       '@repo/qbo-api':
         specifier: workspace:*
         version: link:../../packages/qbo-api
+      '@repo/qbo-db':
+        specifier: workspace:*
+        version: link:../../packages/qbo-db
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config

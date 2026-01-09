@@ -9,9 +9,7 @@ import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
 
 // Internal Modules -----------------------------------------------------------
 
-import {
-  refreshAccounts,
-} from "./Refreshers";
+import { refreshAccounts } from "./refreshers/AccountsRefresher";
 
 // Private Objects ------------------------------------------------------------
 

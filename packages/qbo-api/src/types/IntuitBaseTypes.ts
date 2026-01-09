@@ -532,9 +532,11 @@ export type Ratio = {
 }
 
 // Line 1813 - Reference type of all IDs that are taken as input or output.
+// NOTE: sandbox data has name and value, but XSD says name and type.
 export type ReferenceType = {
   name?: string;
   type?: string;
+  value?: string;
 }
 
 // Line 1897 - Enumeration of Summary Report basis.

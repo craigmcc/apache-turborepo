@@ -91,7 +91,7 @@ const qboApiInfo: QboApiInfo = {
 // Public Objects ------------------------------------------------------------
 
 // Document environment variables
-logger.info({
+logger.trace({
   context: "AuthActions.environment",
   message: "Environment Variables",
   QBO_BASE_URL,
@@ -106,7 +106,7 @@ logger.info({
 // If we have a cached refresh token, try to use it directly
 if (cachedRefreshToken) {
 
-  logger.info({
+  logger.trace({
     context: "AuthActions.attemptRefresh",
     cachedRefreshToken,
   });
@@ -140,7 +140,7 @@ if (cachedRefreshToken) {
     logger.info({
       context: "AuthActions.attemptRefresh.success",
       message: "Successfully refreshed tokens",
-      refreshResponseData,
+//      refreshResponseData,
     });
 
     // Set the tokens we need
@@ -223,7 +223,7 @@ app.get(web_path, async (req, res) => {
     return;
   }
 
-  logger.info({
+  logger.trace({
     context: "AuthActions.expressCallback",
     message: "Received OAuth callback",
     authorizationCode,
@@ -235,7 +235,7 @@ app.get(web_path, async (req, res) => {
     authorizationCode,
     QBO_REDIRECT_URL
   );
-  logger.info({
+  logger.trace({
     context: "AuthActions.expressCallback",
     message: "Exchanged authorization code for tokens",
     accessToken,
@@ -279,7 +279,7 @@ async function exchangeAuthorizationCodeForTokens(
     grant_type: "authorization_code",
     redirect_uri: redirectUrl,
   };
-  logger.info({
+  logger.trace({
     context: "AuthActions.exchangeAuthorizationCodeForTokens",
     message: "Exchanging authorization code for tokens",
     tokenRequest
@@ -296,7 +296,7 @@ async function exchangeAuthorizationCodeForTokens(
     body: new URLSearchParams(tokenRequest),
   });
   const tokenResponseData = await tokenResponse.json();
-  logger.info({
+  logger.trace({
     context: "AuthActions.exchangeAuthorizationCodeForTokens",
     message: "Received access token and refresh token",
     tokenResponseData,
@@ -357,8 +357,6 @@ async function fetchCachedRefreshToken(): Promise<string | null> {
     if (err.code === "ENOENT") return null;
     throw err;
   }
-
-//  return "RT1-9-H0-1776308828253480qvlv4o20ja3izh"; // TODO - get a real one
 }
 
 /**
@@ -373,7 +371,7 @@ async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
   }
 
   const wellKnownInfo: QboWellKnownInfo = await response.json();
-  logger.info({
+  logger.trace({
     context: "AuthActions.fetchWellKnownInfo",
     message: "Fetched Well Known Info",
     wellKnownInfo,
@@ -395,7 +393,7 @@ async function
     scope: "com.intuit.quickbooks.accounting",
     state: oauthState,
   };
-  logger.info({
+  logger.trace({
     context: "AuthActions.requestAuthorizationCode",
     message: "Constructing authorization URL",
     authorizationRequest,
@@ -408,7 +406,7 @@ async function
   authorizationUrl.searchParams.set("scope", authorizationRequest.scope);
   authorizationUrl.searchParams.set("state", authorizationRequest.state!);
 
-  logger.info({
+  logger.trace({
     context: "AuthActions.requestAuthorizationCode",
     message: "Constructed authorization URL",
     authorizationUrl: authorizationUrl.toString(),
