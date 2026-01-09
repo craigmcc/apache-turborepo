@@ -42,7 +42,9 @@ jobs:
       - name: Generate Prisma client and migrate to dummy database for qbo-db
         env:
           DATABASE_URL: file:./github_qbo.db
-        run: cd packages/qbo-db; pnpm run qbo-db:generate; pnpm run qbo-db:migrate:sandbox; cd ../..
+        run:
+          cat $GITHUB_ENV > .env.sandbox
+          cd packages/qbo-db; pnpm run qbo-db:generate; pnpm run qbo-db:migrate:sandbox; cd ../..
 
       - name: Generate Prisma client and migrate to dummy database for ramp-db
         env:
