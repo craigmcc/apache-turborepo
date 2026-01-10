@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Apache Treasury - Monthly Credit Card Statement Distributor
+Apache Treasury - Credit Card Statement Distributor
 
-This script generates monthly credit card activity statements for each department
+This script generates credit card activity statements for each department
 by querying the ramp-db SQLite database directly and distributes them via email.
 
 Usage:
     python ramp_statement_distributor.py --config config.json
-    python ramp_statement_distributor.py --config config.json --month 2024-11
-    python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-12
+    python ramp_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30
+    python ramp_statement_distributor.py --config config.json --from-date 2024-01-01 --to-date 2024-12-31
     python ramp_statement_distributor.py --config config.json --departments Infrastructure,Marketing
     python ramp_statement_distributor.py --config config.json --list-departments
     python ramp_statement_distributor.py --config config.json --dry-run
@@ -147,8 +147,10 @@ class StatementDistributor:
             'total_departments': 0,
             'successful': 0,
             'failed': 0,
+            'skipped': 0,
             'departments_processed': [],
-            'departments_failed': [],
+            'departments_failed': [],  # Contains (name, reason) tuples
+            'departments_skipped': [],
             'from_date': None,
             'to_date': None
         }
@@ -279,78 +281,61 @@ class StatementDistributor:
         
         sys.exit(0)
 
-    def _parse_month(self, month_str: str) -> datetime:
+    def _parse_date(self, date_str: str) -> datetime:
         """
-        Parse a month string in YYYY-MM format.
+        Parse a date string in YYYY-MM-DD format.
 
         Args:
-            month_str: Month in YYYY-MM format
+            date_str: Date in YYYY-MM-DD format
 
         Returns:
-            datetime object set to the first day of the month
+            datetime object for the specified date
         """
         try:
-            year, month_num = map(int, month_str.split('-'))
-            return datetime(year, month_num, 1)
+            return datetime.strptime(date_str, '%Y-%m-%d')
         except ValueError:
-            logger.error(f"Invalid month format: {month_str}. Use YYYY-MM")
+            logger.error(f"Invalid date format: {date_str}. Use YYYY-MM-DD")
             sys.exit(1)
 
-    def _get_month_range(
+    def _get_date_range(
         self,
-        from_month: Optional[str] = None,
-        to_month: Optional[str] = None
-    ) -> List[tuple[str, str]]:
+        from_date: Optional[str] = None,
+        to_date: Optional[str] = None
+    ) -> Tuple[str, str]:
         """
-        Generate a list of (from_date, to_date) tuples for each month in the range.
+        Get the date range for statement generation.
 
         Args:
-            from_month: Start month in YYYY-MM format (inclusive)
-            to_month: End month in YYYY-MM format (inclusive)
+            from_date: Start date in YYYY-MM-DD format
+            to_date: End date in YYYY-MM-DD format
 
         Returns:
-            List of tuples, each containing (from_date, to_date) in YYYY-MM-DD format
+            Tuple of (from_date, to_date) in YYYY-MM-DD format
         """
-        # Determine start month
-        if from_month:
-            start_date = self._parse_month(from_month)
+        # Determine start date
+        if from_date:
+            start_date = self._parse_date(from_date)
         else:
-            # Default to previous month
+            # Default to first day of previous month
             today = datetime.now()
             start_date = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
 
-        # Determine end month
-        if to_month:
-            end_date = self._parse_month(to_month)
+        # Determine end date
+        if to_date:
+            end_date = self._parse_date(to_date)
         else:
-            # Default to same as start month
-            end_date = start_date
+            # Default to last day of the month containing start_date
+            next_month = start_date.replace(day=28) + timedelta(days=4)
+            end_date = next_month - timedelta(days=next_month.day)
 
-        # Validate that from_month is not after to_month
+        # Validate that from_date is not after to_date
         if start_date > end_date:
             logger.error(
-                f"Invalid month range: from_month ({from_month}) is after to_month ({to_month})"
+                f"Invalid date range: from_date ({from_date}) is after to_date ({to_date})"
             )
             sys.exit(1)
 
-        # Generate list of months
-        month_ranges = []
-        current = start_date
-
-        while current <= end_date:
-            # Calculate last day of current month
-            next_month = current.replace(day=28) + timedelta(days=4)
-            last_day = next_month - timedelta(days=next_month.day)
-
-            from_date = current.strftime('%Y-%m-%d')
-            to_date = last_day.strftime('%Y-%m-%d')
-
-            month_ranges.append((from_date, to_date))
-
-            # Move to next month
-            current = next_month.replace(day=1)
-
-        return month_ranges
+        return (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
     def _load_account_group_ranges(self, account_group: str) -> List[Dict[str, str]]:
         """Load account code ranges for a specific account group."""
@@ -534,6 +519,7 @@ class StatementDistributor:
         total = self.stats['total_departments']
         successful = self.stats['successful']
         failed = self.stats['failed']
+        skipped = self.stats['skipped']
         from_date = self.stats['from_date']
         to_date = self.stats['to_date']
         
@@ -544,6 +530,7 @@ class StatementDistributor:
         report.append(f"Date Range: {from_date} to {to_date}")
         report.append(f"Total Departments: {total}")
         report.append(f"Successful: {successful}")
+        report.append(f"Skipped (no transactions): {skipped}")
         report.append(f"Failed: {failed}")
         report.append("")
         
@@ -553,10 +540,16 @@ class StatementDistributor:
                 report.append(f"  - {dept}")
             report.append("")
         
+        if self.stats['departments_skipped']:
+            report.append("Departments Skipped (no transactions):")
+            for dept in self.stats['departments_skipped']:
+                report.append(f"  - {dept}")
+            report.append("")
+        
         if self.stats['departments_failed']:
             report.append("Departments Failed:")
-            for dept in self.stats['departments_failed']:
-                report.append(f"  - {dept}")
+            for dept, reason in self.stats['departments_failed']:
+                report.append(f"  - {dept}: {reason}")
             report.append("")
         
         if failed > 0:
@@ -622,7 +615,8 @@ class StatementDistributor:
             smtp_port = self.smtp_config.get('port', 587)
             use_tls = self.smtp_config.get('use_tls', True)
             username = self.smtp_config.get('username')
-            password = self.smtp_config.get('password')
+            # Support SMTP_PASSWORD environment variable as fallback
+            password = self.smtp_config.get('password') or os.environ.get('SMTP_PASSWORD')
 
             with smtplib.SMTP(smtp_host, smtp_port) as server:
                 if use_tls:
@@ -643,7 +637,7 @@ class StatementDistributor:
         department: Dict,
         from_date: str,
         to_date: str,
-        dry_run: bool = False
+        send_emails: bool = False
     ) -> bool:
         """
         Process a single department: download statement and send email.
@@ -652,19 +646,21 @@ class StatementDistributor:
             department: Department configuration dictionary
             from_date: Start date for the statement
             to_date: End date for the statement
-            dry_run: If True, don't send actual emails
+            send_emails: If True, actually send emails; if False (default), dry-run mode
 
         Returns:
             True if processing was successful, False otherwise
         """
         account_group = department.get('account_group')
         email = department.get('email')
-        name = department.get('name', account_group)
+        name = department.get('name', account_group or 'Unknown')
 
         if not account_group or not email:
             logger.error(
                 f"Invalid department configuration: {department}"
             )
+            self.stats['failed'] += 1
+            self.stats['departments_failed'].append((name, "Invalid department configuration (missing account_group or email)"))
             return False
 
         logger.info(f"Processing department: {name}")
@@ -673,6 +669,16 @@ class StatementDistributor:
         if self.stats['from_date'] is None:
             self.stats['from_date'] = from_date
             self.stats['to_date'] = to_date
+
+        # Query transactions first to check if any exist
+        transactions = self.query_transactions(account_group, from_date, to_date)
+        
+        # Skip departments with no transactions
+        if len(transactions) == 0:
+            logger.info(f"Skipping {name}: no transactions found for date range")
+            self.stats['skipped'] += 1
+            self.stats['departments_skipped'].append(name)
+            return True  # Not a failure, just skipped
 
         # Generate statement
         statement_path = self.generate_statement(
@@ -683,7 +689,7 @@ class StatementDistributor:
 
         if not statement_path:
             self.stats['failed'] += 1
-            self.stats['departments_failed'].append(name)
+            self.stats['departments_failed'].append((name, "Failed to generate statement (see logs for details)"))
             return False
 
         # Prepare email
@@ -699,13 +705,13 @@ class StatementDistributor:
             to_date=to_date
         )
 
-        # Send email
+        # Send email (dry_run is inverse of send_emails)
         success = self.send_email(
             email,
             subject,
             body,
             statement_path,
-            dry_run
+            dry_run=not send_emails
         )
         
         # Track results
@@ -714,95 +720,7 @@ class StatementDistributor:
             self.stats['departments_processed'].append(name)
         else:
             self.stats['failed'] += 1
-            self.stats['departments_failed'].append(name)
-
-        return success
-
-    def process_department_merged(
-        self,
-        department: Dict,
-        month_ranges: List[Tuple[str, str]],
-        overall_from_date: str,
-        overall_to_date: str,
-        dry_run: bool = False
-    ) -> bool:
-        """
-        Process a department with merged transactions across multiple months.
-
-        Args:
-            department: Department configuration dictionary
-            month_ranges: List of (from_date, to_date) tuples for each month
-            overall_from_date: Overall start date for the merged statement
-            overall_to_date: Overall end date for the merged statement
-            dry_run: If True, don't send actual emails
-
-        Returns:
-            True if processing was successful, False otherwise
-        """
-        account_group = department.get('account_group')
-        email = department.get('email')
-        name = department.get('name', account_group)
-
-        if not account_group or not email:
-            logger.error(
-                f"Invalid department configuration: {department}"
-            )
-            return False
-
-        logger.info(f"Processing department (merged): {name}")
-        
-        # Track date range for summary (first department sets the range)
-        if self.stats['from_date'] is None:
-            self.stats['from_date'] = overall_from_date
-            self.stats['to_date'] = overall_to_date
-
-        # Collect transactions from all months
-        all_transactions = []
-        for from_date, to_date in month_ranges:
-            logger.info(f"  Querying transactions for {name} from {from_date} to {to_date}")
-            transactions = self.query_transactions(account_group, from_date, to_date)
-            all_transactions.extend(transactions)
-            logger.info(f"  Found {len(transactions)} transactions for this period")
-
-        # Sort transactions by GL account, then date (matching API behavior)
-        all_transactions.sort(key=lambda t: (t.get('gl_account', ''), t.get('accounting_date', '')))
-
-        # Generate single merged CSV
-        filename = f"Ramp-{name}-{overall_from_date}-{overall_to_date}.csv"
-        statement_path = self.output_dir / filename
-
-        self.generate_csv_from_transactions(all_transactions, statement_path)
-        logger.info(f"Generated merged statement with {len(all_transactions)} transactions: {statement_path}")
-
-        # Prepare email
-        subject = self.email_template.get('subject', '').format(
-            department=name,
-            from_date=overall_from_date,
-            to_date=overall_to_date
-        )
-
-        body = self.email_template.get('body', '').format(
-            department=name,
-            from_date=overall_from_date,
-            to_date=overall_to_date
-        )
-
-        # Send email
-        success = self.send_email(
-            email,
-            subject,
-            body,
-            statement_path,
-            dry_run
-        )
-        
-        # Track results
-        if success:
-            self.stats['successful'] += 1
-            self.stats['departments_processed'].append(name)
-        else:
-            self.stats['failed'] += 1
-            self.stats['departments_failed'].append(name)
+            self.stats['departments_failed'].append((name, "Failed to send email (see logs for details)"))
 
         return success
 
@@ -841,18 +759,18 @@ class StatementDistributor:
 
     def run(
         self,
-        from_month: Optional[str] = None,
-        to_month: Optional[str] = None,
-        dry_run: bool = False,
+        from_date: Optional[str] = None,
+        to_date: Optional[str] = None,
+        send_emails: bool = False,
         department_filter: Optional[str] = None
     ) -> int:
         """
         Run the statement generation and distribution process.
 
         Args:
-            from_month: Optional start month in YYYY-MM format
-            to_month: Optional end month in YYYY-MM format
-            dry_run: If True, download statements but don't send emails
+            from_date: Optional start date in YYYY-MM-DD format
+            to_date: Optional end date in YYYY-MM-DD format
+            send_emails: If True, actually send emails; if False (default), dry-run mode
             department_filter: Optional comma-separated list of departments to process
 
         Returns:
@@ -860,69 +778,39 @@ class StatementDistributor:
         """
         logger.info("Starting statement distribution process")
 
-        if dry_run:
-            logger.info("Running in DRY RUN mode - emails will not be sent")
+        if not send_emails:
+            logger.info("Running in DRY RUN mode - emails will not be sent (use --send-emails to send)")
 
         # Filter departments if specified
         departments_to_process = self._filter_departments(department_filter)
 
-        # Get month ranges
-        month_ranges = self._get_month_range(from_month, to_month)
+        # Get date range
+        from_date_str, to_date_str = self._get_date_range(from_date, to_date)
 
-        if len(month_ranges) == 1:
-            logger.info(
-                f"Processing statements for {month_ranges[0][0]} to {month_ranges[0][1]}"
-            )
-        else:
-            logger.info(
-                f"Processing statements for {len(month_ranges)} months (MERGED): "
-                f"{month_ranges[0][0]} to {month_ranges[-1][1]}"
-            )
+        logger.info(f"Processing statements for {from_date_str} to {to_date_str}")
 
         # Initialize statistics
-        if len(month_ranges) == 1:
-            self.stats['total_departments'] = len(departments_to_process) * len(month_ranges)
-        else:
-            # In merge mode, one file per department regardless of month count
-            self.stats['total_departments'] = len(departments_to_process)
+        self.stats['total_departments'] = len(departments_to_process)
 
-        # Process departments based on mode
-        if len(month_ranges) == 1:
-            # Single month - use existing logic
-            for from_date, to_date in month_ranges:
-                logger.info(f"Processing month: {from_date} to {to_date}")
-
-                for department in departments_to_process:
-                    self.process_department(
-                        department,
-                        from_date,
-                        to_date,
-                        dry_run
-                    )
-        else:
-            # Multi-month range - merge all months per department
-            overall_from_date = month_ranges[0][0]
-            overall_to_date = month_ranges[-1][1]
-            logger.info(f"Merging {len(month_ranges)} months into single file per department")
-
-            for department in departments_to_process:
-                self.process_department_merged(
-                    department,
-                    month_ranges,
-                    overall_from_date,
-                    overall_to_date,
-                    dry_run
-                )
+        # Process each department
+        for department in departments_to_process:
+            self.process_department(
+                department,
+                from_date_str,
+                to_date_str,
+                send_emails
+            )
 
         # Log summary
         logger.info(
             f"Processing complete. "
             f"Successful: {self.stats['successful']}, "
+            f"Skipped: {self.stats['skipped']}, "
             f"Failed: {self.stats['failed']}"
         )
 
         # Send summary report (skip in dry-run mode)
-        if not dry_run:
+        if send_emails:
             self.send_summary_report()
         else:
             logger.info("Skipping summary report in dry-run mode")
@@ -933,12 +821,12 @@ class StatementDistributor:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='Generate and distribute monthly credit card statements'
+        description='Generate and distribute credit card statements for specified date ranges'
     )
     parser.add_argument(
         '--config',
-        required=True,
-        help='Path to configuration JSON file'
+        default='config.json',
+        help='Path to configuration JSON file (default: config.json)'
     )
     parser.add_argument(
         '--departments',
@@ -950,30 +838,35 @@ def main():
         help='List all available departments and exit'
     )
 
-    # Month specification options
-    month_group = parser.add_mutually_exclusive_group()
-    month_group.add_argument(
-        '--month',
-        help='Single month to process in YYYY-MM format (default: previous month)'
-    )
-    month_group.add_argument(
-        '--from-month',
-        dest='from_month',
-        help='Start month for range in YYYY-MM format (use with --to-month)'
-    )
-    
+    # Date specification options
     parser.add_argument(
-        '--to-month',
-        dest='to_month',
-        help='End month for range in YYYY-MM format (use with --from-month)'
+        '--from-date',
+        dest='from_date',
+        help='Start date in YYYY-MM-DD format (default: first day of previous month)'
     )
     parser.add_argument(
-        '--dry-run',
+        '--to-date',
+        dest='to_date',
+        help='End date in YYYY-MM-DD format (default: last day of previous month)'
+    )
+    parser.add_argument(
+        '--send-emails',
         action='store_true',
-        help='Download statements but do not send emails'
+        dest='send_emails',
+        help='Actually send emails (default: dry-run mode, emails are not sent)'
     )
 
+    # Print help if no arguments provided
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+
     args = parser.parse_args()
+
+    # Verify config file exists before proceeding
+    if not os.path.exists(args.config):
+        print(f"Error: Configuration file not found: {args.config}", file=sys.stderr)
+        sys.exit(1)
 
     # Set up logging FIRST (before any log messages)
     global logger
@@ -986,25 +879,12 @@ def main():
     if args.list_departments:
         distributor.list_departments()
 
-    # Handle month arguments
-    if args.month:
-        # Single month specified
-        from_month = args.month
-        to_month = args.month
-    elif args.from_month:
-        # Range specified
-        from_month = args.from_month
-        to_month = args.to_month if args.to_month else args.from_month
-    elif args.to_month:
-        # Only to_month specified (error)
-        parser.error("--to-month requires --from-month")
+    # Validate date arguments
+    if args.to_date and not args.from_date:
+        parser.error("--to-date requires --from-date")
         sys.exit(1)
-    else:
-        # No month specified, use default
-        from_month = None
-        to_month = None
 
-    exit_code = distributor.run(from_month, to_month, args.dry_run, args.departments)
+    exit_code = distributor.run(args.from_date, args.to_date, args.send_emails, args.departments)
     sys.exit(exit_code)
 
 

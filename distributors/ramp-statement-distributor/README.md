@@ -1,12 +1,12 @@
 # Statement Distributor
 
-A Python tool for the Apache Software Foundation Treasury that automates the monthly process of generating and distributing credit card activity statements to departments.
+A Python tool for the Apache Software Foundation Treasury that automates the process of generating and distributing credit card activity statements to departments.
 
 ## Overview
 
 This tool:
 1. Loads department list from the shared `AccountGroups.json` configuration
-2. Queries the ramp database directly to generate monthly credit card statements for each department
+2. Queries the ramp database directly to generate credit card statements for each department
 3. Saves the statements as CSV files locally
 4. Distributes the statements via email to the appropriate department contacts
 
@@ -191,13 +191,18 @@ Configure your email server settings:
 }
 ```
 
-**Security Note**: For production use, consider using environment variables for sensitive credentials instead of storing them in the config file:
+**Environment Variable Support**: The SMTP password can be provided via the `SMTP_PASSWORD` environment variable instead of storing it in the config file. This is the recommended approach for production deployments:
 
-```python
-# Example: Reading password from environment
-import os
-password = os.environ.get('SMTP_PASSWORD')
+```bash
+export SMTP_PASSWORD="your-smtp-password-here"
+python ramp_statement_distributor.py
 ```
+
+The tool checks for the password in this order:
+1. `smtp.password` in `config.json`
+2. `SMTP_PASSWORD` environment variable (fallback)
+
+If using the environment variable, you can omit the `password` field from config.json or leave it empty.
 
 ### Email Template
 
@@ -256,47 +261,50 @@ When you're done, deactivate the virtual environment:
 deactivate
 ```
 
+### Getting Help
+
+Running without arguments displays the help message:
+
+```bash
+python ramp_statement_distributor.py
+```
+
 ### Basic Usage (Previous Month)
 
-By default, the tool processes the previous month's data:
+By default, the tool processes the previous month's data in **dry-run mode** (emails are not sent):
 
 ```bash
-python ramp_statement_distributor.py --config config.json
+python ramp_statement_distributor.py --from-date 2024-12-01 --to-date 2024-12-31
 ```
 
-### Specify a Specific Month
-
-To process a specific month:
+To use a custom configuration file:
 
 ```bash
-python ramp_statement_distributor.py --config config.json --month 2024-11
+python ramp_statement_distributor.py --config /path/to/custom-config.json --from-date 2024-12-01 --to-date 2024-12-31
 ```
 
-### Specify a Month Range
+### Specify a Date Range
 
-To process multiple months at once:
+To process a specific date range:
 
 ```bash
-python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-12
+# Single month
+python ramp_statement_distributor.py --from-date 2024-11-01 --to-date 2024-11-30
+
+# Multiple months (quarterly)
+python ramp_statement_distributor.py --from-date 2024-10-01 --to-date 2024-12-31
+
+# Full year
+python ramp_statement_distributor.py --from-date 2024-01-01 --to-date 2024-12-31
+
+# Custom date range (mid-month to mid-month)
+python ramp_statement_distributor.py --from-date 2024-10-15 --to-date 2024-12-15
 ```
 
-**Automatic CSV Merging:** When a multi-month range is specified, the tool automatically merges all transactions into a single CSV file per department (instead of creating separate files for each month).
-
-**Single month behavior:**
-- Command: `--from-month 2024-10` or `--from-month 2024-10 --to-month 2024-10`
-- Output: `Ramp-Infrastructure-2024-10-01-2024-10-31.csv`
-- Emails: One per department
-
-**Multi-month behavior:**
-- Command: `--from-month 2024-10 --to-month 2024-12`
-- Output: `Ramp-Infrastructure-2024-10-01-2024-12-31.csv` (merged, contains Oct-Dec transactions)
-- Emails: One per department
-- Sorting: Transactions sorted by GL account, then date
-
-**Benefits of automatic merging:**
-- Fewer files to manage (one per department instead of one per department per month)
-- Fewer emails sent (one per department instead of multiple)
-- Easier for departments to process quarterly or annual statements
+**Output:**
+- All transactions within the date range are included in a single CSV file per department
+- Format: `Ramp-Infrastructure-2024-10-01-2024-12-31.csv`
+- One email per department
 
 ### Filter by Department
 
@@ -304,24 +312,24 @@ To process only specific departments instead of all departments:
 
 ```bash
 # Single department
-python ramp_statement_distributor.py --config config.json --departments Infrastructure
+python ramp_statement_distributor.py --departments Infrastructure
 
 # Multiple departments (comma-separated)
-python ramp_statement_distributor.py --config config.json --departments Infrastructure,Marketing,Security
+python ramp_statement_distributor.py --departments Infrastructure,Marketing,Security
 ```
 
 **Notes:**
 - Department names are case-insensitive
 - Invalid department names show a warning but don't stop execution
 - If no valid departments are found, the tool exits with an error
-- Can be combined with month filters and dry-run mode
+- Can be combined with date filters and dry-run mode
 
 ### List Available Departments
 
 To see all available departments that can be used with the `--departments` filter:
 
 ```bash
-python ramp_statement_distributor.py --config config.json --list-departments
+python ramp_statement_distributor.py --list-departments
 ```
 
 This will display all departments that have email addresses configured and exit without processing any statements.
@@ -343,34 +351,34 @@ Available departments (10):
 
 **Note:** This command exits immediately after displaying the list, regardless of other arguments provided.
 
-### Dry Run Mode
+### Default Behavior (Dry Run)
 
-Test the tool without sending emails (statements will still be generated):
+By default, the tool runs in dry-run mode: statements are generated but emails are **not** sent. This is a safety feature to prevent accidental emails.
 
 ```bash
-python ramp_statement_distributor.py --config config.json --dry-run
+# Dry-run: generates CSVs but doesn't send emails
+python ramp_statement_distributor.py --from-date 2024-11-01 --to-date 2024-11-30
+```
+
+### Sending Emails
+
+To actually send emails, you must explicitly use the `--send-emails` flag:
+
+```bash
+# Actually send emails
+python ramp_statement_distributor.py --from-date 2024-11-01 --to-date 2024-11-30 --send-emails
 ```
 
 ### Full Options
 
-Single month with dry-run:
+Filter departments with date range (dry-run):
 ```bash
-python ramp_statement_distributor.py --config config.json --month 2024-11 --dry-run
+python ramp_statement_distributor.py --departments Infrastructure,Security --from-date 2024-11-01 --to-date 2024-11-30
 ```
 
-Month range:
+Filter departments with full year and send emails:
 ```bash
-python ramp_statement_distributor.py --config config.json --from-month 2024-01 --to-month 2024-03
-```
-
-Filter departments with specific month:
-```bash
-python ramp_statement_distributor.py --config config.json --departments Infrastructure,Security --month 2024-11
-```
-
-Filter departments with month range and dry-run:
-```bash
-python ramp_statement_distributor.py --config config.json --departments Marketing --from-month 2024-01 --to-month 2024-12 --dry-run
+python ramp_statement_distributor.py --departments Marketing --from-date 2024-01-01 --to-date 2024-12-31 --send-emails
 ```
 
 ## Automation with Cron
@@ -387,8 +395,10 @@ chmod +x ramp_statement_distributor.py
 
 ```cron
 # Run on the 1st of each month at 9:00 AM
-0 9 1 * * cd /path/to/distributors/ramp-statement-distributor && source .venv/bin/activate && python ramp_statement_distributor.py --config config.json >> /var/log/ramp-statement-distributor.log 2>&1
+0 9 1 * * cd /path/to/distributors/ramp-statement-distributor && source .venv/bin/activate && python ramp_statement_distributor.py --send-emails >> /var/log/ramp-statement-distributor.log 2>&1
 ```
+
+**Note:** The `--send-emails` flag is required for the cron job to actually send emails.
 
 **Note:** The cron job activates the virtual environment before running the script to ensure all dependencies are available.
 
@@ -401,14 +411,13 @@ The tool creates:
    Ramp-{account_group}-{from_date}-{to_date}.csv
    ```
    
-   **Note:** For multi-month ranges, the tool automatically merges transactions into a single CSV file per department:
-   - Single month: `Ramp-Infrastructure-2024-10-01-2024-10-31.csv`
-   - Multi-month (merged): `Ramp-Infrastructure-2024-10-01-2024-12-31.csv` (contains all transactions from Oct-Dec)
+   Examples:
+   - `Ramp-Infrastructure-2024-10-01-2024-10-31.csv`
+   - `Ramp-Infrastructure-2024-01-01-2024-12-31.csv`
 
 2. **Logs**: Detailed logging to stdout showing:
    - Statement generation progress for each department
    - Email sending status
-   - Merge status for multi-month ranges
    - Summary of successes and failures
 
 3. **Summary Report**: A summary email sent to the configured recipient (default: treasurer@apache.org) showing:
@@ -443,7 +452,7 @@ If emails fail to send:
 
 1. Verify your SMTP credentials are correct
 2. Check firewall settings allow outbound SMTP connections
-3. Test with `--dry-run` to ensure statement downloads work independently
+3. Test without `--send-emails` to ensure statement generation works independently
 
 ### Account Group Not Found
 
@@ -465,7 +474,7 @@ If the tool says "No departments configured with email addresses":
 
 ## Security Considerations
 
-1. **Credentials**: Store sensitive credentials (SMTP password) in environment variables or a secure secrets manager
+1. **Credentials**: Use the `SMTP_PASSWORD` environment variable instead of storing the password in config.json. This prevents credentials from being committed to version control.
 2. **File Permissions**: Restrict access to `config.json`, the database file, and the `statements` directory:
    ```bash
    chmod 600 config.json
