@@ -6,6 +6,7 @@
 
 import { exit } from "node:process";
 import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
+import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules -----------------------------------------------------------
 
@@ -19,10 +20,14 @@ const API_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 export async function main() {
 
-  console.log("QBO Refresh started at ", new Date().toLocaleString());
   const apiInfo = await fetchApiInfo(API_TIMEOUT);
+  logger.info({
+    context: "qbo-refresh.started",
+  });
   await refreshAccounts(apiInfo);
-  console.log("Done with refreshing data");
+  logger.info({
+    context: "qbo-refresh.finished",
+  });
 
 }
 
@@ -30,10 +35,12 @@ export async function main() {
 
 main()
   .then(() => {
-    console.log("QBO Refresh finished at ", new Date().toLocaleString());
     exit(0);
   })
   .catch((error) => {
-    console.error("Error in QBO Refresh:", error);
+    logger.error({
+      context: "qbo-refresh.error",
+      error: error,
+    })
     exit(1);
   });

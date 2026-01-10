@@ -5,13 +5,12 @@
 // External Modules ----------------------------------------------------------
 
 import { fetchAccounts } from "@repo/qbo-api/AccountActions";
+import { QboAccount } from "@repo/qbo-api/types/Finance";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
 import { dbQbo, Account } from "@repo/qbo-db/*";
-import { clientLogger as logger} from "@repo/shared-utils/*";
+import { serverLogger as logger} from "@repo/shared-utils/*";
 
 // Internal Modules ----------------------------------------------------------
-
-import { createAccount } from "../creators/AccountCreator";
 
 // Public Objects ------------------------------------------------------------
 
@@ -34,7 +33,7 @@ export async function refreshAccounts(apiInfo: QboApiInfo): Promise<void> {
     }
   }
   logger.info({
-    context: "AccountRefresher.refreshAccounts.step1",
+    context: "AccountsRefresher.refreshAccounts.step1",
     nonSubaccounts: storedIds.size,
     totalAccounts: accounts.size,
   })
@@ -58,7 +57,7 @@ export async function refreshAccounts(apiInfo: QboApiInfo): Promise<void> {
     }
   }
   logger.info({
-    context: "AccountRefresher.refreshAccounts.step2",
+    context: "AccountsRefresher.refreshAccounts.step2",
     totalStored: storedIds.size,
     totalAccounts: accounts.size,
   });
@@ -66,6 +65,30 @@ export async function refreshAccounts(apiInfo: QboApiInfo): Promise<void> {
 }
 
 // Private Objects -----------------------------------------------------------
+
+export function createAccount(qboAccount: QboAccount): Account {
+  return {
+    id: qboAccount.Id || "", // should never be missing
+    // IntuitEntity fields
+    createTime: qboAccount.MetaData?.CreateTime || null,
+    domain: qboAccount.domain || null,
+    lastUpdatedTime: qboAccount.MetaData?.LastUpdatedTime || null,
+    // Account fields
+    accountSubType: qboAccount.AccountSubType || null,
+    accountType: qboAccount.AccountType || null,
+    acctNum: qboAccount.AcctNum || null,
+    active: qboAccount.Active || null,
+    classification: qboAccount.Classification || null,
+    currencyRefName: qboAccount.CurrencyRef?.name || null,
+    currencyRefValue: qboAccount.CurrencyRef?.value || null,
+    currentBalance: qboAccount.CurrentBalance || null,
+    description: qboAccount.Description || null,
+    fullyQualifiedName: qboAccount.FullyQualifiedName || null,
+    name: qboAccount.Name || null,
+    parentId: qboAccount.ParentRef?.value || null,
+    subAccount: qboAccount.SubAccount || null,
+  };
+}
 
 const MAX_RESULTS = 100; // Maximum results per QBO API request
 
