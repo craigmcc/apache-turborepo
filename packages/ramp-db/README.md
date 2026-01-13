@@ -113,7 +113,7 @@ via SQL join operations by Prisma), and sorting them in ascending order by name.
 
 ## Database Viewer
 
-Primsa comes with a browser-based database viewer that can be used to inspect
+Prisma comes with a browser-based database viewer that can be used to inspect
 the contents of the database.  To launch the viewer, run the following command:
 
 ```bash

@@ -105,7 +105,7 @@ const vendors = await dbBill.vendor.findMany({
 
 ## Database Viewer
 
-Primsa comes with a browser-based database viewer that can be used to inspect
+Prisma comes with a browser-based database viewer that can be used to inspect
 the contents of the database.  To launch the viewer, run the following command:
 
 ```bash
