@@ -83,8 +83,7 @@ For the production environment, the following environment variables must be set 
 | QBO_CLIENT_ID          | OAuth2 Client ID                   | Your OAuth2 Client ID from the Intuit Developer Portal          |
 | QBO_CLIENT_SECRET      | OAuth2 Client Secret               | Your OAuth2 Client Secret from the Intuit Developer Portal      |
 | QBO_ENVIRONMENT        | Which environment?                 | *production*                                                    |
-| QBO_LOCAL_REDIRECT_URI | Redirect URI in local app          | Example: *http://localhost:8000/callback*                       |
-| QBO_REALM_ID           | Your company ID                    | The Realm ID for your QuickBooks Online sandbox app             |
+| QBO_LOCAL_REDIRECT_URI | Redirect URI in local app          | Example: *http://localhost:8000/callback*                       |`| QBO_REALM_ID           | Your company ID                    | The Realm ID for your QuickBooks Online sandbox app             |
 | QBO_REDIRECT_URI       | OAuth2 Redirect URI for QBO        | Example: *https://{ngrok-domain}:8000/callback*                 |
 | QBO_WELL_KNOWN_URL     | Well-known configuration URL       | `https://developer.intuit.com/.well-known/openid_configuration` |
 
