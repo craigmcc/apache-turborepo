@@ -36,7 +36,7 @@ export type QboAccount = IntuitEntity & {
   AccountSubType?: string;
   // Type is a detailed account classification that specifies the use of
   // this account.
-  AccountType?: AccountTypeEnum;
+  AccountType?: QboAccountTypeEnum;
   // User entered/specified account number to help the user in identifying
   // the account within the chart-of-accounts and in deciding what should
   // be posted to the	account.
@@ -53,7 +53,7 @@ export type QboAccount = IntuitEntity & {
   BankNumber?: string;
   // 5 types of classification an account classified. Suggested examples of
   // account type are Asset, Equity, Expense, Liability, Revenue
-  Classification?: AccountClassificationEnum;
+  Classification?: QboAccountClassificationEnum;
   // Reference to the Currency that this account will hold the amounts in.
   CurrencyRef?: ReferenceType | null;
   // Specifies the balance amount for the current Account. Valid for
@@ -107,7 +107,7 @@ export type QboAccount = IntuitEntity & {
 
 // Line 64 - Enumeration of basic Account types used generally in the
 // accounting activities.
-export enum AccountClassificationEnum {
+export enum QboAccountClassificationEnum {
   Asset = "Asset",
   Equity = "Equity",
   Expense = "Expense",
@@ -118,7 +118,7 @@ export enum AccountClassificationEnum {
 // Line 220 - Enumeration of Account sub-types(QBW) and Account types(QBO)
 // used to specifically categorize accounts. Note: QBO doesn't support the
 // "Non-Posting" Account type.
-export enum AccountTypeEnum {
+export enum QboAccountTypeEnum {
   "Accounts Receivable" = "Accounts Receivable",
   Bank = "Bank",
   "Cost of Goods Sold" = "Cost of Goods Sold",
