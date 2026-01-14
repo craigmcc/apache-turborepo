@@ -308,8 +308,20 @@ export enum DeliveryTypeEnum {
   Tradeshift = "Tradeshift",
 }
 
-// TODO: Line 828
+// Line 828 - EmailAddress type definition. This entity is always
+// manipulated in context of another parent entity like Person,
+// Organization etc.
 export type EmailAddress = {
+  // Unique identifier for an INtuit entity.
+  Id?: string;
+  // Email address.
+  Address?: string;
+  // True if this is the default email address.
+  Default?: boolean;
+  // Descriptive tag (or label) associated with the email address.
+  // Valid values are Business and Home, as defined in the
+  // EmailAddressLabelType.
+  Tag?: string;
 }
 
 // Line 1111 - Enumeration of type of email addresses that the data sync

@@ -10,6 +10,7 @@
 // Internal Modules ----------------------------------------------------------
 
 import {
+  EmailAddress,
   IntuitAnyType,
   IntuitEntity,
   ReferenceType,
@@ -143,25 +144,36 @@ export type QboCheckPayment = {
 // Line 9027 - TODO - CreditCardPayment
 export type QboCreditCardPayment = {
 }
-0
-// Line TODO - EmailAddress
-export type QboEmailAddress = {
-}
 
-// Line TODO - EmailStatusEnum
+// Line 3413 - Enumeration of email status values.
 export enum QboEmailStatusEnum {
+  EmailSent = "EmailSent",
+  NeedToSend = "NeedToSend",
+  NotSet = "NotSet",
+
 }
 
-// Line TODO - GlobalTaxCalculationEnum
+// Line 3465 - Enumeration of global tax model types.
 export enum QboGlobalTaxCalculationEnum {
+  "Not Applicable" = "Not Applicable",
+  "Tax Exclusive" = "Tax Exclusive",
+  "Tax Inclusive" = "Tax Inclusive",
 }
 
 // Line 5744 - TODO - Invoice
 export type QboInvoice = QboSalesTransaction & {
 }
 
-// Line 3548 - TODO - JournalCodeTypeEnum ???
+// Line 3548 - Enumeration of the different types of Journal Codes
+// applicable in FR.
 export enum QboJournalCodeTypeEnum {
+  Bank = "Bank",
+  Cash = "Cash",
+  Expenses = "Expenses",
+  Nouveaux = "Nouveaux",
+  Others = "Others",
+  Sales = "Sales",
+  Wages = "Wages",
 }
 
 // Line 11984 - JournalEntry
@@ -176,8 +188,24 @@ export type QboJournalEntryLineDetail = {
 export type QboLine = {
 }
 
-// Line TODO - LineDetailTypeEnum ???
+// Line 192 - Enumeration of line detail types.
 export enum QboLineDetailTypeEnum {
+  AccountBasedExpenseLineDetail = "AccountBasedExpenseLineDetail",
+  DepositLineDetail = "DepositLineDetail",
+  DescriptionOnly = "DescriptionOnly",
+  DiscountLineDetail = "DiscountLineDetail",
+  GroupLineDetail = "GroupLineDetail",
+  ItemAdjustmentLineDetail = "ItemAdjustmentLineDetail",
+  ItemBasedExpenseLineDetail = "ItemBasedExpenseLineDetail",
+  ItemReceiptLineDetail = "ItemReceiptLineDetail",
+  JournalEntryLineDetail = "JournalEntryLineDetail",
+  PaymentLineDetail = "PaymentLineDetail",
+  PurchaseOrderLineDetail = "PurchaseOrderLineDetail",
+  ReimburseLineDetail = "ReimburseLineDetail",
+  SalesItemLineDetail = "SalesItemLineDetail",
+  SubTotalLineDetail = "SubTotalLineDetail",
+  TaxLineDetail = "TaxLineDetail",
+  TDSLineDetail = "TDSLineDetail",
 }
 
 // Line TODO - LinkedTxn
@@ -227,11 +255,11 @@ export type QboSalesTransaction = QboTransaction & {
   // Bill-to address of the invoice.
   BillAddr?: QboPhysicalAddress | null;
   // The email address where the invoice is sent.
-  BillEmail?: QboEmailAddress | null;
+  BillEmail?: EmailAddress | null;
   // The BCC email address where the invoice is sent.
-  BillEmailBcc?: QboEmailAddress | null;
+  BillEmailBcc?: EmailAddress | null;
   // The CC email address where the invoice is sent.
-  BillEmailCc?: QboEmailAddress | null;
+  BillEmailCc?: EmailAddress | null;
   // Information about a check payment for the invoice.
   // Applicable to: Estimate, SalesOrder.
   CheckPayment?: QboCheckPayment | null;
