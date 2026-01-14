@@ -30,6 +30,7 @@ const QBO_BASE_URL = process.env.QBO_BASE_URL;
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID;
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;
 const QBO_ENVIRONMENT = process.env.QBO_ENVIRONMENT;
+const QBO_LOCAL_REDIRECT_URL = process.env.QBO_LOCAL_REDIRECT_URL;
 const QBO_MINOR_VERSION = process.env.QBO_MINOR_VERSION;
 const QBO_REALM_ID = process.env.QBO_REALM_ID;
 const QBO_REDIRECT_URL = process.env.QBO_REDIRECT_URL;
@@ -47,6 +48,9 @@ if (!QBO_CLIENT_SECRET) {
 }
 if (!QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
+}
+if (!QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
+  throw new Error("QBO_LOCAL_REDIRECT_URL is not set for production environment");
 }
 if (!QBO_MINOR_VERSION) {
   throw new Error("QBO_MINOR_VERSION is not set");
@@ -97,6 +101,7 @@ logger.trace({
   QBO_BASE_URL,
   QBO_CLIENT_ID,
   QBO_ENVIRONMENT,
+  QBO_LOCAL_REDIRECT_URL,
   QBO_MINOR_VERSION,
   QBO_REALM_ID,
   QBO_REDIRECT_URL,
@@ -202,8 +207,12 @@ export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
 // Express Server for Receiving Redirects ------------------------------------
 
 const app = express();
-const web_path = extractPathFromUrl(QBO_REDIRECT_URL!);
-const port = extractPortFromUrl(QBO_REDIRECT_URL!);
+const web_path = (QBO_ENVIRONMENT === "production")
+  ? extractPathFromUrl(QBO_LOCAL_REDIRECT_URL!)
+  : extractPathFromUrl(QBO_REDIRECT_URL!);
+const port = (QBO_ENVIRONMENT === "production")
+  ? extractPortFromUrl(QBO_LOCAL_REDIRECT_URL!)
+  : extractPortFromUrl(QBO_REDIRECT_URL!);
 
 app.get(web_path, async (req, res) => {
 

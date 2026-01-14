@@ -14,7 +14,7 @@ import { refreshAccounts } from "./refreshers/AccountsRefresher";
 
 // Private Objects ------------------------------------------------------------
 
-// Timeout for API requests (in milliseconds) must allow enout time
+// Timeout for API requests (in milliseconds) must allow sufficient time
 // for a user to manually authenticate if necessary.
 const API_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
@@ -37,10 +37,12 @@ main()
   .then(() => {
     exit(0);
   })
+/*
   .catch((error) => {
     logger.error({
       context: "qbo-refresh.error",
-      error: error,
+      error,
     })
     exit(1);
   });
+*/
