@@ -55,7 +55,7 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
-    {id: "name", desc: false}, // TODO - acctNum once available
+    {id: "acctNum", desc: false},
   ]);
 
   // Apply selection filters whenever they change
@@ -126,6 +126,25 @@ export function AccountsTable({ allAccounts }: AccountsTableProps) {
     columnHelper.accessor(row => row.acctNum || "n/a", {
       header: "GL Account",
       id: "acctNum",
+      sortingFn: (rowA, rowB, columnId) => {
+        const a = rowA.getValue(columnId);
+        const b = rowB.getValue(columnId);
+
+        // Check if values are null or undefined
+        const isANull = a === null || typeof a === 'undefined' || a === '';
+        const isBNull = b === null || typeof b === 'undefined' || b === '';
+
+        // Logic to put nulls last
+        if (isANull && isBNull) return 0; // Both are null/empty, treat as equal for sorting
+        if (isANull) return 1; // A is null/empty, B is not: put A after B
+        if (isBNull) return -1; // B is null/empty, A is not: put B after A
+
+        // Use default comparison for non-null values
+        if (a > b) return 1;
+        if (b > a) return -1;
+        return 0;
+
+      },
     }),
 
     columnHelper.accessor(row => row.name, {
