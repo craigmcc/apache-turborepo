@@ -193,7 +193,7 @@ export enum QboJournalCodeTypeEnum {
   Wages = "Wages",
 }
 
-// Line 11984 - Accopunting transaction, consisting of journal lines,
+// Line 11984 - Accounting transaction, consisting of journal lines,
 // each of which is either a debit or a credit.  The total of the debits
 // and credits must be equal.
 export type QboJournalEntry = QboTransaction & {
@@ -216,10 +216,12 @@ export type QboJournalEntry = QboTransaction & {
   // Indicates the total amount of the transaction, including all the charges,
   // allowances, and taxes.
   TotalAmt?: number;
+  /// Associated Lines of the Journal Entry.
+  Line?: QboJournalEntryLineDetail[];
 }
 
 // Line 8212 - JournalEntry detail for a transaction line.
-export type QboJournalEntryLineDetail = {
+export type QboJournalEntryLineDetail = QboLine & {
   // Reference to the Account associated with the journal entry line.
   AccountRef?: ReferenceType | null;
   // The line is to be billed to a customer if the account is an expense
@@ -361,8 +363,10 @@ export enum QboPaymentTypeEnum {
 export type QboPhysicalAddress = {
 }
 
-// Line TODO !!! - PostingTypeEnum {
+// Line TODO - PostingTypeEnum
 export enum QboPostingTypeEnum {
+  Credit = "Credit",
+  Debit = "Debit",
 }
 
 // Line TODO - PrintStatusEnum

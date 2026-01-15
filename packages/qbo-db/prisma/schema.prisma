@@ -13,16 +13,19 @@ datasource db {
 
 // QBO API Models (Database Schema) ------------------------------------------
 
+// Chart of Accounts Entity
 model Account {
   /// Primary key for this Account
-  id                 String                 @id @unique
+  id String @id @unique
+
   /// IntuitEntity Columns ---------------------------------------------------
   /// Time this entity was created [Metadata->CreateTime]
-  createTime         DateTime?
+  createTime      DateTime?
   /// Domain in which this entity belongs
-  domain             String?
+  domain          String?
   /// Time this entity was last updated [Metadata->LastUpdatedTime]
-  lastUpdatedTime    DateTime?
+  lastUpdatedTime DateTime?
+
   /// Account Columns --------------------------------------------------------
   /// Subtype of account
   accountSubType     String?
@@ -50,11 +53,14 @@ model Account {
   parentId           String?
   /// Is this a subaccount?
   subAccount         Boolean?
+
   /// Relationships ----------------------------------------------------------
   /// Child accounts of this Account
-  childAccounts      Account[]              @relation("ParentChild")
+  childAccounts    Account[]          @relation("ParentChild")
+  /// Journal Entry lines associated with this Account
+  journalEntryLine JournalEntryLine[]
   /// Parent account of this Account
-  parentAccount      Account?               @relation("ParentChild", fields: [parentId], references: [id])
+  parentAccount    Account?           @relation("ParentChild", fields: [parentId], references: [id])
 
   @@map("accounts")
 }
@@ -65,4 +71,68 @@ enum AccountClassification {
   Expense
   Liability
   Revenue
+}
+
+// Journal Entry Entity
+model JournalEntry {
+  /// Primary key for this JournalEntry
+  id String @id @unique
+
+  /// IntuitEntity Columns ---------------------------------------------------
+  /// Time this entity was created [Metadata->CreateTime]
+  createTime      DateTime?
+  /// Domain in which this entity belongs
+  domain          String?
+  /// Time this entity was last updated [Metadata->LastUpdatedTime]
+  lastUpdatedTime DateTime?
+
+  /// Transaction Columns ----------------------------------------------------
+  /// User entered private note for this transaction.
+  privateNote String?
+  /// Date of this JournalEntry (YYYY-MM-DD)
+  txnDate     String?
+
+  /// JournalEntry Columns ---------------------------------------------------
+  /// Is this journal entry an adjustment?
+  adjustment Boolean?
+
+  /// Relationships ----------------------------------------------------------
+  /// Lines associated with this JournalEntry
+  lines JournalEntryLine[] @relation("JournalEntryLines")
+
+  @@map("journal_entries")
+}
+
+// Journal Entry Line Entity
+model JournalEntryLine {
+  /// Secondary key for this JournalEntryLine (primary is journalEntryId)
+  id String @id
+
+  /// Line Columns -----------------------------------------------------------
+  /// Amount for this line (always positive)
+  amount      Float?
+  /// Description of this line
+  description String?
+
+  /// JournalEntryLineDetail Columns -----------------------------------------
+  /// Account ID for this line
+  accountId   String?
+  /// Posting type for this line (Debit or Credit)
+  postingType PostingType?
+
+  /// Relationships ----------------------------------------------------------
+  /// Account this line is associated with
+  account        Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  /// Journal Entry ID of the JournalEntry this line belongs to
+  journalEntryId String       @map("journal_entry_id")
+  /// Journal Entry this line belongs to
+  journalEntry   JournalEntry @relation("JournalEntryLines", fields: [journalEntryId], references: [id], onDelete: Cascade)
+
+  @@index([journalEntryId, id])
+  @@map("journal_entry_lines")
+}
+
+enum PostingType {
+  Debit
+  Credit
 }

@@ -11,6 +11,7 @@ import { serverLogger as logger } from "@repo/shared-utils/*";
 // Internal Modules -----------------------------------------------------------
 
 import { refreshAccounts } from "./refreshers/AccountsRefresher";
+import { refreshJournalEntries } from "./refreshers/JournalEntryRefreshers";
 
 // Private Objects ------------------------------------------------------------
 
@@ -25,6 +26,7 @@ export async function main() {
     context: "qbo-refresh.started",
   });
   await refreshAccounts(apiInfo);
+  await refreshJournalEntries(apiInfo);
   logger.info({
     context: "qbo-refresh.finished",
   });
