@@ -553,8 +553,8 @@ export type QboTransaction = IntuitEntity & {
   // See TxnApprovalInfo.
   TxnApprovalInfo?: QboTxnApprovalInfo;
   // The date entered by the user when this transaction occurred.  Often, it is
-  // the date the transaction is created by the system.
-  TxnDate?: Date;
+  // the date the transaction is created by the system. (YYYY-MM-DD)
+  TxnDate?: string;
   // Originating source of the transaction.  Valid values are defined in
   // TxnSourceEnum.
   TxnSource?: string;
