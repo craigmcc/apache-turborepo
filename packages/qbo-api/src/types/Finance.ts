@@ -153,6 +153,23 @@ export enum QboEmailStatusEnum {
 
 }
 
+// Line 8464 - Reference information for an entity.
+export type QboEntityTypeRef = {
+  // The entity reference.
+  EntityRef?: ReferenceType | null;
+  // Entity Type
+  Type?: QboEntityTypeEnum | null;
+}
+
+// Line 150 - Enumeration of entity types.
+export enum QboEntityTypeEnum {
+  Customer = "Customer",
+  Employee = "Employee",
+  Job = "Job",
+  Other = "Other",
+  Vendor = "Vendor",
+}
+
 // Line 3465 - Enumeration of global tax model types.
 export enum QboGlobalTaxCalculationEnum {
   "Not Applicable" = "Not Applicable",
@@ -176,16 +193,135 @@ export enum QboJournalCodeTypeEnum {
   Wages = "Wages",
 }
 
-// Line 11984 - JournalEntry
+// Line 11984 - Accopunting transaction, consisting of journal lines,
+// each of which is either a debit or a credit.  The total of the debits
+// and credits must be equal.
 export type QboJournalEntry = QboTransaction & {
+  // Indicates that the journal entry is an after-the-fact entry to make
+  // changes to specific accounts.
+  Adjustment?: boolean | null;
+  // If the company file is set up to use Multi-Currency feature, indicates
+  // whether the amounts were entered in home currency.
+  EnteredInHomeCurrency?: boolean | null;
+  // Indicates the GlobalTax model if the model inclusive of tax,
+  // exclusive of tax, or not applicable.
+  GlobalTaxCalculation?: QboGlobalTaxCalculationEnum | null;
+  // If the company file is set up to use Multi-Currency feature, the
+  // balance in home currency for the journal entry.
+  HomeCurrencyAdjustment?: boolean | null;
+  // Indicates the total amount of the transaction, including all the charges,
+  // allowances, and taxes, in the home currency for multi-currency enabled
+  // companies.
+  HomeTotalAmt?: number;
+  // Indicates the total amount of the transaction, including all the charges,
+  // allowances, and taxes.
+  TotalAmt?: number;
 }
 
-// Line 8212 - TODO - JournalEntryLineDetail
+// Line 8212 - JournalEntry detail for a transaction line.
 export type QboJournalEntryLineDetail = {
+  // Reference to the Account associated with the journal entry line.
+  AccountRef?: ReferenceType | null;
+  // The line is to be billed to a customer if the account is an expense
+  // account and the Entity Reference specifies a Customer or a Job.
+  // MAYBE BillableStatus?: QboBillableStatusEnum | null;
+  // Reference to the Class associated with the journal entry line.
+  ClassRef?: ReferenceType | null;
+  // Reference to the Department associated with the journal entry line.
+  DepartmentRef?: ReferenceType | null;
+  // Reference information for ther Entity (Customer/Vendor/Employee)
+  // associated with the journal entry line.
+  Entity?: QboEntityTypeRef | null;
+  // Indicates whether the journal entry line is a debit or credit.
+  PostingType?: QboPostingTypeEnum;
+  // Indicates whether the tax applicable on the line is sales or purchase.
+  // MAYBE TaxApplicableOn?: QboTaxApplicableOnEnum | null;
+  // Tax applicable for this transaction line.
+  TaxAmount?: number;
+  // Sales/Purchase tax code associated with the journal entry line.
+  // For Non US/CA companies.
+  TaxCodeRef?: ReferenceType | null;
+  // Total amount of line item including tax.
+  TaxInclusiveAmt?: number;
+  // Sales/Purchase tax rate Id associated with the journal entry line.
+  // For CA companies.
+  TaxRateRef?: ReferenceType | null;
 }
 
-// Line 6355 - TODO - Line
+// Line 6355 - A line item of a Transaction.
 export type QboLine = {
+  // ID of a line item.
+  Id?: string;
+  // AccountExpense type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE AccountBasedExpenseLineDetail?: QboAccountBasedExpenseLineDetail;
+  // The amount of the line, which depends on the type of the line.  It can
+  // represent the discount amount, charge amount, tax amount, or subtotal
+  // amount based on the line type detail.
+  Amount?: number;
+  // The amount or equivalent paid or charged for a product/service.
+  CostAmount?: number;
+  // Deposit type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE DepositLineDetail?: QboDepositLineDetail;
+  // Free form text description of the line item that appears in the
+  // printed record.
+  Description?: string;
+  // The type of the line, in the transaction.
+  DetailType?: QboLineDetailTypeEnum;
+  // DiscountDetail type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE DiscountLineDetail?: QboDiscountLineDetail;
+  // GroupLine type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE GroupLineDetail?: QboGroupLineDetail;
+  // The amount or equivalent paid or charged for a product/service.
+  HomeCostAmount?: number;
+  // PItem Adjustment line type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE ItemAdjustmentLineDetail?: QboItemAdjustmentLineDetail;
+  // ExpenseItem type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE ItemBasedExpenseLineDetail?: QboItemBasedExpenseLineDetail;
+  // ItemReceipt type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE ItemReceiptLineDetail?: QboItemReceiptLineDetail;
+  // JournalEntry type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  JournalEntryLineDetail?: QboJournalEntryLineDetail;
+  // Position of the line in a collection of transaction lines.  Must be
+  // a positive integer.
+  LineNum?: number;
+  // A link between this line and a specific transaction.  For example, an
+  // invoice line may be linked to an estimate.
+  LinkedTxn?: QboLinkedTxn[];
+  // PaymentDetail type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE PaymentLineDetail?: QboPaymentLineDetail;
+  // Reference to the project this line is associated with.
+  ProjectRef?: ReferenceType | null;
+  // PurchaseOrderItem type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE PurchaseOrderItemLineDetail?: QboPurchaseOrderItemLineDetail;
+  // The amount/quantity received of the line, which depends on the type of
+  // the line.  It can represent the received amount or received quantity
+  // based on the line type detail.
+  Received?: number;
+  // Reimburse type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE ReimburseLineDetail?: QboReimburseLineDetail;
+  // SalesTaxDetail type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE SalesItemLineDetail?: QboSalesItemLineDetail;
+  // SalesOrderItem type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE SalesOrderItemLineDetail?: QboSalesdOrderItemLineDetail;
+  // SubTotalLine type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE SubTotalLineDetail?: QboSubTotalLineDetail;
+  // TDS line type for the transaction.  Exclusive of other "detail"
+  // type fields.
+  // MAYBE TDSLineDetail?: QboTDSLineDetail;
 }
 
 // Line 192 - Enumeration of line detail types.
@@ -225,7 +361,7 @@ export enum QboPaymentTypeEnum {
 export type QboPhysicalAddress = {
 }
 
-// Line TODO - PostingTypeEnum {
+// Line TODO !!! - PostingTypeEnum {
 export enum QboPostingTypeEnum {
 }
 
