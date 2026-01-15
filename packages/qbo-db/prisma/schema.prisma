@@ -106,7 +106,7 @@ model JournalEntry {
 // Journal Entry Line Entity
 model JournalEntryLine {
   /// Secondary key for this JournalEntryLine (primary is journalEntryId)
-  id String @id
+  id String
 
   /// Line Columns -----------------------------------------------------------
   /// Amount for this line (always positive)
@@ -128,7 +128,7 @@ model JournalEntryLine {
   /// Journal Entry this line belongs to
   journalEntry   JournalEntry @relation("JournalEntryLines", fields: [journalEntryId], references: [id], onDelete: Cascade)
 
-  @@index([journalEntryId, id])
+  @@id([journalEntryId, id])
   @@map("journal_entry_lines")
 }
 

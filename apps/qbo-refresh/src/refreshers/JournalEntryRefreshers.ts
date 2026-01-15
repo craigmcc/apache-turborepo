@@ -7,8 +7,8 @@
 import { fetchJournalEntries } from "@repo/qbo-api/JournalEntryActions";
 import { QboJournalEntry, QboJournalEntryLineDetail } from "@repo/qbo-api/types/Finance";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
-import { dbQbo, JournalEntry, JournalEntryLine, PostingType } from "@repo/qbo-db/*";
-import { serverLogger as logger} from "@repo/shared-utils/*";
+import { dbQbo, JournalEntry, JournalEntryLine } from "@repo/qbo-db/*";
+import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -18,18 +18,34 @@ export async function refreshJournalEntries(
   apiInfo: QboApiInfo,
 ): Promise<void> {
 
+  const currentTime = new Date().toISOString();
+
   // Fetch all journal entries from QBO API
   const journalEntries = await fetchAllJournalEntries(apiInfo);
   logger.info({
     context: "JournalEntryRefresher.refreshJournalEntries.fetched",
     totalJournalEntries: journalEntries.length,
   });
+  let accountsAdded = 0;
+  let entrySkipped = 0;
   let lineCount = 0;
+  let lineInvalidAccount = 0;
+  let lineMissingAccount = 0;
+  let lineSkipped = 0;
 
   // Add the JournalEntry to the database
   for (const qboJournalEntry of journalEntries) {
 
     const journalEntry = createJournalEntry(qboJournalEntry);
+    if (journalEntry.txnDate && (journalEntry.txnDate < "2000-05-01")) {
+      logger.trace({
+        context: "JournalEntryRefresher.refreshJournalEntries.earlyTxnDate",
+        journalEntryId: journalEntry.id,
+        txnDate: journalEntry.txnDate,
+      });
+      entrySkipped++;
+      continue;
+    }
     await dbQbo.journalEntry.upsert({
       where: {id: journalEntry.id},
       create: journalEntry,
@@ -39,9 +55,66 @@ export async function refreshJournalEntries(
     // Add the JournalEntryLines to the database
     const lineDetails = qboJournalEntry.Line || [];
     for (const lineDetail of lineDetails) {
-      const journalEntryLine = createJournalEntryLine(journalEntry.id, lineDetail);
+      const journalEntryLine = createJournalEntryLine(journalEntry, lineDetail);
+      if (lineDetail.DetailType !== "JournalEntryLineDetail") {
+        if (lineDetail.DetailType !== "DescriptionOnly") {
+          logger.warn({
+            context: "JournalEntryRefresher.refreshJournalEntries.lineSkipped",
+            journalEntryId: journalEntry.id,
+            journalEntryLineId: journalEntryLine.id,
+            lineDetail
+          });
+        }
+        lineSkipped++;
+        continue;
+      }
+      if (!journalEntryLine.accountId) {
+        logger.warn({
+          context: "JournalEntryRefresher.refreshJournalEntries.missingAccountId",
+          journalEntryId: journalEntry.id,
+          journalEntryLineId: journalEntryLine.id,
+          qboJournalEntry,
+        });
+        lineMissingAccount++;
+        continue;
+      }
+      const account = await dbQbo.account.findUnique({
+        where: {id: journalEntryLine.accountId},
+      });
+      if (!account) {
+        const added = await dbQbo.account.create({
+          data: {
+            id: journalEntryLine.accountId,
+            createTime: currentTime,
+            domain: "QBO",
+            lastUpdatedTime: currentTime,
+            accountSubType: "Unknown",
+            accountType: "Unknown",
+            acctNum: "????",
+            active: false,
+            description: "Added by JournalEntryRefresher",
+            fullyQualifiedName: "Unknown Account FQN",
+            name: lineDetail.JournalEntryLineDetail?.AccountRef?.name || "Unknown Account Name",
+          }
+        });
+        accountsAdded++;
+        logger.warn({
+          context: "JournalEntryRefresher.refreshJournalEntries.accountAdded",
+          journalEntryId: journalEntry.id,
+          journalEntryLineId: journalEntryLine.id,
+          qboJournalEntry,
+          account: added,
+        });
+        lineInvalidAccount++;
+//        continue;
+      }
       await dbQbo.journalEntryLine.upsert({
-        where: {id: journalEntryLine.id},
+        where: {
+          journalEntryId_id: {
+            journalEntryId: journalEntry.id,
+            id: journalEntryLine.id,
+          },
+        },
         create: journalEntryLine,
         update: journalEntryLine,
       });
@@ -55,6 +128,11 @@ export async function refreshJournalEntries(
     context: "JournalEntryRefresher.refreshJournalEntries.completed",
     totalJournalEntries: journalEntries.length,
     totalJournalEntryLines: lineCount,
+    accountsAdded,
+    entrySkipped,
+    lineInvalidAccount,
+    lineMissingAccount,
+    lineSkipped,
   });
 
 }
@@ -73,22 +151,14 @@ function createJournalEntry(qboJournalEntry: QboJournalEntry): JournalEntry {
   }
 }
 
-function createJournalEntryLine(journalEntryId: string, line: QboJournalEntryLineDetail): JournalEntryLine {
-  let postingType: PostingType | null = null;
-  if (line.PostingType) {
-    if (line.PostingType === "Credit") {
-      postingType = PostingType.Credit;
-    } else if (line.PostingType === "Debit") {
-      postingType = PostingType.Debit;
-    }
-  }
+function createJournalEntryLine(journalEntry: JournalEntry, line: QboJournalEntryLineDetail): JournalEntryLine {
   return {
     id: line.Id || "", // should never be missing
     amount: line.Amount || 0,
     description: line.Description || null,
-    accountId: line.AccountRef?.value || null,
-    postingType: postingType,
-    journalEntryId: journalEntryId,
+    accountId: line.JournalEntryLineDetail?.AccountRef?.value || null,
+    postingType: line.JournalEntryLineDetail?.PostingType || null,
+    journalEntryId: journalEntry.id,
   }
 }
 
