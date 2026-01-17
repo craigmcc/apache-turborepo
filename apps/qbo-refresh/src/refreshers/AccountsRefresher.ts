@@ -171,7 +171,7 @@ export function createAccount(qboAccount: QboAccount): Account {
     accountSubType: qboAccount.AccountSubType || null,
     accountType: qboAccount.AccountType || null,
     acctNum: qboAccount.AcctNum || null,
-    active: qboAccount.Active || null,
+    active: qboAccount.Active || false,
     classification: qboAccount.Classification || null,
     currencyRefName: qboAccount.CurrencyRef?.name || null,
     currencyRefValue: qboAccount.CurrencyRef?.value || null,

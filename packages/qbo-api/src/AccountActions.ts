@@ -34,7 +34,7 @@ export async function fetchAccounts(apiInfo: QboApiInfo, params: FetchAccountsPa
   const maxResults = params.maxResults || 100;
 
   const query =
-    `SELECT * FROM Account STARTPOSITION ${startPosition} MAXRESULTS ${maxResults}`;
+    `SELECT * FROM Account WHERE active IN (true, false) STARTPOSITION ${startPosition} MAXRESULTS ${maxResults}`;
   const url = new URL(`${apiInfo.baseUrl}/v3/company/${apiInfo.realmId}/query?`);
   url.searchParams.set("minversion", apiInfo.minorVersion);
   url.searchParams.set("query", query);
