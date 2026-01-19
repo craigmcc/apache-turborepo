@@ -14,13 +14,15 @@ import {
 
 export type AccountPlus = Account & {
   childAccounts?: AccountPlus[] | null;
+  journalEntryLines?: JournalEntryLinePlus[] | null;
   parentAccount?: AccountPlus | null;
 };
 
 export type JournalEntryPlus = JournalEntry & {
-  lines: JournalEntryLinePlus[];
+  lines?: JournalEntryLinePlus[] | null;
 };
 
 export type JournalEntryLinePlus = JournalEntryLine & {
   account?: AccountPlus | null;
+  journalEntry?: JournalEntryPlus | null;
 };

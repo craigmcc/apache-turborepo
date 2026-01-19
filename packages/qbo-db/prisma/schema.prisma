@@ -56,11 +56,11 @@ model Account {
 
   /// Relationships ----------------------------------------------------------
   /// Child accounts of this Account
-  childAccounts    Account[]          @relation("ParentChild")
+  childAccounts     Account[]          @relation("ParentChild")
   /// Journal Entry lines associated with this Account
-  journalEntryLine JournalEntryLine[]
+  journalEntryLines JournalEntryLine[]
   /// Parent account of this Account
-  parentAccount    Account?           @relation("ParentChild", fields: [parentId], references: [id])
+  parentAccount     Account?           @relation("ParentChild", fields: [parentId], references: [id])
 
   @@map("accounts")
 }

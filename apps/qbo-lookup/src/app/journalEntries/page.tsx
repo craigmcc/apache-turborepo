@@ -1,5 +1,5 @@
 /**
- * Base page for Accounts.
+ * Base page for Journal Entries.
  */
 
 // External Imports ----------------------------------------------------------
