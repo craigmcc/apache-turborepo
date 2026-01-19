@@ -38,6 +38,10 @@ export async function fetchJournalEntries(apiInfo: QboApiInfo, params: FetchAcco
   const url = new URL(`${apiInfo.baseUrl}/v3/company/${apiInfo.realmId}/query?`);
   url.searchParams.set("minversion", apiInfo.minorVersion);
   url.searchParams.set("query", query);
+  logger.info({
+    context: "JournalEntryActions.fetchJournalEntries",
+    url,
+  });
 
   const response = await fetch(url, {
     headers: {
