@@ -45,6 +45,7 @@ catalogs:
     "react-csv": "^2.2.2"
     "@types/react-csv": "^1.1.10"
   tanstack:
+    "@tanstack/react-form": "^1.27.7"
     "@tanstack/react-table": "^8.21.3"
   tsx:
     tsx: "^4.19.4"

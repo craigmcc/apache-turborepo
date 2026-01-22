@@ -1,0 +1,44 @@
+{
+  "license": "Apache-2.0",
+  "name": "qbo-reports",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev:production": "dotenvx run -f .env.production --quiet -- next dev --turbopack --port 3002",
+    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- next dev --turbopack --port 3002",
+    "lint": "next lint",
+    "start:production": "dotenvx run -f .env.production --quiet -- next start --port 3002",
+    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- next start --port 3002"
+  },
+  "type": "module",
+  "version": "0.1.0",
+  "dependencies": {
+    "@repo/qbo-api": "workspace:*",
+    "@repo/shared-components": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
+    "@tanstack/react-form": "catalog:tanstack",
+    "@tanstack/react-table": "catalog:tanstack",
+    "@uidotdev/usehooks": "catalog:uidotdev",
+    "bootstrap": "catalog:bootstrap5",
+    "clsx": "catalog:clsx",
+    "lucide-react": "catalog:lucide-react",
+    "next": "catalog:next15",
+    "pino": "catalog:pino",
+    "react": "catalog:react19",
+    "react-bootstrap": "catalog:bootstrap5",
+    "react-bootstrap-toasts": "^0.2.0",
+    "react-dom": "catalog:react19",
+    "zod": "catalog:zod"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@eslint/eslintrc": "catalog:eslint",
+    "@repo/eslint-config": "workspace:*",
+    "@types/node": "catalog:node22",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "eslint": "catalog:eslint",
+    "eslint-config-next": "catalog:eslint",
+    "typescript": "catalog:typescript5"
+  }
+}
