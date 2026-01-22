@@ -1,0 +1,35 @@
+{
+  "description": "Stand alone Node application that reports from QBO journal entries",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/qbo-report-journal",
+  "private": true,
+  "scripts": {
+    "dotenv": "dotenvx",
+    "build": "tsc",
+    "check-types": "dotenvx run --quiet -- tsc --noEmit",
+    "dev:production": "dotenvx run -f .env.production --quiet -- tsc --watch",
+    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- tsc --watch",
+    "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
+    "start:production": "dotenvx run -f .env.production --quiet -- tsx ./dist/index.js",
+    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- tsx ./dist/index.js"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@types/node": "catalog:node22",
+    "eslint": "catalog:eslint",
+    "tsx": "catalog:tsx",
+    "typescript": "catalog:typescript5"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/qbo-api": "workspace:*",
+    "@repo/qbo-db": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  }
+}

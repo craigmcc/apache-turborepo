@@ -382,6 +382,40 @@ importers:
         specifier: catalog:typescript5
         version: 5.8.3
 
+  apps/qbo-report-journal:
+    dependencies:
+      '@dotenvx/dotenvx':
+        specifier: catalog:dotenvx
+        version: 1.44.1
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@repo/qbo-api':
+        specifier: workspace:*
+        version: link:../../packages/qbo-api
+      '@repo/qbo-db':
+        specifier: workspace:*
+        version: link:../../packages/qbo-db
+      '@repo/shared-utils':
+        specifier: workspace:*
+        version: link:../../packages/shared-utils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+    devDependencies:
+      '@types/node':
+        specifier: catalog:node22
+        version: 22.15.21
+      eslint:
+        specifier: catalog:eslint
+        version: 9.27.0(jiti@2.4.2)
+      tsx:
+        specifier: catalog:tsx
+        version: 4.19.4
+      typescript:
+        specifier: catalog:typescript5
+        version: 5.8.3
+
   apps/ramp-lookup:
     dependencies:
       '@repo/ramp-db':

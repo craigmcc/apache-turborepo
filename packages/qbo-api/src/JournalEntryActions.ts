@@ -62,6 +62,12 @@ export async function fetchJournalEntries(apiInfo: QboApiInfo, params: FetchAcco
     const text = JSON.stringify(response.body, null, 2);
     throw new Error(`Error fetching accounts: ${text}`);
   } else {
+    logger.info({
+      context: "JournalEntryActions.fetchJournalEntries",
+      message: "Successfully fetched JournalEntries",
+      intuit_id: response.headers.get("intuit_tid") || "n/a",
+      status: response.status,
+    })
     const json = await response.json();
     return json.QueryResponse.JournalEntry || [];
   }
