@@ -8,6 +8,7 @@
 // Public Objects ------------------------------------------------------------
 
 export const Timestamps = {
+
   /**
    * Return a timestamp string in ISO format (yyyy-mm-ddThh:mm:ss+nn) for the
    * specified JavaScript date.  Based on:
@@ -44,6 +45,18 @@ export const Timestamps = {
       + leftPad(date.getMinutes(), 2)
       + leftPad(date.getSeconds(), 2);
   },
+
+  /**
+   * Return a string representing the date and time adjusted for the
+   * local time zone.
+   *
+   * @param {Date} date               Date to render (default is current date/time)
+   * @return {string}                 Localized date and time string
+   */
+  locale(date: Date = new Date()): string {
+    return date.toLocaleString();
+  },
+
 };
 
 

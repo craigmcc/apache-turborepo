@@ -18,6 +18,6 @@ export const clientLogger = pino({
   base: null, // Remove "hostname", "name", and "pid"
   level: "info",
   timestamp: function (): string {
-    return ',"time":"' + Timestamps.iso() + '"';
+    return ',"time":"' + Timestamps.locale() + '"';
   },
 });
