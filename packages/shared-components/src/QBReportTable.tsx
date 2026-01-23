@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo } from 'react';
 
 type ColDef = { ColTitle?: string; ColType?: string };

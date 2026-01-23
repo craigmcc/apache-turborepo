@@ -1,0 +1,43 @@
+{
+  "description": "Demonstration of React Bootstrap components",
+  "license": "Apache-2.0",
+  "name": "bootstrap-alone",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --turbopack --port 3003",
+    "lint": "next lint",
+    "start": "next start"
+  },
+  "type": "module",
+  "version": "0.1.0",
+  "dependencies": {
+    "@repo/shared-components": "workspace:*",
+    "@repo/shared-utils": "workspace:*",
+    "@tanstack/react-form": "catalog:tanstack",
+    "@tanstack/react-table": "catalog:tanstack",
+    "bootstrap": "catalog:bootstrap5",
+    "clsx": "catalog:clsx",
+    "lucide-react": "catalog:lucide-react",
+    "next": "catalog:next15",
+    "pino": "catalog:pino",
+    "react": "catalog:react19",
+    "react-bootstrap": "catalog:bootstrap5",
+    "react-bootstrap-toasts": "^0.2.0",
+    "react-csv": "catalog:react-csv",
+    "react-dom": "catalog:react19",
+    "zod": "catalog:zod"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@eslint/eslintrc": "catalog:eslint",
+    "@repo/eslint-config": "workspace:*",
+    "@types/node": "catalog:node22",
+    "@types/react": "catalog:react19",
+    "@types/react-csv": "catalog:react-csv",
+    "@types/react-dom": "catalog:react19",
+    "eslint": "catalog:eslint",
+    "eslint-config-next": "catalog:eslint",
+    "typescript": "catalog:typescript5"
+  }
+}
