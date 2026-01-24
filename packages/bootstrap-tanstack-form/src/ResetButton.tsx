@@ -35,7 +35,7 @@ export function ResetButton({ className, label, ...props }: Props) {
         form.reset();
       }}
       role="button"
-      type="button"
+      type="reset"
       variant="danger"
       {...props}
     >

@@ -10,11 +10,13 @@
 import { Images } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+import {
+  Col,
+  Container,
+  Row,
+  Tab,
+  Tabs
+} from "react-bootstrap";
 
 // Internal Imports ----------------------------------------------------------
 
@@ -51,6 +53,10 @@ export function MenuBar() {
               eventKey="Home"
               title="Home"
             />
+            <Tab
+              eventKey="Buttons"
+              title="Buttons"
+            />
           </Tabs>
         </Col>
       </Row>
@@ -62,4 +68,5 @@ export function MenuBar() {
 
 const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
   ["Home", "/"],
+  ["Buttons", "/buttons"],
 ]);
