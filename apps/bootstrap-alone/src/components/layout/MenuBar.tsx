@@ -1,22 +1,14 @@
 "use client";
 
 /**
- * MenuBar component for the RAMP Lookup application.
+ * MenuBar component for the Bootstrap Alone application.
  */
 
 // External Imports ----------------------------------------------------------
 
 import { Images, Moon, Sun } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Row,
-  Tab,
-  Tabs
-} from "react-bootstrap";
+import { Button, Nav, Navbar } from "react-bootstrap";
 
 // Internal Imports ----------------------------------------------------------
 
@@ -26,7 +18,8 @@ const THEME_STORAGE_KEY = "bootstrap-alone-theme";
 
 export function MenuBar() {
 
-  const [key, setKey] = useState<string>("Home");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isClient, setIsClient] = useState<boolean>(false);
   const [theme, setTheme] = useState<string>(
     typeof window !== "undefined"
       ? localStorage.getItem(THEME_STORAGE_KEY) || "light"
@@ -34,67 +27,46 @@ export function MenuBar() {
   );
 
   useEffect(() => {
+    // Indicate that we are running on the client side
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     // Save and apply the theme when it changes
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     document.body.setAttribute("data-bs-theme", theme);
   }, [theme]);
-
-  const router = useRouter();
-
-  function handleSelect(eventKey: string | null) {
-    const actualKey = eventKey ? eventKey : "Home";
-    setKey(actualKey);
-    const path = KEY_PAGE_MAPPINGS.get(actualKey) || "/";
-    router.push(path);
-  }
 
   function toggleTheme() {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   }
 
   return (
-    <Container className="bg-info-subtle" fluid>
-      <Row className="my-2" xs={2}>
-        <Col className="mt-1">
-          <Images className="pe-2" size={38}/>
-          Bootstrap Alone
-        </Col>
-        <Col xs={5} >
-          <Tabs
-            activeKey={key ? key : undefined}
-            fill
-            id="ramp-lookup-tabs"
-            onSelect={(k) => handleSelect(k)}
-          >
-            <Tab
-              eventKey="Home"
-              title="Home"
-            />
-            <Tab
-              eventKey="Buttons"
-              title="Buttons"
-            />
-          </Tabs>
-        </Col>
-        <Col className="d-flex justify-content-end" xs={1}>
-          {theme === "light" ? (
-            <Button onClick={toggleTheme} variant="outline-dark">
-              <Sun size={24}/>
-            </Button>
-          ) : (
-            <Button onClick={toggleTheme} variant="outline-light">
-              <Moon size={24}/>
-            </Button>
-          )}
-        </Col>
-      </Row>
-    </Container>
+    <Navbar bg="info-subtle" expand="lg" className="px-3">
+      <Navbar.Brand href="/">
+        <Images className="pe-2" size={38}/>
+        Bootstrap Alone
+      </Navbar.Brand>
+      <Nav className="mx-auto" defaultActiveKey="/" variant="pills">
+        <Nav.Item>
+          <Nav.Link href="/">Home</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="link-buttons" href="/buttons">Buttons</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="link-forms" href="/forms">Forms</Nav.Link>
+        </Nav.Item>
+      </Nav>
+      {theme === "light" ? (
+        <Button onClick={toggleTheme} variant="outline-dark">
+          <Sun size={24}/>
+        </Button>
+      ) : (
+        <Button onClick={toggleTheme} variant="outline-light">
+          <Moon size={24}/>
+        </Button>
+      )}
+    </Navbar>
   );
 }
-
-// Private Objects -----------------------------------------------------------
-
-const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
-  ["Home", "/"],
-  ["Buttons", "/buttons"],
-]);
