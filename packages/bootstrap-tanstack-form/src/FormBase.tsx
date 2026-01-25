@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Generic form control wrapper component (for Bootstrap).
  *

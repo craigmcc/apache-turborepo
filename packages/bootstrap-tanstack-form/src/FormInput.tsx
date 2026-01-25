@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Input component using TanStack Form and Bootstrap.
  */

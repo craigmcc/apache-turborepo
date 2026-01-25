@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Checkbox component using TanStack Form and Shadcn UI.
  */

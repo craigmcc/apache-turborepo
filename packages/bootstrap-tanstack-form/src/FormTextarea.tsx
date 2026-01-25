@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Textarea component using Tanstack Form and Shadcn UI.
  */
