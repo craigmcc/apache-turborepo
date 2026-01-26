@@ -39,7 +39,73 @@ export function Inputs() {
   return (
     <div className="d-flex justify-content-evenly gap-4">
 
-      <Card className="border bg-light">
+      <Card className="border bg-info-subtle">
+        <CardBody>
+          <CardTitle className="text-center">Horizontal Inputs</CardTitle>
+          <CardText as="div">
+            <Table border={2} bordered>
+              <thead>
+              <tr>
+                <th>Input Type</th>
+                <th className="text-center">Example</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td className="font-weight-medium">Checkbox</td>
+                <td className="text-center">
+                  <FieldCheckbox
+                    handleChange={(newValue) => setExampleCheckbox(newValue)}
+                    label="Example Checkbox"
+                    name="exampleCheckbox"
+                    value={exampleCheckbox}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="font-weight-medium">Password</td>
+                <td className="form-control">
+                  <FieldInput
+                    handleChange={(newValue) => setExamplePassword(newValue)}
+                    label="Example Password Input"
+                    name="examplePassword"
+                    placeholder="Enter password"
+                    type="password"
+                    value={examplePassword}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="font-weight-medium">Select</td>
+                <td className="form-control">
+                  <FieldSelect
+                    handleChange={(newValue) => setExampleSelect(newValue)}
+                    label="Example Select Input"
+                    name="exampleSelect"
+                    options={selectOptions}
+                    value={exampleSelect}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td className="font-weight-medium">Text</td>
+                <td className="form-control">
+                  <FieldInput
+                    handleChange={(newValue) => setExampleInput(newValue)}
+                    label="Example Text Input"
+                    name="exampleInput"
+                    placeholder="Enter text"
+                    value={exampleInput}
+                  />
+                </td>
+              </tr>
+              </tbody>
+            </Table>
+          </CardText>
+        </CardBody>
+      </Card>
+
+      <Card className="border bg-info-subtle">
         <CardBody>
           <CardTitle className="text-center">Vertical Inputs</CardTitle>
           <CardText as="div">
