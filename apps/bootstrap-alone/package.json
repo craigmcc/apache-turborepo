@@ -12,6 +12,7 @@
   "type": "module",
   "version": "0.1.0",
   "dependencies": {
+    "@repo/bootstrap-tanstack-form": "workspace:*",
     "@repo/shared-components": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "@tanstack/react-form": "catalog:tanstack",

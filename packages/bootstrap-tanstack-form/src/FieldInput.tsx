@@ -8,7 +8,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { InputHTMLAttributes } from "react";
+import { ChangeEvent, InputHTMLAttributes } from "react";
 import { Form } from "react-bootstrap";
 
 // Internal Modules ----------------------------------------------------------
@@ -23,9 +23,9 @@ export type FieldInputProps = {
   // Input field name. (also used as id)
   name: string,
   // Optional handler for blur events
-  onBlur?: () => void,
+  handleBlur?: () => void,
   // Handler for value change events.
-  onChange: (newValue: string) => void,
+  handleChange: (newValue: string) => void,
   // Size (not used because it conflicts with InputHTMLAttributes.size)
   size?: "sm" | "md" | "lg",
   // Input field type.  [text]
@@ -36,10 +36,10 @@ export type FieldInputProps = {
 
 export function FieldInput({
   className,
+  handleBlur,
+  handleChange,
   label,
   name,
-  onBlur,
-  onChange,
   type = "text",
   value,
   ...props
@@ -49,10 +49,9 @@ export function FieldInput({
     <Form.Group className={className} controlId={name}>
       <Form.Label>{label}</Form.Label>
       <Form.Control
-        id={name}
         name={name}
-        onBlur={onBlur}
-        onChange={(e) => onChange(e.target.value)}
+        onBlur={handleBlur}
+        onChange={(e) => handleChange(e.target.value)}
         size="sm"
         type={type}
         value={value}

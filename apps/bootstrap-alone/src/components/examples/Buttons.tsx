@@ -37,11 +37,11 @@ export function Buttons() {
   return (
     <div className="d-flex justify-content-evenly gap-4">
 
-      <Card className="w-70 border bg-light">
+      <Card className="border bg-light">
         <CardBody>
           <CardTitle className="text-center">Plain Variants</CardTitle>
           <CardText as="div">
-            <Table>
+            <Table border={2} bordered>
               <thead>
               <tr>
                 <th>Variant</th>
@@ -63,11 +63,11 @@ export function Buttons() {
         </CardBody>
       </Card>
 
-      <Card className="w-70 border bg-light">
+      <Card className="border bg-light">
         <CardBody>
           <CardTitle className="text-center">Outline Variants</CardTitle>
           <CardText as="div">
-            <Table>
+            <Table border={2} bordered>
               <thead>
               <tr>
                 <th>Variant</th>
@@ -89,11 +89,11 @@ export function Buttons() {
         </CardBody>
       </Card>
 
-      <Card className="w-70 border bg-light">
+      <Card className="border bg-light">
         <CardBody>
           <CardTitle className="text-center">Size Options</CardTitle>
           <CardText as="div">
-            <Table>
+            <Table border={2} bordered>
               <thead>
               <tr>
                 <th>Variants</th>

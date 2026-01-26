@@ -23,16 +23,16 @@ export type FieldSelectOption = {
 export type FieldSelectProps = {
   // Optional CSS classes to apply to the select field.
   className?: string,
+  // Optional handler for blur events
+  handleBlur?: () => void,
+  // Handler for value change events.
+  handleChange: (newValue: string) => void,
   // Visual label for this field.
   label: string,
   // Select options
   options: FieldSelectOption[],
   // Select field name. (also used as id)
   name: string,
-  // Optional handler for blur events
-  onBlur?: () => void,
-  // Handler for value change events.
-  onChange: (newValue: string) => void,
   // Size (not used because it conflicts with InputHTMLAttributes.size)
   size?: "sm" | "md" | "lg",
   // Current select field value
@@ -41,11 +41,11 @@ export type FieldSelectProps = {
 
 export function FieldSelect({
   className,
+  handleBlur,
+  handleChange,
   label,
   name,
   options,
-  onBlur,
-  onChange,
   value,
   ...props
 }: FieldSelectProps) {
@@ -55,13 +55,14 @@ export function FieldSelect({
       <Form.Select
         id={name}
         name={name}
-        onBlur={onBlur}
-        onChange={e => onChange(e.target.value)}
+        onBlur={handleBlur}
+        onChange={e => handleChange(e.target.value)}
         value={value}
         {...props}
       >
         {options.map((option, index) => (
           <option
+            disabled={!option.value}
             key={index}
             value={option.value ? option.value : undefined}
           >

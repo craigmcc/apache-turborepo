@@ -17,24 +17,24 @@ import { Form } from "react-bootstrap";
 export type FieldCheckboxProps = {
   // Optional CSS classes to apply to the checkbox field.
   className?: string,
+  // Optional handler for blur events
+  handleBlur?: () => void,
+  // Handler for value change events.
+  handleChange: (newValue: boolean) => void,
   // Visual label for this field.
   label: string,
   // Checkbox field name. (also used as id)
   name: string,
-  // Optional handler for blur events
-  onBlur?: () => void,
-  // Handler for value change events.
-  onChange: (newValue: boolean) => void,
   // Current checkbox field value
   value: boolean,
 };
 
 export function FieldCheckbox({
   className,
+  handleBlur,
+  handleChange,
   label,
   name,
-  onBlur,
-  onChange,
   value,
   ...props
 }: FieldCheckboxProps) {
@@ -46,8 +46,8 @@ export function FieldCheckbox({
         id={name}
         label={label}
         name={name}
-        onBlur={onBlur}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)}
+        onBlur={handleBlur}
+        onChange={(e) => handleChange(e.target.checked)}
         type="checkbox"
         {...props}
       />

@@ -271,6 +271,9 @@ importers:
 
   apps/bootstrap-alone:
     dependencies:
+      '@repo/bootstrap-tanstack-form':
+        specifier: workspace:*
+        version: link:../../packages/bootstrap-tanstack-form
       '@repo/shared-components':
         specifier: workspace:*
         version: link:../../packages/shared-components
