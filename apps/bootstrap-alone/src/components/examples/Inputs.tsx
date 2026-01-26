@@ -67,7 +67,8 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldInput
                     handleChange={(newValue) => setExamplePassword(newValue)}
-                    label="Example Password Input"
+                    horizontal
+                    label="Password:"
                     name="examplePassword"
                     placeholder="Enter password"
                     type="password"
@@ -80,7 +81,8 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldSelect
                     handleChange={(newValue) => setExampleSelect(newValue)}
-                    label="Example Select Input"
+                    horizontal
+                    label="Select:"
                     name="exampleSelect"
                     options={selectOptions}
                     value={exampleSelect}
@@ -92,7 +94,7 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldInput
                     handleChange={(newValue) => setExampleInput(newValue)}
-                    label="Example Text Input"
+                    label="Text:"
                     name="exampleInput"
                     placeholder="Enter text"
                     value={exampleInput}
@@ -133,7 +135,7 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldInput
                     handleChange={(newValue) => setExamplePassword(newValue)}
-                    label="Example Password Input"
+                    label="Password:"
                     name="examplePassword"
                     placeholder="Enter password"
                     type="password"
@@ -146,7 +148,7 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldSelect
                     handleChange={(newValue) => setExampleSelect(newValue)}
-                    label="Example Select Input"
+                    label="Select:"
                     name="exampleSelect"
                     options={selectOptions}
                     value={exampleSelect}
@@ -158,7 +160,7 @@ export function Inputs() {
                 <td className="form-control">
                   <FieldInput
                     handleChange={(newValue) => setExampleInput(newValue)}
-                    label="Example Text Input"
+                    label="Text:"
                     name="exampleInput"
                     placeholder="Enter text"
                     value={exampleInput}

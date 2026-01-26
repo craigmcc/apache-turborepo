@@ -8,8 +8,8 @@
 
 // External Modules ----------------------------------------------------------
 
-import { ChangeEvent, InputHTMLAttributes } from "react";
-import { Form } from "react-bootstrap";
+import { InputHTMLAttributes } from "react";
+import { Col, Form, Row } from "react-bootstrap";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -18,14 +18,16 @@ import { Form } from "react-bootstrap";
 export type FieldInputProps = {
   // Optional CSS classes to apply to the input field.
   className?: string,
-  // Visual label for this field.
-  label: string,
-  // Input field name. (also used as id)
-  name: string,
   // Optional handler for blur events
   handleBlur?: () => void,
   // Handler for value change events.
   handleChange: (newValue: string) => void,
+  // Horizontal layout? [false]
+  horizontal?: boolean,
+  // Visual label for this field.
+  label: string,
+  // Input field name. (also used as id)
+  name: string,
   // Size (not used because it conflicts with InputHTMLAttributes.size)
   size?: "sm" | "md" | "lg",
   // Input field type.  [text]
@@ -35,15 +37,35 @@ export type FieldInputProps = {
 } & InputHTMLAttributes<HTMLInputElement>;
 
 export function FieldInput({
-  className,
-  handleBlur,
-  handleChange,
-  label,
-  name,
-  type = "text",
-  value,
-  ...props
-}: FieldInputProps) {
+                             className,
+                             handleBlur,
+                             handleChange,
+                             horizontal,
+                             label,
+                             name,
+                             type = "text",
+                             value,
+                             ...props
+                           }: FieldInputProps) {
+
+  if (horizontal) {
+    return (
+      <Form.Group as={Row} className={className} controlId={name}>
+        <Form.Label column sm={4}>{label}</Form.Label>
+        <Col sm={8}>
+          <Form.Control
+            name={name}
+            onBlur={handleBlur}
+            onChange={(e) => handleChange(e.target.value)}
+            size="sm"
+            type={type}
+            value={value}
+            {...props}
+          />
+        </Col>
+      </Form.Group>
+    );
+  }
 
   return (
     <Form.Group className={className} controlId={name}>
