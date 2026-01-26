@@ -23,4 +23,4 @@ export const serverLogger = pino({
   timestamp: function (): string {
     return ',"time":"' + Timestamps.locale() + '"';
   },
-}, pino.destination(2)); // Send to stderr
+});
