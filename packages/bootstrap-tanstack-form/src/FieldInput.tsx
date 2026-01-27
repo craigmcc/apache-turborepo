@@ -1,10 +1,8 @@
 "use client";
 
 /**
- * A component similar to FormInput, but without the Tanstack Form dependencies,
- * for use in standalone inputs such as a search box.
- * TODO: Implement "horizontal" like FormBase when implemented there.
- */
+ * An input text component, that can be used without the Tanstack Form
+ * requirements of FormInput. */
 
 // External Modules ----------------------------------------------------------
 
@@ -22,8 +20,10 @@ export type FieldInputProps = {
   handleBlur?: () => void,
   // Handler for value change events.
   handleChange: (newValue: string) => void,
-  // Horizontal layout? [false]
-  horizontal?: boolean,
+  // If horizontal layout is requested, the number of Bootstrap grid columns
+  // (out of twelve) to allocate to the label (the rest goes to the input).
+  // If not specified, a vertical layout is used.
+  horizontal?: number,
   // Visual label for this field.
   label: string,
   // Input field name. (also used as id)
@@ -48,11 +48,12 @@ export function FieldInput({
                              ...props
                            }: FieldInputProps) {
 
-  if (horizontal) {
+  if (horizontal && horizontal > 0 && horizontal < 12) {
+    const groupClass = className ? `${className} align-items-center` : "align-items-center";
     return (
-      <Form.Group as={Row} className={className} controlId={name}>
-        <Form.Label column sm={4}>{label}</Form.Label>
-        <Col sm={8}>
+      <Form.Group as={Row} className={groupClass} controlId={name}>
+        <Form.Label className="mb-0" column sm={horizontal}>{label}</Form.Label>
+        <Col sm={12 - horizontal}>
           <Form.Control
             name={name}
             onBlur={handleBlur}
@@ -68,9 +69,10 @@ export function FieldInput({
   }
 
   return (
-    <Form.Group className={className} controlId={name}>
+    <Form.Group controlId={name}>
       <Form.Label>{label}</Form.Label>
       <Form.Control
+        className={className}
         name={name}
         onBlur={handleBlur}
         onChange={(e) => handleChange(e.target.value)}

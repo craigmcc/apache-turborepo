@@ -1,9 +1,8 @@
 "use client";
 
 /**
- * A component similar to FormCheckbox, but without the Tanstack Form dependencies,
- * for use in standalone checkboxes.
- * TODO: Implement "horizontal" like FormBase when implemented there.
+ * An input select component, that can be used without the Tanstack Form
+ * requirements of FormSelect.
  */
 
 // External Modules ----------------------------------------------------------
@@ -27,8 +26,10 @@ export type FieldSelectProps = {
   handleBlur?: () => void,
   // Handler for value change events.
   handleChange: (newValue: string) => void,
-  // Horizontal layout? [false]
-  horizontal?: boolean,
+  // If horizontal layout is requested, the number of Bootstrap grid columns
+  // (out of twelve) to allocate to the label (the rest goes to the input).
+  // If not specified, a vertical layout is used.
+  horizontal?: number,
   // Visual label for this field.
   label: string,
   // Select options
@@ -53,11 +54,12 @@ export function FieldSelect({
   ...props
 }: FieldSelectProps) {
 
-  if (horizontal) {
+  if (horizontal && horizontal > 0 && horizontal < 12) {
+    const groupClass = className ? `${className} align-items-center` : "align-items-center";
     return (
-      <Form.Group as={Row} className={className} controlId={name}>
-        <Form.Label column sm={4}>{label}</Form.Label>
-        <Col sm={8}>
+      <Form.Group as={Row} className={groupClass} controlId={name}>
+        <Form.Label className="mb-0" column sm={horizontal}>{label}</Form.Label>
+        <Col sm={12 - horizontal}>
           <Form.Select
             name={name}
             onBlur={handleBlur}

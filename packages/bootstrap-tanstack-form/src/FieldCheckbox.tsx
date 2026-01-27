@@ -1,13 +1,11 @@
 "use client";
 
 /**
- * A component similar to FormCheckbox, but without the Tanstack Form dependencies,
- * for use in standalone checkboxes.
- */
+ * An input checkbox component, that can be used without the Tanstack Form
+ * requirements of FormCheckbox. */
 
 // External Modules ----------------------------------------------------------
 
-import { ChangeEvent } from "react";
 import { Form } from "react-bootstrap";
 
 // Internal Modules ----------------------------------------------------------
