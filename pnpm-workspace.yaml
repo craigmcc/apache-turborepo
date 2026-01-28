@@ -1,64 +1,64 @@
 catalogs:
   bootstrap5:
-    bootstrap: "^5.3.8"
-    react-bootstrap: "^2.10.10"
+    bootstrap: "5.3.8"
+    react-bootstrap: "2.10.10"
   clsx:
-    clsx: "^2.1.1"
+    clsx: "2.1.1"
   date-fns:
-    date-fns: "^4.1.0"
+    date-fns: "4.1.0"
   dotenvx:
-    "@dotenvx/dotenvx": "^1.44.1"
+    "@dotenvx/dotenvx": "1.44.1"
   eslint:
-    "@eslint/eslintrc": "^3.3.1"
-    eslint: "^9.27.0"
+    "@eslint/eslintrc": "3.3.1"
+    eslint: "9.27.0"
     # May have a 15.4 version upcoming
-    eslint-config-next: "^15.3.2"
+    eslint-config-next: "15.3.2"
   express:
-    "@types/express": "^5.0.6"
-    express: "^5.2.1"
+    "@types/express": "5.0.6"
+    express: "5.2.1"
   jest29:
-    "@types/jest": "^29.5.14"
-    jest: "^29.7.0"
-    jest-environment-jsdom: "^29.7.0"
-    ts-jest: "^29.3.4"
+    "@types/jest": "29.5.14"
+    jest: "29.7.0"
+    jest-environment-jsdom: "29.7.0"
+    ts-jest: "29.3.4"
   lucide-react:
-    lucide-react: "^0.511.0"
+    lucide-react: "0.511.0"
   next15:
-    next: "^15.5.10"
+    next: "15.5.10"
   node20:
-    "@types/node": "^20.11.0"
+    "@types/node": "20.11.0"
     node: "20.19.2"
   node22:
-    "@types/node": "^22.15.21"
-    node: "^22.16.0"
+    "@types/node": "22.15.21"
+    node: "22.16.0"
   pino:
-    pino: "^9.7.0"
+    pino: "9.7.0"
   prisma6:
-    "@prisma/client": "^6.8.2"
-    prisma: "^6.8.2"
+    "@prisma/client": "6.8.2"
+    prisma: "6.8.2"
   react19:
-    "@types/react": "^19.1.5"
-    "@types/react-dom": "^19.1.5"
-    react: "^19.1.0"
-    react-dom: "^19.1.0"
+    "@types/react": "19.1.5"
+    "@types/react-dom": "19.1.5"
+    react: "19.1.0"
+    react-dom: "19.1.0"
   react-csv:
-    "react-csv": "^2.2.2"
-    "@types/react-csv": "^1.1.10"
+    "react-csv": "2.2.2"
+    "@types/react-csv": "1.1.10"
   react-toastify:
-    react-toastify: "^11.0.5"
+    react-toastify: "11.0.5"
   sonner:
-    sonner: "^2.0.7"
+    sonner: "2.0.7"
   tanstack:
-    "@tanstack/react-form": "^1.27.7"
-    "@tanstack/react-table": "^8.21.3"
+    "@tanstack/react-form": "1.27.7"
+    "@tanstack/react-table": "8.21.3"
   tsx:
-    tsx: "^4.19.4"
+    tsx: "4.19.4"
   typescript5:
-    typescript: "^5.8.3"
+    typescript: "5.8.3"
   uidotdev:
     "@uidotdev/usehooks": "2.4.1"
   zod:
-    zod: "^3.25.28"
+    zod: "3.25.28"
 packages:
   - "apps/*"
   - "packages/*"
