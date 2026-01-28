@@ -7,6 +7,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -35,6 +36,12 @@ export default function RootLayout({
       <MenuBar />
       {children}
     {/*</Providers>*/}
+    <Toaster
+      closeButton
+      invert
+      position="top-right"
+      richColors
+    />
     </body>
     </html>
   );

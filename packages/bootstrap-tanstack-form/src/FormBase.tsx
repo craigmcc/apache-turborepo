@@ -20,6 +20,10 @@ import { useFieldContext } from "./useAppContexts";
 // Public Objects ------------------------------------------------------------
 
 export type FormControlProps = {
+  // If horizontal layout is requested, the number of Bootstrap grid columns
+  // (out of twelve) to allocate to the label (the rest goes to the input).
+  // If not specified, a vertical layout is used.
+  horizontal?: number
   // Visual label for this form control
   label: string
   // Optional description for this form control
@@ -28,49 +32,25 @@ export type FormControlProps = {
 
 type FormBaseProps = FormControlProps & {
   children: ReactNode
-  horizontal?: boolean // TODO - not yet implemented
   controlFirst?: boolean
 }
 
 export function FormBase({
   children,
-  label,
-  description,
-  controlFirst,
-//  horizontal, // TODO - not yet implemented
 }: FormBaseProps) {
 
   const field = useFieldContext()
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-  const labelElement = (
-    <>
-      <Form.Label htmlFor={field.name}>{label}</Form.Label>
-      {description && <Form.Text className="text-muted">{description}</Form.Text>}
-    </>
-  )
+
   const errorElem = isInvalid &&
     <Form.Control.Feedback type="invalid">
       <FieldErrors field={field}/>
     </Form.Control.Feedback>
 
   return (
-    <Form.Group
-      data-invalid={isInvalid}
-//      orientation={horizontal ? "horizontal" : undefined}
-    >
-      {controlFirst ? (
-        <>
-          {children}
-          {labelElement}
-          {errorElem}
-        </>
-      ) : (
-        <>
-          {labelElement}
-          {children}
-          {errorElem}
-        </>
-      )}
+    <Form.Group data-invalid={isInvalid}>
+      {children}
+      {errorElem}
     </Form.Group>
   )
 }

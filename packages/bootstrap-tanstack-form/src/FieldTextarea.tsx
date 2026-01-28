@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * An input text component, that can be used without the Tanstack Form
- * requirements of FormInput. */
+ * An input textarea component, that can be used without the Tanstack Form
+ * requirements of FormTextarea. */
 
 // External Modules ----------------------------------------------------------
 
@@ -13,8 +13,8 @@ import { Col, Form, Row } from "react-bootstrap";
 
 // Public Objects ------------------------------------------------------------
 
-export type FieldInputProps = {
-  // Optional CSS classes to apply to the input field.
+export type FieldTextareaProps = {
+  // Optional CSS classes to apply to the textarea field.
   className?: string,
   // Optional handler for blur events
   handleBlur?: () => void,
@@ -30,6 +30,8 @@ export type FieldInputProps = {
   label: string,
   // Input field name. (also used as id)
   name: string,
+  /// Number of rows for the textarea [3]
+  rows?: number,
   // Size (not used because it conflicts with InputHTMLAttributes.size)
   size?: "sm" | "md" | "lg",
   // Input field type.  [text]
@@ -38,18 +40,19 @@ export type FieldInputProps = {
   value: string,
 } & InputHTMLAttributes<HTMLInputElement>;
 
-export function FieldInput({
-                             className,
-                             handleBlur,
-                             handleChange,
-                             horizontal,
-                              isInvalid = false,
-                             label,
-                             name,
-                             type = "text",
-                             value,
-                             ...props
-                           }: FieldInputProps) {
+export function FieldTextarea({
+                                className,
+                                handleBlur,
+                                handleChange,
+                                horizontal,
+                                isInvalid = false,
+                                label,
+                                name,
+                                rows = 3,
+                                type = "text",
+                                value,
+                                ...props
+                              }: FieldTextareaProps) {
 
   if (horizontal && horizontal > 0 && horizontal < 12) {
     const groupClass = className ? `${className} align-items-center` : "align-items-center";
@@ -59,11 +62,13 @@ export function FieldInput({
         <Col sm={12 - horizontal}>
           <Form.Control
             aria-invalid={isInvalid}
+            as="textarea"
             name={name}
             onBlur={handleBlur}
             onChange={(e) => handleChange(e.target.value)}
+            rows={rows}
             size="sm"
-            type={type}
+//            type={type}
             value={value}
             {...props}
           />
@@ -77,10 +82,12 @@ export function FieldInput({
       <Form.Label>{label}</Form.Label>
       <Form.Control
         aria-invalid={isInvalid}
+        as="textarea"
         className={className}
         name={name}
         onBlur={handleBlur}
         onChange={(e) => handleChange(e.target.value)}
+        rows={rows}
         size="sm"
         type={type}
         value={value}

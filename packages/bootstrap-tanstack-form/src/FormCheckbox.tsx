@@ -1,16 +1,14 @@
 "use client";
 
 /**
- * Checkbox component using TanStack Form and Shadcn UI.
+ * Checkbox component using TanStack Form and Bootstrap.
  */
 
 // External Modules ----------------------------------------------------------
 
-import Form from "react-bootstrap/Form";
-
-
 // Internal Modules ----------------------------------------------------------
 
+import { FieldCheckbox } from "./FieldCheckbox";
 import { FormBase, FormControlProps } from "./FormBase";
 import { useFieldContext } from "./useAppContexts";
 
@@ -21,15 +19,14 @@ export function FormCheckbox(props: FormControlProps) {
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
 
   return (
-    <FormBase {...props} controlFirst horizontal>
-      <Form.Check
+    <FormBase {...props}>
+      <FieldCheckbox
         aria-invalid={isInvalid}
-        checked={field.state.value}
-        id={field.name}
+        handleBlur={field.handleBlur}
+        handleChange={field.handleChange}
         label={props.label}
         name={field.name}
-        onBlur={field.handleBlur}
-        onChange={e => field.handleChange(e.target.checked)}
+        value={field.state.value}
       />
     </FormBase>
   )

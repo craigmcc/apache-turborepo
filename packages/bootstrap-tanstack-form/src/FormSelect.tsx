@@ -6,10 +6,9 @@
 
 // External Modules ----------------------------------------------------------
 
-import Form from "react-bootstrap/Form";
-
 // Internal Modules ----------------------------------------------------------
 
+import { FieldSelect } from "./FieldSelect";
 import { FormBase, FormControlProps } from "./FormBase";
 import { useFieldContext } from "./useAppContexts";
 
@@ -33,23 +32,16 @@ export function FormSelect({
 
   return (
     <FormBase {...props}>
-      <Form.Select
+      <FieldSelect
         aria-invalid={isInvalid}
-        id={field.name}
+        handleBlur={field.handleBlur}
+        handleChange={field.handleChange}
+        horizontal={props.horizontal}
+        label={props.label}
         name={field.name}
-        onBlur={field.handleBlur}
-        onChange={e => field.handleChange(e.target.value)}
+        options={options}
         value={field.state.value}
-      >
-        {options.map((option, index) => (
-          <option
-            key={index}
-            value={option.value ? option.value : undefined}
-          >
-            {option.label}
-          </option>
-        ))}
-      </Form.Select>
+      />
     </FormBase>
   )
 }

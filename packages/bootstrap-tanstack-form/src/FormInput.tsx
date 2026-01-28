@@ -6,10 +6,9 @@
 
 // External Modules ----------------------------------------------------------
 
-import Form from "react-bootstrap/Form";
-
 // Internal Modules ----------------------------------------------------------
 
+import { FieldInput } from "./FieldInput";
 import { FormBase, FormControlProps } from "./FormBase";
 import { useFieldContext } from "./useAppContexts";
 
@@ -21,12 +20,13 @@ export function FormInput(props: FormControlProps) {
 
   return (
     <FormBase {...props}>
-      <Form.Control
+      <FieldInput
         aria-invalid={isInvalid}
-        id={field.name}
+        handleBlur={field.handleBlur}
+        handleChange={field.handleChange}
+        horizontal={props.horizontal}
+        label={props.label}
         name={field.name}
-        onBlur={field.handleBlur}
-        onChange={e => field.handleChange(e.target.value)}
         value={field.state.value}
       />
     </FormBase>

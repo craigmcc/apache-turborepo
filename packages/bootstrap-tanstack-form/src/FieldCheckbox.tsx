@@ -19,6 +19,8 @@ export type FieldCheckboxProps = {
   handleBlur?: () => void,
   // Handler for value change events.
   handleChange: (newValue: boolean) => void,
+  // Is this field value invalid? [false]
+  isInvalid?: boolean,
   // Visual label for this field.
   label: string,
   // Checkbox field name. (also used as id)
@@ -31,6 +33,7 @@ export function FieldCheckbox({
   className,
   handleBlur,
   handleChange,
+  isInvalid = false,
   label,
   name,
   value,
@@ -40,6 +43,7 @@ export function FieldCheckbox({
   return (
     <Form.Group className={className} controlId={name}>
       <Form.Check
+        aria-invalid={isInvalid}
         checked={value}
         id={name}
         label={label}

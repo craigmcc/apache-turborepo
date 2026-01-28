@@ -11,7 +11,7 @@
     "build": "tsc",
     "check-types": "dotenvx run --quiet -- tsc --noEmit",
     "dev": "dotenvx run -f .env.sandbox --quiet -- tsc --watch",
-    "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
+    "lint": "dotenvx --ignore=MISSING_ENV_FILE run --quiet -- eslint . --max-warnings 0",
     "start:production": "dotenvx run -f .env.production --quiet -- tsx ./dist/index.js",
     "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- tsx ./dist/index.js"
   },

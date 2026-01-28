@@ -20,6 +20,7 @@ import {
 import { FieldCheckbox } from "@repo/bootstrap-tanstack-form/FieldCheckbox";
 import { FieldInput } from "@repo/bootstrap-tanstack-form/FieldInput";
 import { FieldSelect, FieldSelectOption } from "@repo/bootstrap-tanstack-form/FieldSelect";
+import { FieldTextarea } from "@repo/bootstrap-tanstack-form/FieldTextarea";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -31,6 +32,7 @@ export function Inputs() {
   const [exampleInput, setExampleInput] = useState<string>("");
   const [examplePassword, setExamplePassword] = useState<string>("");
   const [exampleSelect, setExampleSelect] = useState<string>("option1");
+  const [exampleTextarea, setExampleTextarea] = useState<string>("");
 
   const selectOptions: FieldSelectOption[] = [
     { label: "Please select an option" },
@@ -106,6 +108,19 @@ export function Inputs() {
                       />
                     </td>
                   </tr>
+                  <tr>
+                    <td className="font-weight-medium">Textarea</td>
+                    <td className="form-control">
+                      <FieldTextarea
+                        handleChange={(newValue) => setExampleTextarea(newValue)}
+                        horizontal={4}
+                        label="Example Textarea:"
+                        name="exampleTextarea"
+                        placeholder="Enter text"
+                        value={exampleTextarea}
+                      />
+                    </td>
+                  </tr>
                   </tbody>
                 </Table>
               </CardText>
@@ -171,6 +186,18 @@ export function Inputs() {
                         name="exampleInput"
                         placeholder="Enter text"
                         value={exampleInput}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="font-weight-medium">Textarea</td>
+                    <td className="form-control">
+                      <FieldTextarea
+                        handleChange={(newValue) => setExampleTextarea(newValue)}
+                        label="Example Textarea:"
+                        name="exampleTextarea"
+                        placeholder="Enter text"
+                        value={exampleTextarea}
                       />
                     </td>
                   </tr>

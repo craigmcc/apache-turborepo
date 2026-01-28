@@ -89,11 +89,9 @@ export function MenuBar() {
           <Nav.Link as={Link} eventKey="link-buttons" href="/buttons">
             Buttons
           </Nav.Link>
-          {/*
           <Nav.Link as={Link} eventKey="link-forms" href="/forms">
             Forms
           </Nav.Link>
-*/}
           <Nav.Link as={Link} eventKey="link-inputs" href="/inputs">
             Inputs
           </Nav.Link>
@@ -131,7 +129,7 @@ const THEME_STORAGE_KEY = "bootstrap-alone-theme";
 function mapPathToKey(pathname: string) {
   if (pathname === "/") return "home";
   if (pathname.startsWith("/buttons")) return "link-buttons";
-  // if (pathname.startsWith("/forms")) return "link-forms";
+  if (pathname.startsWith("/forms")) return "link-forms";
   if (pathname.startsWith("/inputs")) return "link-inputs";
   return "home";
 }

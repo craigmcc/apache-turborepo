@@ -6,7 +6,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack --port 3003",
-    "lint": "next lint",
+    "lint": "eslint .",
     "start": "next start"
   },
   "type": "module",
@@ -27,6 +27,7 @@
     "react-bootstrap-toasts": "^0.2.0",
     "react-csv": "catalog:react-csv",
     "react-dom": "catalog:react19",
+    "sonner": "catalog:sonner",
     "zod": "catalog:zod"
   },
   "devDependencies": {
