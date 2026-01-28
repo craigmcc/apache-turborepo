@@ -62,6 +62,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
     { id: "bill.vendor.name", desc: false },
     { id: "bill.invoiceDate", desc: false },
   ]);
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [toInvoiceDateFilter, setToInvoiceDateFilter] = useState<string>("");
   const [userNameFilter, setUserNameFilter] = useState<string>("");
   const [vendorNameFilter, setVendorNameFilter] = useState<string>("");
@@ -86,6 +87,13 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
       });
     }
 
+    if (statusFilter.length > 0) {
+      filters.push({
+        id: "status",
+        value: statusFilter,
+      });
+    }
+
     if (userNameFilter.length > 0) {
       filters.push({
         id: "user.name",
@@ -102,7 +110,7 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
 
     setColumnFilters(filters);
 
-  }, [accountFilter, fromInvoiceDateFilter, toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
+  }, [accountFilter, fromInvoiceDateFilter, statusFilter, toInvoiceDateFilter, userNameFilter, vendorNameFilter]);
 
   // Handle the "CSV Export" modal close
   function handleCsvExportClose() {
@@ -184,27 +192,26 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
         id: "user.name",
       }),
 
-    columnHelper.display({
-      cell: info => {
-        const archived = info.row.original.bill?.archived;
-        const status = info.row.original.status;
-        if (archived) {
-          return <span className="text-secondary">Archived</span>;
-        } else if (status === "Approved") {
-          return <span className="text-success">Approved</span>;
-        } else if (status === "Denied") {
-          return <span className="text-danger">Denied</span>;
-        } else if (status === "Stale") {
-          return <span className="text-warning">Stale</span>;
-        } else if (status === "Upcoming") {
-          return <span className="text-info">Upcoming</span>;
-        } else {
-          return <span className="text-secondary">{status}</span>;
-        }
-      },
-      header: "Approval Status",
-      id: "status",
-    }),
+    columnHelper.accessor(
+      row => row.status,
+      {
+        cell: info => {
+          const status = info.row.original.status;
+          if (status === "Approved") {
+            return <span className="text-success">Approved</span>;
+          } else if (status === "Denied") {
+            return <span className="text-danger">Denied</span>;
+          } else if (status === "Stale") {
+            return <span className="text-warning">Stale</span>;
+          } else if (status === "Upcoming") {
+            return <span className="text-info">Upcoming</span>;
+          } else {
+            return <span className="text-secondary">{status}</span>;
+          }
+        },
+        header: "Approval Status",
+        id: "status",
+      }),
 
     columnHelper.display({
       cell: info => {
@@ -306,6 +313,16 @@ export function BillApproversTable({ allBillApprovers }: BillApproversTableProps
             placeholder="Enter part of name"
             setTextFieldFilter={setUserNameFilter}
             textFieldFilter={userNameFilter}
+          />
+        </Col>
+
+        <Col>
+          <TextFieldFilter
+            controlId="statusFilter"
+            label="Filter by Approval Status:"
+            placeholder="Enter part of status"
+            setTextFieldFilter={setStatusFilter}
+            textFieldFilter={statusFilter}
           />
         </Col>
 

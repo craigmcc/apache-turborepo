@@ -14,13 +14,15 @@
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "test": "jest --watch",
-    "test:ci": "jest"
+    "test:ci": "jest",
+    "zod": "catalog:zod"
   },
   "type": "module",
   "version": "0.0.0",
   "dependencies": {
     "date-fns": "catalog:date-fns",
-    "pino": "catalog:pino"
+    "pino": "catalog:pino",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

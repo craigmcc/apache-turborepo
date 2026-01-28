@@ -1,0 +1,45 @@
+{
+  "description": "Tanstack Form components built with React Bootstrap",
+  "exports": {
+    "./*": "./dist/*.js"
+  },
+  "jest": {
+    "preset": "@repo/jest-presets/node"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/bootstrap-tanstack-form",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "eslint . --max-warnings 0",
+    "test": "jest --watch"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "dependencies": {
+    "@repo/shared-utils": "workspace:*",
+    "@tanstack/react-form": "catalog:tanstack",
+    "clsx": "catalog:clsx",
+    "lucide-react": "catalog:lucide-react",
+    "next": "catalog:next15",
+    "react": "catalog:react19",
+    "react-bootstrap": "catalog:bootstrap5",
+    "react-bootstrap-toasts": "^0.2.0",
+    "react-dom": "catalog:react19",
+    "zod": "catalog:zod"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/jest-presets": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/jest": "catalog:jest29",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "eslint": "catalog:eslint",
+    "jest": "catalog:jest29",
+    "ts-jest": "catalog:jest29",
+    "typescript": "catalog:typescript5"
+  }
+}

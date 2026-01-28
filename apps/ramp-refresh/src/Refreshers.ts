@@ -29,7 +29,7 @@ import {
   TransactionLineItem,
   User,
   Violation,
-} from "@repo/ramp-db/index.js";
+} from "@repo/ramp-db/*";
 import {
   createAccountingGLAccount,
   createCard,
@@ -542,6 +542,7 @@ export async function refreshUsers(accessToken: string): Promise<void> {
   let count = 0;
   let nextStart: string | null = "";
 
+  // First pass: Insert all users without manager_id to avoid foreign key constraint violations
   while (nextStart !== null) {
 
     const result = await fetchUsers(
@@ -558,11 +559,13 @@ export async function refreshUsers(accessToken: string): Promise<void> {
     for (const rampUser of result.model!.data) {
 
       const user: User = createUser(rampUser);
+      // Remove manager_id for first pass to avoid FK constraint issues
+      const userWithoutManager = { ...user, manager_id: null };
 
       await dbRamp.user.upsert({
         where: {id: user.id},
-        update: user,
-        create: user,
+        update: userWithoutManager,
+        create: userWithoutManager,
       });
 
       count++;
@@ -573,7 +576,43 @@ export async function refreshUsers(accessToken: string): Promise<void> {
 
   }
 
-  console.log("Users refreshed:", count);
+  console.log("Users refreshed (first pass):", count);
+
+  // Second pass: Update all users with their manager_id
+  console.log("Updating user manager relationships...");
+  let managerCount = 0;
+  nextStart = "";
+
+  while (nextStart !== null) {
+
+    const result = await fetchUsers(
+      accessToken,
+      {
+        page_size: 100,
+        start: nextStart && nextStart.length > 0 ? nextStart : undefined
+      }
+    );
+    if (result.error) {
+      throw result.error;
+    }
+
+    for (const rampUser of result.model!.data) {
+
+      if (rampUser.manager_id) {
+        await dbRamp.user.update({
+          where: {id: rampUser.id},
+          data: {manager_id: rampUser.manager_id},
+        });
+        managerCount++;
+      }
+
+    }
+
+    nextStart = extractNextPaginationId(result.model!.page?.next || null);
+
+  }
+
+  console.log("Manager relationships updated:", managerCount);
 
 }
 

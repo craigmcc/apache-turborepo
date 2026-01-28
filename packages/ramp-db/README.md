@@ -1,66 +1,16 @@
 # packages/ramp-db
 
-## Introduction
+A package that defines the Prisma database schema for information retrieved from
+the [Ramp API Platform](https://docs.ramp.com/developer-api/v1/introduction).
+The database schema focuses on the Ramp Card workflows that we currently use,
+and represents the stored version of material retrieved via the
+[ramp-api](../ramp-api/README.md) package.
 
-This package contains a Prisma schema for the `db-ramp` database,
-which can contain tables of content downloaded with the Ramp APIs,
-along with a generated Prisma client for that schema.
+## Dependency Declaration
 
-## Initial Setup
+For applications that depend on this package, declare it in your `package.json`
+file as follows:
 
-(1) When you first acquire this turborepo, you will need to configure
-the location of the database.  Do this by configuring a `.env` file
-within the `packages/ramp-db` directory.  Be sure that the location
-where you have configured the database is not checked in to the Git
-repository. The best practice is to store it in some global location.
-
-##### File: packages/ramp-db/.env
-```env
-DATABASE_URL="file:/Users/{username}/ramp-db.db"
-```
-
-This file will be listed in the `.gitignore` file, so it will not be
-checked in to the Git repository.
-
-(2) Next, you will need to generate the Prisma client (and associated
-classes), based on the current schema.  This is done by running
-the following command:
-
-```bash
-turbo run db-ramp:generate
-```
-
-This will generate the client and necessary classes in
-`packages/ramp-db/generated/`.  These files are *not* checked in to
-the Git repository, because they are specific to the OS and
-architecture of the machine where they were generated.
-
-This step will need to be repeated whenever the schema changes.
-
-(3) Finally, you will need to run the Prisma migration command to
-bring the table structure of your database up to date with the latest
-schema.  If there has been a schema change, this will generate a new
-SQL migration script (under `packages/prisma/migrations`), which can
-then be applied to the database by the following command:
-
-```bash
-turbo run db-ramp:migrate
-```
-
-The migration files themselves (under a date/time stamped directory),
-and the overall lock file (`packages/prisma/migrations/migration_lock.toml`)
-must be checked in to the Git repository, so that other develoepers will
-be able to apply any new migration(s) to their own database, by using
-the same command above.
-
-This step will need to be repeated whenever the schema changes.
-
-## Using the Prisma Client in Your Application
-
-(1) To use this package in your application, declare it as a dependency
-in your application:
-
-##### File:  `apps/{your-app}/package.json`
 ```json
 {
   "dependencies": {
@@ -69,51 +19,107 @@ in your application:
 }
 ```
 
-(2) Run your package manager's install command, either inside the
-`apps/{your-app}` directory or in the root of the monorepo.
+## Configuration
+
+This package only requires a reference to the *DATABASE_URL* environment variable,
+in the `.env` file, to perform its operations.  Applications that consume this package
+and the [ramp-api](../ramp-api/README.md) package will also need to set the environment
+variables referenced in that package's documentation.
+
+The database URL should be a reference to a local SQLite database file.  This file
+must NOT be committed to source control, as it contains sensitive information.  For
+example, you might do this:
+
+```dotenv
+DATABASE_URL="file:~/sqlite/db-ramp.db"
+```
+
+The structure of the database is defined by a [Prisma schema file](./prisma/schema.prisma).
+See the [Prisma documentation](https://www.prisma.io/docs/) for more information about
+how to use Prisma with your database.
+
+## Usage
+
+This package has two scripts that **MUST** be run before the package can be built
+or referenced by applications that need it.
+
+| Script Name        | Description                                                    |
+|--------------------|----------------------------------------------------------------|
+| `ramp-db:generate` | Generates the Prisma client code based on the database schema. |
+| `ramp-db:migrate`  | Applies any pending migrations to the database.                |                
+
+For example, you can run the following commands (starting from the monorepo root):
 
 ```bash
-# Inside the application root (only installs dependencies for this app)
-cd apps/{your-app}
-pnpm install
+cd packages/ramp-db
+pnpm run ramp-db:generate
+pnpm run ramp-db:migrate
+cd ../..
 ```
+In the application consuming this package, you can import the database client itself
+(*dbRamp*), and the desired models that are derived from the
+[database schema](./prisma/schema.prisma), as follows:
+
+```ts
+// Import the database client and whatever models you need
+import { dbRamp, Card, User } from '@repo/ramp-db/*';
+```
+
+Then, *dbRamp* can be used to perform database operations, such as upserting
+(inserting if new or updating if existing) rows, as well as other operations.
+See the Prisma documentation for more information on how to use the Prisma client.
+
+For example, to upsert a *User* row:
+
+```ts
+// Transform a RampUser object retrieved via ramp-api
+// into a User object for ramp-db
+const user = createUser(rampUser);
+// Insert or update the user into the database
+await dbRamp.user.upsert({
+  where: { id: user.id },
+  create: user,
+  update: user,
+});
+```
+
+Applications that render data from the database will also use *dbRamp* to query
+the local database for the desired rows.  For example, you might see a query
+like this to retrieve all users, including related information (performed
+via SQL join operations by Prisma), and sorting them in ascending order by name.
+
+```ts
+  const users = await dbRamp.user.findMany({
+  include: {
+    cards: true,
+    department: true,
+    limit_users: {
+      include: {
+        limit: {
+          include: {
+            spending_restrictions: true,
+          },
+        },
+      },
+    },
+    manager: true,
+  },
+  orderBy: [
+    { last_name: "asc" },
+    { first_name: "asc" },
+  ],
+});
+```
+
+## Database Viewer
+
+Prisma comes with a browser-based database viewer that can be used to inspect
+the contents of the database.  To launch the viewer, run the following command:
 
 ```bash
-# From inside the monorepo root (installs dependencies for all apps)
-pnpm install
+cd packages/ramp-db
+pnpm run ramp-db:studio
+// You will need to Control-C to terminate the viewer when done
+cd ../..
 ```
 
-(3) Add a `DATABASE_URL` environment variable to the environment file for
-your application.  The value *must* match the one you configured above
-in the `packages/ramp-db/.env` file.  For example:
-
-##### File: apps/{your-app}/.env
-```env
-DATABASE_URL="file:/Users/{username}/ramp-db.db"
-```
-
-(4) To use the Prisma client, you will need to import it into your TypeScript
-or JavaScript module that needs to access the database.  The Prisma client then
-gives you access to all the Prisma logic to interact with the underlying database.
-For example, you might include code like this:
-
-##### File:  `apps/{your-app}/src/app/page.tsx`
-```tsx
-import { dbRamp, Department } from '@craigmcc/ramp-db/client';
-
-export default async function Home() {
-  const department = await dbRamp.departments.findFirst();
-    return (
-        <div>
-            <p className="text-3xl font-bold underline">
-                Department is {department?.name}
-            </p>
-        </div>
-    );
-}
-```
-
-NOTE:  You *must* import `dbRamp` (the Prisma client for this database).
-You *may* import one or more of the model types for each table in the
-database, but because of TypeScript's type inference, you will often
-not need to do this.

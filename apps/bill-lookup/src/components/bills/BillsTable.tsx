@@ -37,7 +37,7 @@ import {
   formatAccountNumberAndName,
   formatBillAmount,
   formatBillDueDate,
-  formatBillExchangeRate,
+//  formatBillExchangeRate,
   formatBillInvoiceDate,
   formatBillInvoiceNumber,
   formatBillPaidAmount,
@@ -197,12 +197,30 @@ export function BillsTable({ allBills }: BillsTableProps) {
       id: "paidAmount",
     }),
 
+/*
     columnHelper.display({
       cell: info => {
         return <span>{formatBillExchangeRate(info.row.original) || "n/a"}</span>;
       },
       header: "Exchange Rate",
       id: "exchangeRate",
+    }),
+*/
+
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.approvalStatus || "n/a"}</span>;
+      },
+      header: "Approved?",
+      id: "approvalStatus",
+    }),
+
+    columnHelper.display({
+      cell: info => {
+        return <span>{info.row.original.paymentStatus || "n/a"}</span>;
+      },
+      header: "Paid?",
+      id: "paymentStatus",
     }),
 
     columnHelper.accessor(

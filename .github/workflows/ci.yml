@@ -39,6 +39,12 @@ jobs:
           DATABASE_URL: file:./github_bill.db
         run: cd packages/bill-db; pnpm run bill-db:generate; pnpm run bill-db:migrate; cd ../..
 
+      - name: Generate Prisma client and migrate to dummy database for qbo-db
+        env:
+          DATABASE_URL: file:./github_qbo.db
+        run:
+          cd packages/qbo-db; pnpm run qbo-db:generate; pnpm run qbo-db:migrate:ci; cd ../..
+
       - name: Generate Prisma client and migrate to dummy database for ramp-db
         env:
           DATABASE_URL: file:./github_ramp.db

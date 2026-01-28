@@ -1,0 +1,30 @@
+{
+  "description": "Prisma client and generated models for a database corresponding to QBO API objects",
+  "exports": {
+    "./*": "./dist/index.js"
+  },
+  "license": "Apache-2.0",
+  "name": "@repo/qbo-db",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "qbo-db:deploy": "prisma migrate deploy",
+    "qbo-db:generate" : "prisma generate",
+    "qbo-db:migrate:ci": "prisma migrate dev --skip-generate",
+    "qbo-db:migrate:production": "dotenvx run -f .env.production --quiet -- prisma migrate dev --skip-generate",
+    "qbo-db:migrate:sandbox": "dotenvx run -f .env.sandbox --quiet -- prisma migrate dev --skip-generate",
+    "qbo-db:studio:production": "dotenvx run -f .env.production --quiet -- prisma studio",
+    "qbo-db:studio:sandbox": "dotenvx run -f .env.sandbox --quiet -- prisma studio"
+  },
+  "type": "module",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "prisma": "catalog:prisma6"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "catalog:dotenvx",
+    "@prisma/client": "catalog:prisma6"
+  }
+}

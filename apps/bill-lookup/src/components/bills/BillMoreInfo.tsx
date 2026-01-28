@@ -73,6 +73,10 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                   <td>{formatBillAmount(bill)}</td>
                 </tr>
                 <tr>
+                  <td>approvalStatus</td>
+                  <td>{bill.approvalStatus || "n/a"}</td>
+                </tr>
+                <tr>
                   <td>archived</td>
                   <td>{bill.archived ? "Yes" : "No"}</td>
                 </tr>
@@ -95,6 +99,10 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                 <tr>
                   <td>paidAmount</td>
                   <td>{formatBillPaidAmount(bill)}</td>
+                </tr>
+                <tr>
+                  <td>paymentStatus</td>
+                  <td>{bill.paymentStatus || "n/a"}</td>
                 </tr>
                 <tr>
                   <td>GL Account</td>
@@ -148,6 +156,7 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                     <th>ID</th>
                     <th>Active</th>
                     <th>Sort Order</th>
+                    <th>Status</th>
                     <th>User Name</th>
                   </tr>
                   <tbody>
@@ -156,6 +165,7 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                       <td>{approver.id}</td>
                       <td>{approver.isActive ? "Yes" : "No"}</td>
                       <td className="text-end">{approver.sortOrder || "n/a"}</td>
+                      <td>{approver.status || "n/a"}</td>
                       <td>{formatUserName(approver.user)}</td>
                     </tr>
                   ))}
