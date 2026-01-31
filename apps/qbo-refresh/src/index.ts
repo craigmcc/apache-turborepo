@@ -5,7 +5,7 @@
 // External Modules ----------------------------------------------------------
 
 import { exit } from "node:process";
-import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
+import { fetchApiInfo } from "@repo/qbo-api/AuthFunctions";
 import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules -----------------------------------------------------------

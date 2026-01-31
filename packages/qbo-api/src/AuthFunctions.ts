@@ -1,5 +1,5 @@
 /**
- * Server Actions for QuickBooks Online Authentication.
+ * Server-only actions for QuickBooks Online Authentication.
  */
 
 // External Modules ----------------------------------------------------------
@@ -18,7 +18,6 @@ import {
   OAuthRefreshRequest,
   OAuthRefreshResponse,
   OAuthTokenRequest,
-  OAuthTokenResponse,
   QboApiInfo,
   QboWellKnownInfo
 } from "@/types/Types";

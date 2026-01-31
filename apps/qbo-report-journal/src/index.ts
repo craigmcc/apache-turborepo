@@ -15,7 +15,7 @@
 import fs from "node:fs";
 import { exit } from "node:process";
 import { parseArgs } from "node:util";
-import { fetchApiInfo } from "@repo/qbo-api/AuthActions";
+import { fetchApiInfo } from "@repo/qbo-api/AuthFunctions";
 
 // Private Objects -----------------------------------------------------------
 

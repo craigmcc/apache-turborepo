@@ -4,7 +4,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { fetchAccounts } from "@repo/qbo-api/AccountActions";
+import { fetchAccounts } from "@repo/qbo-api/AccountFunctions";
 import { QboAccount } from "@repo/qbo-api/types/Finance";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
 import { dbQbo, Account } from "@repo/qbo-db/*";

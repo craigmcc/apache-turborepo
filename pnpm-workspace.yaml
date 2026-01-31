@@ -46,6 +46,8 @@ catalogs:
     "@types/react-csv": "1.1.10"
   react-toastify:
     react-toastify: "11.0.5"
+  server-only:
+    server-only: "0.0.1"
   sonner:
     sonner: "2.0.7"
   tanstack:

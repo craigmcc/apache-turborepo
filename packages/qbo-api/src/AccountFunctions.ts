@@ -1,7 +1,5 @@
-"use server"
-
 /**
- * Server Actions for QboJournalEntries.
+ * Server-only functions for Accounts.
  */
 
 // External Modules ----------------------------------------------------------
@@ -10,7 +8,7 @@ import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules ----------------------------------------------------------
 
-import type { QboJournalEntry } from "@/types/Finance";
+import type { QboAccount } from "@/types/Finance";
 import type { QboApiInfo } from "@/types/Types";
 
 // Private Objects -----------------------------------------------------------
@@ -18,7 +16,7 @@ import type { QboApiInfo } from "@/types/Types";
 // Public Objects ------------------------------------------------------------
 
 /**
- * Query parameters for fetchJournalEntries().
+ * Query parameters for fetchAccounts().
  */
 export type FetchAccountsParams = {
   startPosition?: number;
@@ -26,22 +24,18 @@ export type FetchAccountsParams = {
 }
 
 /**
- * Fetch JournalEntries from the QBO API.
+ * Fetch Accounts from the QBO API.
  */
-export async function fetchJournalEntries(apiInfo: QboApiInfo, params: FetchAccountsParams): Promise<QboJournalEntry[]> {
+export async function fetchAccounts(apiInfo: QboApiInfo, params: FetchAccountsParams): Promise<QboAccount[]> {
 
   const startPosition = params.startPosition || 1;
   const maxResults = params.maxResults || 100;
 
   const query =
-    `SELECT * FROM JournalEntry STARTPOSITION ${startPosition} MAXRESULTS ${maxResults}`;
+    `SELECT * FROM Account WHERE active IN (true, false) STARTPOSITION ${startPosition} MAXRESULTS ${maxResults}`;
   const url = new URL(`${apiInfo.baseUrl}/v3/company/${apiInfo.realmId}/query?`);
   url.searchParams.set("minversion", apiInfo.minorVersion);
   url.searchParams.set("query", query);
-  logger.info({
-    context: "JournalEntryActions.fetchJournalEntries",
-    url,
-  });
 
   const response = await fetch(url, {
     headers: {
@@ -52,8 +46,8 @@ export async function fetchJournalEntries(apiInfo: QboApiInfo, params: FetchAcco
 
   if (!response.ok) {
     logger.error({
-      context: "JournalEntryActions.fetchJournalEntries",
-      message: "Failed to fetch JournalEntries",
+      context: "AccountActions.fetchAccounts",
+      message: "Failed to fetch Accounts",
       url,
       body: response.body,
       status: response.status,
@@ -62,14 +56,9 @@ export async function fetchJournalEntries(apiInfo: QboApiInfo, params: FetchAcco
     const text = JSON.stringify(response.body, null, 2);
     throw new Error(`Error fetching accounts: ${text}`);
   } else {
-    logger.info({
-      context: "JournalEntryActions.fetchJournalEntries",
-      message: "Successfully fetched JournalEntries",
-      intuit_id: response.headers.get("intuit_tid") || "n/a",
-      status: response.status,
-    })
     const json = await response.json();
-    return json.QueryResponse.JournalEntry || [];
+    const accounts: QboAccount[] = json.QueryResponse.Account || [];
+    return accounts;
   }
 
 }
