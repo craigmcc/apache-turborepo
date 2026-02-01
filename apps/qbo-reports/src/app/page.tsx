@@ -19,7 +19,7 @@ export default function HomePage() {
         </h1>
       </Container>
       <p className="lead text-center">
-        Click one of the tabs above to retrieve the corresponding information.
+        Click one of the tabs above to retrieve the corresponding report.
       </p>
       </>
   );

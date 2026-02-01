@@ -1,4 +1,5 @@
 {
+  "description": "Invoke QuickBooks Online reports APIs for çustomizable reports",
   "license": "Apache-2.0",
   "name": "qbo-reports",
   "private": true,
@@ -28,6 +29,7 @@
     "react-bootstrap": "catalog:bootstrap5",
     "react-bootstrap-toasts": "^0.2.0",
     "react-dom": "catalog:react19",
+    "sonner": "catalog:sonner",
     "zod": "catalog:zod"
   },
   "devDependencies": {

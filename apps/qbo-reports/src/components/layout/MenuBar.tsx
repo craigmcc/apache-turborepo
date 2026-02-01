@@ -1,69 +1,127 @@
 "use client";
 
 /**
- * MenuBar component for the QBO Lookup application.
+ * Menu bar for the QBO Reports application.
  */
 
-// External Imports ----------------------------------------------------------
+// External Modules ----------------------------------------------------------
 
-import { Images } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+import { Images, Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button, Nav, Navbar } from "react-bootstrap";
 
-// Internal Imports ----------------------------------------------------------
+// Internal Modules ----------------------------------------------------------
 
 // Public Objects ------------------------------------------------------------
 
 export function MenuBar() {
+  const [activeKey, setActiveKey] = useState<string>(() =>
+    typeof window !== "undefined" ? mapPathToKey(window.location.pathname) : "home"
+  );
+  const [isClient, setIsClient] = useState<boolean>(false);
+  const [theme, setTheme] = useState<string>(
+    typeof window !== "undefined"
+      ? localStorage.getItem(THEME_STORAGE_KEY) || "light"
+      : "light"
+  );
 
-  const [key, setKey] = useState<string>("Home");
+  // Indicate that we are now running on the client (avoids SSR/hydration issues).
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const router = useRouter();
+  // Update activeKey once after client mount so the client reflects the real pathname.
+  useEffect(() => {
+    if (isClient) {
+      setActiveKey(mapPathToKey(window.location.pathname));
+    }
+  }, [isClient]);
 
-  function handleSelect(eventKey: string | null) {
-    const actualKey = eventKey ? eventKey : "Home";
-    setKey(actualKey);
-    const path = KEY_PAGE_MAPPINGS.get(actualKey) || "/";
-    router.push(path);
+  // Apply theme to localStorage and document body attribute.
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    document.body.setAttribute("data-bs-theme", theme);
+  }, [theme]);
+
+  // Keep active key in sync with browser history (back/forward)
+  useEffect(() => {
+    const onPop = () => {
+      setActiveKey(mapPathToKey(window.location.pathname));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Handle theme toggle button click.
+  function toggleTheme() {
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   }
 
   return (
-    <Container className="bg-info-subtle" fluid>
-      <Row className="my-2">
-        <Col className="mt-1">
-            <Images className="pe-2" size={38}/>
-            QBO Lookup
-        </Col>
-        <Col className="w-200">
-          <Tabs
-            activeKey={key ? key : undefined}
-            fill
-            id="reports-lookup-tabs"
-            onSelect={(k) => handleSelect(k)}
-          >
-            <Tab
-              eventKey="Home"
-              title="Home"
-            />
-            <Tab
-              eventKey="JournalReports"
-              title="Journal Reports"
-            />
-          </Tabs>
-        </Col>
-      </Row>
-    </Container>
+    <Navbar expand="lg" className="bg-body-tertiary px-1 d-flex align-items-center w-100">
+      <Navbar.Brand href="/">
+        <Images className="pe-2" size={38} />
+        QBO Reports
+      </Navbar.Brand>
+
+      {/* center the Nav in a flex-grow container so it's visually centered */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <div {...({ suppressHydrationWarning: true } as any)}
+           className="flex-grow-1 d-flex justify-content-center"
+      >
+        <Nav
+          className="justify-content-center"
+          variant="pills"
+          {...(isClient
+            ? {
+              activeKey: activeKey,
+              onSelect: (k: unknown) => {
+                if (typeof k === "string") setActiveKey(k);
+              },
+            }
+            : // use the same initial key used on the server so SSR/hydration don't mismatch
+            { defaultActiveKey: activeKey })}
+        >
+          <Nav.Link as={Link} eventKey="home" href="/">
+            Home
+          </Nav.Link>
+          <Nav.Link as={Link} eventKey="link-journalReport" href="/journalReport">
+            Journal
+          </Nav.Link>
+        </Nav>
+      </div>
+
+      {/* theme toggle stays at the far right */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <div {...({ suppressHydrationWarning: true } as any)} className="ms-2">
+        {isClient ? (
+          theme === "light" ? (
+            <Button onClick={toggleTheme} variant="outline-dark">
+              <Sun size={24} />
+            </Button>
+          ) : (
+            <Button onClick={toggleTheme} variant="outline-light">
+              <Moon size={24} />
+            </Button>
+          )
+        ) : (
+          <Button onClick={toggleTheme} variant="outline-dark" aria-hidden>
+            <Sun size={24} />
+          </Button>
+        )}
+      </div>
+    </Navbar>
   );
 }
 
 // Private Objects -----------------------------------------------------------
 
-const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
-  ["Home", "/"],
-  [ "JournalReports", "/journalReports" ],
-]);
+const THEME_STORAGE_KEY = "qbo-reports-theme";
+
+// Return the active key for the given pathname.
+function mapPathToKey(pathname: string) {
+  if (pathname === "/") return "home";
+  if (pathname.startsWith("/journalReport")) return "link-journalReport";
+  return "home";
+}

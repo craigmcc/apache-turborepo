@@ -7,6 +7,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -18,8 +19,8 @@ import { MenuBar } from "@/components/layout/MenuBar";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "QBO Lookup",
-  description: "Look up recently refreshed QBO data",
+  title: "QBO Reports",
+  description: "Render Customized Reports from QuickBooks Online",
 };
 
 export default function RootLayout({
@@ -32,6 +33,12 @@ export default function RootLayout({
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
       <MenuBar />
       {children}
+      <Toaster
+        closeButton
+        invert
+        position="top-right"
+        richColors
+      />
     </body>
     </html>
   );

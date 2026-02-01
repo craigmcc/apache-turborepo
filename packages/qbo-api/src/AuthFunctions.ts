@@ -83,6 +83,7 @@ const oauthState: string = crypto.randomBytes(32).toString("hex");
 const wellKnownInfo: QboWellKnownInfo = await fetchWellKnownInfo();
 
 // Tokens MUST be filled in before this can be returned!
+let completed = false;
 const qboApiInfo: QboApiInfo = {
   accessToken: "",
   baseUrl: QBO_BASE_URL!,
@@ -108,7 +109,7 @@ logger.trace({
 });
 
 // If we have a cached refresh token, try to use it directly
-if (cachedRefreshToken) {
+if (cachedRefreshToken && !completed) {
 
   logger.trace({
     context: "AuthActions.attemptRefresh",
@@ -138,7 +139,7 @@ if (cachedRefreshToken) {
     });
     // Refresh failed, so fall through to the full authorization code flow
 
-  } else {
+  } else if (!completed) {
 
     const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
     logger.info({
@@ -155,28 +156,31 @@ if (cachedRefreshToken) {
     await storeCachedRefreshToken(refreshResponseData.refresh_token);
 
     // Return the API info now that we have tokens
+    completed = true;
     if (readyResolve) readyResolve();
 
   }
 
 } else {
 
-  // No cached refresh token, so trigger the full authorization code flow
-  try {
-    const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
-    logger.info({
-      context: "AuthActions.startAuthFlow",
-      message: "Opening browser for QBO authorization",
-      authorizationUrl,
-    });
-    await openUrl(authorizationUrl);
-    // leave readyPromise unresolved until express callback receives tokens
-  } catch (err) {
-    logger.error({
-      context: "AuthActions.startAuthFlow",
-      message: "Failed to start authorization flow",
-      error: err,
-    });
+  if (!completed) {
+    // No cached refresh token, so trigger the full authorization code flow
+    try {
+      const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
+      logger.info({
+        context: "AuthActions.startAuthFlow",
+        message: "Opening browser for QBO authorization",
+        authorizationUrl,
+      });
+      await openUrl(authorizationUrl);
+      // leave readyPromise unresolved until express callback receives tokens
+    } catch (err) {
+      logger.error({
+        context: "AuthActions.startAuthFlow",
+        message: "Failed to start authorization flow",
+        error: err,
+      });
+    }
   }
 
 }
@@ -191,6 +195,9 @@ if (cachedRefreshToken) {
  * NOTE: The timeout should be sufficient for a user to manually authenticate
  */
 export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
+  if (completed) {
+    return qboApiInfo;
+  }
   if (timeoutMs > 0) {
     // race between readyPromise and a timeout
     await Promise.race([
@@ -256,6 +263,7 @@ app.get(web_path, async (req, res) => {
   await storeCachedRefreshToken(refreshToken);
 
   // Resolve waiting callers now that we have the tokens
+  completed = true;
   if (readyResolve) readyResolve();
 
   // Tell the user they can close the window now
