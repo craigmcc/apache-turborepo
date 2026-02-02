@@ -14,23 +14,15 @@ import { z } from "zod";
 
 // Internal Modules ----------------------------------------------------------
 
-import {
-  JournalReportResponse,
-  JournalReportResponseProps
-} from "./JournalReportResponse";
-
 // Public Objects ------------------------------------------------------------
 
 export function JournalReportRequest() {
 
-  const [journalReportResponseProps, setJournalReportResponseProps]
-    = useState<JournalReportResponseProps>(defaultValues);
   const [submitClicked, setSubmitClicked] = useState<boolean>(false);
 
   const form = useAppForm({
     defaultValues,
     onSubmit: async ({ value }) => {
-      setJournalReportResponseProps(value);
       setSubmitClicked(true);
     },
     validators: {
@@ -80,14 +72,14 @@ export function JournalReportRequest() {
         <hr/>
       </Row>
       {submitClicked &&
-        <JournalReportResponse {...journalReportResponseProps}/>}
+        <span>TODO</span> }
     </Container>
   );
 }
 
 // Private Objects -----------------------------------------------------------
 
-const defaultValues: JournalReportResponseProps = {
+const defaultValues = {
   endDate: "",
   startDate: "",
 }
