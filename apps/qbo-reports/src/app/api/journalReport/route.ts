@@ -63,8 +63,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         {status: 400}
       );
     }
-    if (!areValidColumns(columns)) {
-      const invalidCols = areValidColumns(columns);
+    const invalidCols = areValidColumns(columns);
+    if (invalidCols) {
       logger.warn(
         `JournalReport GET invalid column names: ${invalidCols}`
       );
@@ -73,13 +73,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         {status: 400}
       );
     }
-    if (!areValidColumns(sortBy)) {
-      const invalidSortByCols = areValidColumns(sortBy);
+    const invalidSortBy = areValidColumns(sortBy);
+    if (invalidSortBy) {
       logger.warn(
-        `JournalReport GET invalid sortBy column names: ${invalidSortByCols}`
+        `JournalReport GET invalid sortBy column names: ${invalidSortBy}`
       );
       return NextResponse.json(
-        {error: `Invalid sortBy column names: ${invalidSortByCols}`},
+        {error: `Invalid sortBy column names: ${invalidSortBy}`},
         {status: 400}
       );
     }

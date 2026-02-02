@@ -6,14 +6,14 @@
 
 // Internal Imports ----------------------------------------------------------
 
-import { JournalReportRequest } from "@/components/journalReport/JournalReportRequest";
+import { JournalReport } from "@/components/reports/JournalReport";
 
 // Public Objects ------------------------------------------------------------
 
 export default function JournalReportPage() {
   return (
     <div className="p-4">
-      <JournalReportRequest/>
+      <JournalReport/>
     </div>
   );
 }
