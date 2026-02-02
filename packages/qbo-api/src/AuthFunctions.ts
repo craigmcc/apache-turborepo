@@ -26,7 +26,7 @@ import {
 
 // Load relevant environment variables
 const NODE_ENV = process.env.NODE_ENV || "*undefined*";
-const isTest = NODE_ENV === "test"; // for CI environments
+const isProduction = NODE_ENV === "production"; // for CI environments
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID;
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;
@@ -42,31 +42,31 @@ logger.info({
   NODE_ENV,
 })
 // Validate presence of required environment variables
-if (!isTest && !QBO_BASE_URL) {
+if (!isProduction && !QBO_BASE_URL) {
   throw new Error("QBO_BASE_URL is not set");
 }
-if (!isTest && !QBO_CLIENT_ID) {
+if (!isProduction && !QBO_CLIENT_ID) {
   throw new Error("QBO_CLIENT_ID is not set");
 }
-if (!isTest && !QBO_CLIENT_SECRET) {
+if (!isProduction && !QBO_CLIENT_SECRET) {
   throw new Error("QBO_CLIENT_SECRET is not set");
 }
-if (isTest && !QBO_ENVIRONMENT) {
+if (isProduction && !QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
 }
-if (!isTest && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
+if (!isProduction && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
   throw new Error("QBO_LOCAL_REDIRECT_URL is not set for production environment");
 }
-if (!isTest && !QBO_MINOR_VERSION) {
+if (!isProduction && !QBO_MINOR_VERSION) {
   throw new Error("QBO_MINOR_VERSION is not set");
 }
-if (!isTest && !QBO_REALM_ID) {
+if (!isProduction && !QBO_REALM_ID) {
   throw new Error("QBO_REALM_ID is not set");
 }
-if (!isTest && !QBO_REDIRECT_URL) {
+if (!isProduction && !QBO_REDIRECT_URL) {
   throw new Error("QBO_REDIRECT_URL is not set");
 }
-if (!isTest && !QBO_WELL_KNOWN_URL) {
+if (!isProduction && !QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
 }
 
