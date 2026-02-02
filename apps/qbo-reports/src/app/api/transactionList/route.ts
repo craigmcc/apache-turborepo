@@ -28,8 +28,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // End date (YYYY-MM-DD)
     const endDate = params.get("endDate");
     // Comma-delimited list of columns to include (Report Defaults if not present)
-    const columns = params.get("columns") || null;
-//      "account_name,amount,doc_num,memo,name,tx_date,txn_type";
+    const columns = params.get("columns")
+      "account_name,amount,doc_num,memo,name,subt_nat_amount,tx_date,txn_type";
     // Comma-delimited list of columns to sort by (account_name,tx_date if not present)
     const sortBy = params.get("sortBy") || "account_name,tx_date";
     // Sort order (ascend if not present)
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Return the report data to the caller
     const reportData = await response.json();
-    logger.debug("TransactionList GET completed successfully");
+    logger.info({context: "TransactionList GET completed successfully"});
     return NextResponse.json(reportData);
 
   } catch (error) {
@@ -173,7 +173,6 @@ const API_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 // Those marked "Default" are included if no columns are specified.
 const COLUMN_NAMES: Set<string> = new Set<string>([
   "account_name",          // Default
-  "amount",                // ???
   "create_by",
   "create_date",
   "credit",
@@ -201,14 +200,11 @@ const COLUMN_NAMES: Set<string> = new Set<string>([
   "sales_cust2",
   "sales_cust3",
   "ship_via",
-  "split",                 // ???
   "term_name",
   "tracking_num",
   "tx_date",               // Default
   "txn_type",              // Default
 ]);
-
-const DEFAULT_COLUMNS = "account,doc_num,memo,name,tx_date,txn_type"
 
 // Valid SORT_ORDER values
 const SORT_ORDERS: Set<string> = new Set<string>([
