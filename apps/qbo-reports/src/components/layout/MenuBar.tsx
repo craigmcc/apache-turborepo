@@ -87,7 +87,10 @@ export function MenuBar() {
             Home
           </Nav.Link>
           <Nav.Link as={Link} eventKey="link-journalReport" href="/journalReport">
-            Journal
+            Journal Report
+          </Nav.Link>
+          <Nav.Link as={Link} eventKey="link-transactionList" href="/transactionList">
+            Transaction List
           </Nav.Link>
         </Nav>
       </div>
@@ -123,5 +126,6 @@ const THEME_STORAGE_KEY = "qbo-reports-theme";
 function mapPathToKey(pathname: string) {
   if (pathname === "/") return "home";
   if (pathname.startsWith("/journalReport")) return "link-journalReport";
+  if (pathname.startsWith("/transactionList")) return "link-transactionList";
   return "home";
 }
