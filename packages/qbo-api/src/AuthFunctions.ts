@@ -26,7 +26,7 @@ import {
 
 // Load relevant environment variables
 const NODE_ENV = process.env.NODE_ENV || "*undefined*";
-const isTest = NODE_ENV === "test";
+const isTest = NODE_ENV === "test"; // for CI environments
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID;
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;

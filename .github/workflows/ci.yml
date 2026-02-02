@@ -53,6 +53,7 @@ jobs:
       - name: Build
         env:
           DATABASE_URL: file:./github_bill.db
+          NODE_ENV: test
         run: pnpm build
 
       - name: Test
