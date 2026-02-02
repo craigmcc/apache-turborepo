@@ -28,7 +28,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // End date (YYYY-MM-DD)
     const endDate = params.get("endDate");
     // Comma-delimited list of columns to include (Report Defaults if not present)
-    const columns = params.get("columns")
+    const columns = params.get("columns") ||
       "account_name,amount,doc_num,memo,name,subt_nat_amount,tx_date,txn_type";
     // Comma-delimited list of columns to sort by (account_name,tx_date if not present)
     const sortBy = params.get("sortBy") || "account_name,tx_date";
