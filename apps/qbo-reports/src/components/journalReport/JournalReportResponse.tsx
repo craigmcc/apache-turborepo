@@ -17,7 +17,7 @@ import { Container } from "react-bootstrap";
 
 // Public Objects ------------------------------------------------------------
 
-type JournalReportResponseProps = {
+export type JournalReportResponseProps = {
   // Array of columns to include in the report [Report Default Columns]
   columns?: COLUMN_NAME[];
   // End date for the report (YYYY-MM-DD)

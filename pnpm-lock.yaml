@@ -510,6 +510,9 @@ importers:
 
   apps/qbo-reports:
     dependencies:
+      '@repo/bootstrap-tanstack-form':
+        specifier: workspace:*
+        version: link:../../packages/bootstrap-tanstack-form
       '@repo/qbo-api':
         specifier: workspace:*
         version: link:../../packages/qbo-api
@@ -534,6 +537,9 @@ importers:
       clsx:
         specifier: catalog:clsx
         version: 2.1.1
+      express:
+        specifier: catalog:express
+        version: 5.2.1
       lucide-react:
         specifier: catalog:lucide-react
         version: 0.511.0(react@19.1.0)
@@ -571,6 +577,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@types/express':
+        specifier: catalog:express
+        version: 5.0.6
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
