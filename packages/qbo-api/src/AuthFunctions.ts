@@ -51,7 +51,7 @@ if (!isProduction && !QBO_CLIENT_ID) {
 if (!isProduction && !QBO_CLIENT_SECRET) {
   throw new Error("QBO_CLIENT_SECRET is not set");
 }
-if (isProduction && !QBO_ENVIRONMENT) {
+if (!isProduction && !QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
 }
 if (!isProduction && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
