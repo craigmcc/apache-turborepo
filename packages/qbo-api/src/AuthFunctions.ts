@@ -25,6 +25,8 @@ import {
 // Private Objects -----------------------------------------------------------
 
 // Load relevant environment variables
+const NODE_ENV = process.env.NODE_ENV || "*undefined*";
+const isTest = NODE_ENV === "test";
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID;
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;
@@ -35,32 +37,36 @@ const QBO_REALM_ID = process.env.QBO_REALM_ID;
 const QBO_REDIRECT_URL = process.env.QBO_REDIRECT_URL;
 const QBO_WELL_KNOWN_URL = process.env.QBO_WELL_KNOWN_URL;
 
+logger.info({
+  context: "AuthActions.environment",
+  NODE_ENV,
+})
 // Validate presence of required environment variables
-if (!QBO_BASE_URL) {
+if (!isTest && !QBO_BASE_URL) {
   throw new Error("QBO_BASE_URL is not set");
 }
-if (!QBO_CLIENT_ID) {
+if (!isTest && !QBO_CLIENT_ID) {
   throw new Error("QBO_CLIENT_ID is not set");
 }
-if (!QBO_CLIENT_SECRET) {
+if (!isTest && !QBO_CLIENT_SECRET) {
   throw new Error("QBO_CLIENT_SECRET is not set");
 }
-if (!QBO_ENVIRONMENT) {
+if (isTest && !QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
 }
-if (!QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
+if (!isTest && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
   throw new Error("QBO_LOCAL_REDIRECT_URL is not set for production environment");
 }
-if (!QBO_MINOR_VERSION) {
+if (!isTest && !QBO_MINOR_VERSION) {
   throw new Error("QBO_MINOR_VERSION is not set");
 }
-if (!QBO_REALM_ID) {
+if (!isTest && !QBO_REALM_ID) {
   throw new Error("QBO_REALM_ID is not set");
 }
-if (!QBO_REDIRECT_URL) {
+if (!isTest && !QBO_REDIRECT_URL) {
   throw new Error("QBO_REDIRECT_URL is not set");
 }
-if (!QBO_WELL_KNOWN_URL) {
+if (!isTest && !QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
 }
 
@@ -248,7 +254,7 @@ app.get(web_path, async (req, res) => {
   const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
     wellKnownInfo,
     authorizationCode,
-    QBO_REDIRECT_URL
+    QBO_REDIRECT_URL!
   );
   logger.trace({
     context: "AuthActions.expressCallback",
