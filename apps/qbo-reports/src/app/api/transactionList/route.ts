@@ -14,8 +14,20 @@ import { type NextRequest, NextResponse } from "next/server";
 
 // Public Objects ------------------------------------------------------------
 
+const isCi = process.env.CI === "true" || false; // For CI environments
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
 
+  if (isCi) {
+    logger.error({
+      context: "TransactionList.route",
+      message: "TransactionList called in CI mode"
+    });
+    return NextResponse.json(
+      {error: "TransactionList called in CI mode"},
+      {status: 500}
+    );
+  }
   logger.trace("TransactionList GET starting");
 
   try {
