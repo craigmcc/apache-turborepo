@@ -26,7 +26,7 @@ import {
 
 // Load relevant environment variables
 const CI = process.env.CI;
-const isCi = process.env.CI === "true" || false; // For CI environments
+const isCi = (process.env.CI !== undefined) || false; // For CI environments
 const NODE_ENV = process.env.NODE_ENV || "*undefined*";
 const isProduction = NODE_ENV === "production";
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
@@ -242,74 +242,76 @@ export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
 
 // Express Server for Receiving Redirects ------------------------------------
 
-const app = express();
-const web_path = (QBO_ENVIRONMENT === "production")
-  ? extractPathFromUrl(QBO_LOCAL_REDIRECT_URL!)
-  : extractPathFromUrl(QBO_REDIRECT_URL!);
-const port = (QBO_ENVIRONMENT === "production")
-  ? extractPortFromUrl(QBO_LOCAL_REDIRECT_URL!)
-  : extractPortFromUrl(QBO_REDIRECT_URL!);
+if (!isCi) {
+  const app = express();
+  const web_path = (QBO_ENVIRONMENT === "production")
+    ? extractPathFromUrl(QBO_LOCAL_REDIRECT_URL!)
+    : extractPathFromUrl(QBO_REDIRECT_URL!);
+  const port = (QBO_ENVIRONMENT === "production")
+    ? extractPortFromUrl(QBO_LOCAL_REDIRECT_URL!)
+    : extractPortFromUrl(QBO_REDIRECT_URL!);
 
-app.get(web_path, async (req, res) => {
+  app.get(web_path, async (req, res) => {
 
-  // Receive authorization code and check state for a match
+    // Receive authorization code and check state for a match
 
-  const authorizationCode = req.query.code as string;
-  const state = req.query.state as string;
+    const authorizationCode = req.query.code as string;
+    const state = req.query.state as string;
 
-  if (state !== oauthState) {
-    logger.error({
+    if (state !== oauthState) {
+      logger.error({
+        context: "AuthActions.expressCallback",
+        message: "State mismatch in OAuth callback",
+        expectedState: oauthState,
+        receivedState: state,
+      });
+      res.status(400).send("State mismatch");
+      return;
+    }
+
+    logger.trace({
       context: "AuthActions.expressCallback",
-      message: "State mismatch in OAuth callback",
-      expectedState: oauthState,
-      receivedState: state,
+      message: "Received OAuth callback",
+      authorizationCode,
+      state,
     });
-    res.status(400).send("State mismatch");
-    return;
-  }
 
-  logger.trace({
-    context: "AuthActions.expressCallback",
-    message: "Received OAuth callback",
-    authorizationCode,
-    state,
+    const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
+      wellKnownInfo,
+      authorizationCode,
+      QBO_REDIRECT_URL!
+    );
+    logger.trace({
+      context: "AuthActions.expressCallback",
+      message: "Exchanged authorization code for tokens",
+      accessToken,
+      refreshToken,
+    });
+
+    // Save the received tokens, and persist the refresh token
+    qboApiInfo.accessToken = accessToken;
+    qboApiInfo.refreshToken = refreshToken;
+    await storeCachedRefreshToken(refreshToken);
+
+    // Resolve waiting callers now that we have the tokens
+    completed = true;
+    if (readyResolve) readyResolve();
+
+    // Tell the user they can close the window now
+    res.status(200).send("Authorization successful! You can close this window.");
+
   });
-
-  const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
-    wellKnownInfo,
-    authorizationCode,
-    QBO_REDIRECT_URL!
-  );
-  logger.trace({
-    context: "AuthActions.expressCallback",
-    message: "Exchanged authorization code for tokens",
-    accessToken,
-    refreshToken,
-  });
-
-  // Save the received tokens, and persist the refresh token
-  qboApiInfo.accessToken = accessToken;
-  qboApiInfo.refreshToken = refreshToken;
-  await storeCachedRefreshToken(refreshToken);
-
-  // Resolve waiting callers now that we have the tokens
-  completed = true;
-  if (readyResolve) readyResolve();
-
-  // Tell the user they can close the window now
-  res.status(200).send("Authorization successful! You can close this window.");
-
-});
 
 // TODO - this will not work on production environment
-if (!isCi) {
   app.listen(port, () => {
     logger.info({
       context: "AuthActions.expressListen",
       message: `OAuth Redirect Server listening at http://localhost:${port}${web_path}`,
     });
   });
+
 }
+
 
 // Private Objects -----------------------------------------------------------
 
