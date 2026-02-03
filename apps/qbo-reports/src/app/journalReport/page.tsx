@@ -4,6 +4,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { Container } from "react-bootstrap";
+
 // Internal Imports ----------------------------------------------------------
 
 import { JournalReport } from "@/components/reports/JournalReport";
@@ -12,8 +14,8 @@ import { JournalReport } from "@/components/reports/JournalReport";
 
 export default function JournalReportPage() {
   return (
-    <div className="p-4">
+    <Container fluid>
       <JournalReport/>
-    </div>
+    </Container>
   );
 }

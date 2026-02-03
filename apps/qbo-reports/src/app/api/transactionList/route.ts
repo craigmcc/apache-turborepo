@@ -34,21 +34,26 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Extract query parameters
     const requestUrl = new URL(request.url);
+    logger.info({
+      context: "TransactionList.route",
+      inboundUrl: requestUrl.toString(),
+    });
     const params = requestUrl.searchParams;
     // Start date (YYYY-MM-DD)
     const startDate = params.get("startDate");
     // End date (YYYY-MM-DD)
     const endDate = params.get("endDate");
     // Comma-delimited list of columns to include (Report Defaults if not present)
-    const columns = params.get("columns"); // ||
-    //  "account_name,amount,doc_num,memo,name,subt_nat_amount,tx_date,txn_type";
+    const columns = params.get("columns") || null;
+    //  "tx_date,txn_type,doc_num,name,memo,account_name,subt_nat_amount";
     // Comma-delimited list of columns to sort by (account_name,tx_date if not present)
     const sortBy = params.get("sortBy") || "account_name,tx_date";
     // Sort order (ascend if not present)
     const sortOrder = params.get("sortOrder") || "ascend";
     // Comma-delimited list of columns to include (all if not present)
-    const transaction_type = params.get("transaction_type") ||
-      "Bill,BillPaymentCheck,CreditCardCredit,Expenditure";
+    const transaction_type = params.get("transaction_type") || null;
+  //    "Bill,Bill Payment (Check),Journal Entry,Expenditure,Pledge,Payment,Credit Card Payment";
+  //    "Bill,BillPaymentCheck,JournalEntry,Expenditure,Pledge,Payment,CreditCardPayment";
 
     // Validate required parameters
     if (!startDate || !endDate) {
@@ -163,6 +168,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     reportUrl.searchParams.set("sort_by", sortBy);
     reportUrl.searchParams.set("sort_order", sortOrder);
     reportUrl.searchParams.set("start_date", startDate);
+    if (transaction_type) {
+      reportUrl.searchParams.set("transaction_type", transaction_type);
+    }
+    logger.info({
+      context: "TransactionList.route",
+      outboundUrl: reportUrl.toString(),
+    });
 
     // Fetch the report data from QBO
     const response = await fetch(reportUrl, {
@@ -248,6 +260,7 @@ const COLUMN_NAMES: Set<string> = new Set<string>([
   "sales_cust2",
   "sales_cust3",
   "ship_via",
+  "subt_nat_amount",
   "term_name",
   "tracking_num",
   "tx_date",               // Default
@@ -262,6 +275,7 @@ const SORT_ORDERS: Set<string> = new Set<string>([
 
 // Valid Transaction Types
 const TRANSACTION_TYPES: Set<string> = new Set<string>([
+/*
   "Bill",
   "BillableCharge",
   "BillPaymentCheck",
@@ -272,6 +286,7 @@ const TRANSACTION_TYPES: Set<string> = new Set<string>([
   "Credit",
   "CreditCardCharge",
   "CreditCardCredit",
+  "CreditCardPayment",
   "CreditMemo",
   "CreditRefund",
   "Deposit",
@@ -282,6 +297,8 @@ const TRANSACTION_TYPES: Set<string> = new Set<string>([
   "InventoryQuantityAdjustment",
   "Invoice",
   "JournalEntry",
+  "Payment",
+  "Pledge",
   "PurchaseOrder",
   "ReceivePayment",
   "SalesReceipt",
@@ -294,7 +311,15 @@ const TRANSACTION_TYPES: Set<string> = new Set<string>([
   "TimeActivity",
   "Transfer",
   "VendorCredit",
-
+*/
+  "Bill",
+  "Bill Payment (Check)",
+  "Credit Card Payment",
+  "Deposit",
+  "Expenditure",
+  "Journal Entry",
+  "Payment",
+  "Pledge",
 
 ])
 

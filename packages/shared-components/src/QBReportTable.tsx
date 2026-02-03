@@ -55,12 +55,31 @@ export const QBReportTable: React.FC<Props> = ({ reportJsonText, className, tabl
   );
 
   const headerTitles: string[] = [];
+  const headerTypes: string[] = [];
   if (columns.length > 0) {
     for (let i = 0; i < columns.length; i++) {
       headerTitles.push(columns[i]?.ColTitle ?? columns[i]?.ColType ?? `Col ${i + 1}`);
+      headerTypes.push(columns[i]?.ColType ?? 'string');
     }
   } else {
     for (let i = 0; i < derivedColCount; i++) headerTitles.push(`Col ${i + 1}`);
+  }
+  console.log("Header Titles: " + headerTitles.join('|'));
+  console.log("Header Types:  " + headerTypes.join('|'));
+
+  const txnTypeColIndex = columns.findIndex((col) => col.ColType === 'txn_type');
+  const txnTypes: Set<string> = new Set();
+  if (txnTypeColIndex >= 0) {
+    rows.forEach((r) => {
+      const colData = r.ColData ?? r.Summary?.ColData ?? [];
+      if (Array.isArray(colData)) {
+        const cell = colData[txnTypeColIndex];
+        if (cell?.value) {
+          txnTypes.add(cell.value);
+        }
+      }
+    });
+    console.log("txnTypes: " + txnTypes.size + " [" + Array.from(txnTypes).join('|') + "]");
   }
 
   const tableDefaultStyle: React.CSSProperties = {

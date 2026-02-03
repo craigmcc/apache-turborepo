@@ -45,7 +45,7 @@ export function JournalReport() {
   });
 
   return (
-    <Container>
+    <Container fluid>
       <Row className="align-items-center mb-2">
         <Form onSubmit={(e) => {
           e.preventDefault();

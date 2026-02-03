@@ -4,6 +4,8 @@
 
 // External Imports ----------------------------------------------------------
 
+import { Container } from "react-bootstrap";
+
 // Internal Imports ----------------------------------------------------------
 
 import { TransactionList } from "@/components/reports/TransactionList";
@@ -12,8 +14,8 @@ import { TransactionList } from "@/components/reports/TransactionList";
 
 export default function TransactionListPage() {
   return (
-    <div className="p-4">
+    <Container fluid>
       <TransactionList/>
-    </div>
+    </Container>
   );
 }
