@@ -40,6 +40,7 @@ const QBO_WELL_KNOWN_URL = process.env.QBO_WELL_KNOWN_URL;
 logger.info({
   context: "AuthActions.environment",
   NODE_ENV,
+  isProduction: isProduction ? "true" : "false",
 })
 // Validate presence of required environment variables
 if (!isProduction && !QBO_BASE_URL) {
