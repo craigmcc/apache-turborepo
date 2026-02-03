@@ -16,7 +16,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
 
-  logger.debug("TransactionList GET starting");
+  logger.trace("TransactionList GET starting");
 
   try {
 
@@ -28,8 +28,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // End date (YYYY-MM-DD)
     const endDate = params.get("endDate");
     // Comma-delimited list of columns to include (Report Defaults if not present)
-    const columns = params.get("columns") ||
-      "account_name,amount,doc_num,memo,name,subt_nat_amount,tx_date,txn_type";
+    const columns = params.get("columns"); // ||
+    //  "account_name,amount,doc_num,memo,name,subt_nat_amount,tx_date,txn_type";
     // Comma-delimited list of columns to sort by (account_name,tx_date if not present)
     const sortBy = params.get("sortBy") || "account_name,tx_date";
     // Sort order (ascend if not present)
@@ -40,28 +40,42 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Validate required parameters
     if (!startDate || !endDate) {
-      logger.warn("TransactionList GET missing required parameters");
+      logger.warn({
+        context: "TransactionList.route",
+        message: "TransactionList GET missing required startDate and/or endDate parameters"
+      });
       return NextResponse.json(
         {error: "Missing required parameters: startDate and endDate"},
         {status: 400}
       );
     }
     if (!isValidYMD(startDate)) {
-      logger.warn("TransactionList GET invalid startDate format");
+      logger.warn({
+        context: "TransactionList.route",
+        message: `Invalid startDate format for ${startDate}`,
+      });
       return NextResponse.json(
         {error: "startDate must be in YYYY-MM-DD format"},
         {status: 400}
       );
     }
     if (!isValidYMD(endDate)) {
-      logger.warn("TransactionList GET invalid endDate format");
+      logger.warn({
+        context: "TransactionList.route",
+        message: `Invalid endDate format for ${endDate}`,
+      });
       return NextResponse.json(
         {error: "endDate must be in YYYY-MM-DD format"},
         {status: 400}
       );
     }
     if (endDate < startDate) {
-      logger.warn("TransactionList GET endDate before startDate");
+      logger.warn({
+        context: "TransactionList.route",
+        message: "endDate must not be before startDate",
+        endDate,
+        startDate,
+      });
       return NextResponse.json(
         {error: "endDate must be on or after startDate"},
         {status: 400}
@@ -69,9 +83,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     const invalidCols = areValidColumns(columns);
     if (invalidCols) {
-      logger.warn(
-        `TransactionList GET invalid column names: ${invalidCols}`
-      );
+      logger.warn({
+        context: "TransactionList.route",
+        message: "Invalid column name(s) specified",
+        invalidCols,
+      });
       return NextResponse.json(
         {error: `Invalid column names: ${invalidCols}`},
         {status: 400}
@@ -79,9 +95,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     const invalidTypes = areValidTransactionTypes(transaction_type);
     if (invalidTypes) {
-      logger.warn(
-        `TransactionList GET invalid transaction types: ${invalidTypes}`
-      );
+      logger.warn({
+        context: "TransactionList.route",
+        message: "Invalid transaction type(s) specified",
+        invalidTypes,
+      });
       return NextResponse.json(
         {error: `Invalid transaction types: ${invalidTypes}`},
         {status: 400}
@@ -89,16 +107,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     const invalidSortBy = areValidColumns(sortBy);
     if (invalidSortBy) {
-      logger.warn(
-        `TransactionList GET invalid sortBy column names: ${invalidSortBy}`
-      );
+      logger.warn({
+        context: "TransactionList.route",
+        message: "Invalid sortBy column name(s) specified",
+        invalidSortBy,
+      });
       return NextResponse.json(
         {error: `Invalid sortBy column names: ${invalidSortBy}`},
         {status: 400}
       );
     }
     if (!isValidSortOrder(sortOrder)) {
-      logger.warn("TransactionList GET invalid sortOrder value");
+      logger.warn({
+        context: "TransactionList.route",
+        message: "Invalid sortOrder specified",
+        sortOrder,
+      });
       return NextResponse.json(
         {error: `Invalid sortOrder: must be one of ${Array.from(SORT_ORDERS).join(", ")}`},
         {status: 400}
@@ -108,7 +132,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Fetch the authentication credentials
     const apiInfo = await fetchApiInfo(API_TIMEOUT);
     if (!apiInfo) {
-      logger.error("TransactionList GET unable to fetch API info");
+      logger.error({
+        context: "TransactionList.route",
+        message: "Unable to fetch API info",
+      });
       return NextResponse.json(
         {error: "Unable to fetch API info"},
         {status: 500}
@@ -138,9 +165,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Report any server reported errors
     if (!response.ok) {
       const errorText = await response.text();
-      logger.error(
-        `TransactionList GET QBO API error: ${response.status} - ${errorText}`
-      );
+      logger.error({
+          context: "TransactionList.route",
+          errorText,
+        });
       return NextResponse.json(
         {error: `QBO API error: ${response.status} - ${errorText}`},
         {status: response.status}
@@ -149,12 +177,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Return the report data to the caller
     const reportData = await response.json();
-    logger.info({context: "TransactionList GET completed successfully"});
+    logger.info({
+      context: "TransactionList.route",
+      message: "Report data retrieved successfully",
+      length: reportData.length,
+    });
     return NextResponse.json(reportData);
 
   } catch (error) {
     // Report any fetch errors
-    logger.error(`TransactionList GET exception: ${error}`);
+    logger.error({
+      context: "TransactionList.route",
+      message: "Error on data retrieval",
+      error,
+    });
     return NextResponse.json(
       {error: `Exception occurred: ${error}`},
       {status: 500}

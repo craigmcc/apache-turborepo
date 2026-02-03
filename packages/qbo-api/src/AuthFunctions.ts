@@ -25,8 +25,10 @@ import {
 // Private Objects -----------------------------------------------------------
 
 // Load relevant environment variables
+const CI = process.env.CI;
+const isCi = process.env.CI === "true" || false; // For CI environments
 const NODE_ENV = process.env.NODE_ENV || "*undefined*";
-const isProduction = NODE_ENV === "production"; // for CI environments
+const isProduction = NODE_ENV === "production";
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
 const QBO_CLIENT_ID = process.env.QBO_CLIENT_ID;
 const QBO_CLIENT_SECRET = process.env.QBO_CLIENT_SECRET;
@@ -38,36 +40,39 @@ const QBO_REDIRECT_URL = process.env.QBO_REDIRECT_URL;
 const QBO_WELL_KNOWN_URL = process.env.QBO_WELL_KNOWN_URL;
 
 logger.info({
-  context: "AuthActions.environment",
+  context: "AuthActions.initialization",
+  CI,
   NODE_ENV,
-  isProduction: isProduction ? "true" : "false",
-})
+  isCi,
+  isProduction,
+});
+
 // Validate presence of required environment variables
-if (!isProduction && !QBO_BASE_URL) {
+if (!isCi && !QBO_BASE_URL) {
   throw new Error("QBO_BASE_URL is not set");
 }
-if (!isProduction && !QBO_CLIENT_ID) {
+if (!isCi && !QBO_CLIENT_ID) {
   throw new Error("QBO_CLIENT_ID is not set");
 }
-if (!isProduction && !QBO_CLIENT_SECRET) {
+if (!isCi && !QBO_CLIENT_SECRET) {
   throw new Error("QBO_CLIENT_SECRET is not set");
 }
-if (!isProduction && !QBO_ENVIRONMENT) {
+if (!isCi && !QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
 }
-if (!isProduction && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
+if (!isCi && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
   throw new Error("QBO_LOCAL_REDIRECT_URL is not set for production environment");
 }
-if (!isProduction && !QBO_MINOR_VERSION) {
+if (!isCi && !QBO_MINOR_VERSION) {
   throw new Error("QBO_MINOR_VERSION is not set");
 }
-if (!isProduction && !QBO_REALM_ID) {
+if (!isCi && !QBO_REALM_ID) {
   throw new Error("QBO_REALM_ID is not set");
 }
-if (!isProduction && !QBO_REDIRECT_URL) {
+if (!isCi && !QBO_REDIRECT_URL) {
   throw new Error("QBO_REDIRECT_URL is not set");
 }
-if (!isProduction && !QBO_WELL_KNOWN_URL) {
+if (!isCi && !QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
 }
 
@@ -82,12 +87,28 @@ const readyPromise: Promise<void> = new Promise((resolve) => {
   readyResolve = resolve;
 });
 
-
 // Information shared between authorization steps
-const cachedRefreshToken: string | null = await fetchCachedRefreshToken();
+const cachedRefreshToken: string | null = !isCi
+  ? await fetchCachedRefreshToken()
+  : null;
 const credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
 const oauthState: string = crypto.randomBytes(32).toString("hex");
-const wellKnownInfo: QboWellKnownInfo = await fetchWellKnownInfo();
+const wellKnownInfo: QboWellKnownInfo = !isCi
+  ? await fetchWellKnownInfo()
+  : {
+      authorization_endpoint: "https://example.com/oauth2",
+      claims_supported: [],
+      id_token_signing_alg_values_supported: [],
+      issuer: "https://example.com/oauth2/issuer",
+      jwks_uri: "https://example.com/oauth2/jwks",
+      response_types_supported: [],
+      revocation_endpoint: "https://example.com/oauth2/revoke",
+      scopes_supported: [],
+      subject_types_supported: [],
+      token_endpoint: "https://example.com/oauth2/tokens",
+      token_endpoint_auth_methods_supported: [],
+      userinfo_endpoint: "https://example.com/oauth2/userinfo",
+    };
 
 // Tokens MUST be filled in before this can be returned!
 let completed = false;
@@ -116,80 +137,82 @@ logger.trace({
 });
 
 // If we have a cached refresh token, try to use it directly
-if (cachedRefreshToken && !completed) {
+if (!isCi) {
+  if (cachedRefreshToken && !completed) {
 
-  logger.trace({
-    context: "AuthActions.attemptRefresh",
-    cachedRefreshToken,
-  });
-
-  const refreshRequest: OAuthRefreshRequest = {
-    grant_type: "refresh_token",
-    refresh_token: cachedRefreshToken,
-  };
-  const refreshResponse = await fetch(wellKnownInfo.token_endpoint, {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Authorization": credentials,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams(refreshRequest),
-  });
-
-  if (!refreshResponse.ok) {
-    logger.error({
-      context: "AuthActions.attemptRefresh.failure",
-      message: "Failed to refresh tokens",
-      status: refreshResponse.status,
-      statusText: refreshResponse.statusText,
-    });
-    // Refresh failed, so fall through to the full authorization code flow
-
-  } else if (!completed) {
-
-    const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
-    logger.info({
-      context: "AuthActions.attemptRefresh.success",
-      message: "Successfully refreshed tokens",
-//      refreshResponseData,
+    logger.trace({
+      context: "AuthActions.attemptRefresh",
+      cachedRefreshToken,
     });
 
-    // Set the tokens we need
-    qboApiInfo.accessToken = refreshResponseData.access_token;
-    qboApiInfo.refreshToken = refreshResponseData.refresh_token;
+    const refreshRequest: OAuthRefreshRequest = {
+      grant_type: "refresh_token",
+      refresh_token: cachedRefreshToken,
+    };
+    const refreshResponse = await fetch(wellKnownInfo.token_endpoint, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Authorization": credentials,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(refreshRequest),
+    });
 
-    // Store the new refresh token
-    await storeCachedRefreshToken(refreshResponseData.refresh_token);
-
-    // Return the API info now that we have tokens
-    completed = true;
-    if (readyResolve) readyResolve();
-
-  }
-
-} else {
-
-  if (!completed) {
-    // No cached refresh token, so trigger the full authorization code flow
-    try {
-      const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
-      logger.info({
-        context: "AuthActions.startAuthFlow",
-        message: "Opening browser for QBO authorization",
-        authorizationUrl,
-      });
-      await openUrl(authorizationUrl);
-      // leave readyPromise unresolved until express callback receives tokens
-    } catch (err) {
+    if (!refreshResponse.ok) {
       logger.error({
-        context: "AuthActions.startAuthFlow",
-        message: "Failed to start authorization flow",
-        error: err,
+        context: "AuthActions.attemptRefresh.failure",
+        message: "Failed to refresh tokens",
+        status: refreshResponse.status,
+        statusText: refreshResponse.statusText,
       });
-    }
-  }
+      // Refresh failed, so fall through to the full authorization code flow
 
+    } else if (!completed) {
+
+      const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
+      logger.info({
+        context: "AuthActions.attemptRefresh.success",
+        message: "Successfully refreshed tokens",
+        //      refreshResponseData,
+      });
+
+      // Set the tokens we need
+      qboApiInfo.accessToken = refreshResponseData.access_token;
+      qboApiInfo.refreshToken = refreshResponseData.refresh_token;
+
+      // Store the new refresh token
+      await storeCachedRefreshToken(refreshResponseData.refresh_token);
+
+      // Return the API info now that we have tokens
+      completed = true;
+      if (readyResolve) readyResolve();
+
+    }
+
+  } else {
+
+    if (!completed) {
+      // No cached refresh token, so trigger the full authorization code flow
+      try {
+        const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
+        logger.info({
+          context: "AuthActions.startAuthFlow",
+          message: "Opening browser for QBO authorization",
+          authorizationUrl,
+        });
+        await openUrl(authorizationUrl);
+        // leave readyPromise unresolved until express callback receives tokens
+      } catch (err) {
+        logger.error({
+          context: "AuthActions.startAuthFlow",
+          message: "Failed to start authorization flow",
+          error: err,
+        });
+      }
+    }
+
+  }
 }
 
 /**
@@ -279,12 +302,14 @@ app.get(web_path, async (req, res) => {
 });
 
 // TODO - this will not work on production environment
-app.listen(port, () => {
-  logger.info({
-    context: "AuthActions.expressListen",
-    message: `OAuth Redirect Server listening at http://localhost:${port}${web_path}`,
+if (!isCi) {
+  app.listen(port, () => {
+    logger.info({
+      context: "AuthActions.expressListen",
+      message: `OAuth Redirect Server listening at http://localhost:${port}${web_path}`,
+    });
   });
-});
+}
 
 // Private Objects -----------------------------------------------------------
 

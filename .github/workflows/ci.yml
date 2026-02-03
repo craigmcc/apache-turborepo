@@ -52,6 +52,7 @@ jobs:
 
       - name: Build
         env:
+          CI: true
           DATABASE_URL: file:./github_bill.db
         run: pnpm build
 
