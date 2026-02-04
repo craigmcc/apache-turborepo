@@ -14,10 +14,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 // Public Objects ------------------------------------------------------------
 
-const isCi = process.env.CI === "true" || false; // For CI environments
+//const isCi = process.env.CI === "true" || false; // For CI environments
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
 
+/*
   if (isCi) {
     logger.error({
       context: "TransactionList.route",
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       {status: 500}
     );
   }
+*/
   logger.trace("TransactionList GET starting");
 
   try {
@@ -52,7 +54,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const sortOrder = params.get("sortOrder") || "ascend";
     // Comma-delimited list of columns to include (all if not present)
     const transaction_type = params.get("transaction_type") || null;
-  //    "Bill,Bill Payment (Check),Journal Entry,Expenditure,Pledge,Payment,Credit Card Payment";
   //    "Bill,BillPaymentCheck,JournalEntry,Expenditure,Pledge,Payment,CreditCardPayment";
 
     // Validate required parameters
@@ -98,6 +99,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         {status: 400}
       );
     }
+
+    // Validate optional parameters
     const invalidCols = areValidColumns(columns);
     if (invalidCols) {
       logger.warn({
@@ -275,7 +278,6 @@ const SORT_ORDERS: Set<string> = new Set<string>([
 
 // Valid Transaction Types
 const TRANSACTION_TYPES: Set<string> = new Set<string>([
-/*
   "Bill",
   "BillableCharge",
   "BillPaymentCheck",
@@ -286,19 +288,15 @@ const TRANSACTION_TYPES: Set<string> = new Set<string>([
   "Credit",
   "CreditCardCharge",
   "CreditCardCredit",
-  "CreditCardPayment",
   "CreditMemo",
   "CreditRefund",
   "Deposit",
   "Estimate",
-  "Expenditure",
   "GlobalTaxAdjustment",
   "GlobalTaxPayment",
   "InventoryQuantityAdjustment",
   "Invoice",
   "JournalEntry",
-  "Payment",
-  "Pledge",
   "PurchaseOrder",
   "ReceivePayment",
   "SalesReceipt",
@@ -311,16 +309,13 @@ const TRANSACTION_TYPES: Set<string> = new Set<string>([
   "TimeActivity",
   "Transfer",
   "VendorCredit",
-*/
-  "Bill",
-  "Bill Payment (Check)",
-  "Credit Card Payment",
-  "Deposit",
-  "Expenditure",
-  "Journal Entry",
-  "Payment",
-  "Pledge",
-
+  /*
+    "CreditCardPayment",
+    "Expenditure",
+    "Payment",
+    "Pledge",
+    "ReceivePayment",
+   */
 ])
 
 // Validate the columns parameter (if provided) contains only supported column names.

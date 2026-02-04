@@ -92,6 +92,9 @@ export function MenuBar() {
           <Nav.Link as={Link} eventKey="link-transactionList" href="/transactionList">
             Transaction List
           </Nav.Link>
+          <Nav.Link as={Link} eventKey="link-transactionWithSplits" href="/transactionWithSplits">
+            Transactions With Splits
+          </Nav.Link>
         </Nav>
       </div>
 
@@ -127,5 +130,6 @@ function mapPathToKey(pathname: string) {
   if (pathname === "/") return "home";
   if (pathname.startsWith("/journalReport")) return "link-journalReport";
   if (pathname.startsWith("/transactionList")) return "link-transactionList";
+  if (pathname.startsWith("/transactionWithSplits")) return "link-transactionWithSplits";
   return "home";
 }

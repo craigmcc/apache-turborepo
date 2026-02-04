@@ -81,7 +81,7 @@ export function TransactionList() {
         </Form>
       </Row>
       {submitClicked &&
-        <QBReportTable reportJsonText={reportData}/> }
+        <QBReportTable report={reportData}/> }
     </Container>
   );
 }

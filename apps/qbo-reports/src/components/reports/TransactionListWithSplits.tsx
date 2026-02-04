@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Enter criteria for a Journal Report, and call /api/journalReport
- * to get the report data, and render it.
+ * Enter criteria for a Transaction List With Splits, and call
+ * /api/transactionListWithSplits to get the report data, and render it.
  */
 
 // External Modules ----------------------------------------------------------
@@ -17,7 +17,7 @@ import { z } from "zod";
 
 // Public Objects ------------------------------------------------------------
 
-export function JournalReport() {
+export function TransactionListWithSplits() {
 
   const [reportData, setReportData] = useState<string>("");
   const [submitClicked, setSubmitClicked] = useState<boolean>(false);
@@ -25,9 +25,9 @@ export function JournalReport() {
   const form = useAppForm({
     defaultValues,
     onSubmit: async ({ value }) => {
-      const url = "/api/journalReport" +
-        "?startDate=" + encodeURIComponent(value.startDate) +
-        "&endDate=" + encodeURIComponent(value.endDate);
+      const url = "/api/transactionListWithSplits" +
+        "?start_date=" + encodeURIComponent(value.startDate) +
+        "&end_date=" + encodeURIComponent(value.endDate);
       const response = await fetch(url, {
         method: "GET",
         headers: {
@@ -38,9 +38,9 @@ export function JournalReport() {
       setSubmitClicked(true);
     },
     validators: {
-      onBlur: JournalReportSchema,
-      onChange: JournalReportSchema,
-      onSubmit: JournalReportSchema,
+      onBlur: TransactionListWithSplitsSchema,
+      onChange: TransactionListWithSplitsSchema,
+      onSubmit: TransactionListWithSplitsSchema,
     },
   });
 
@@ -53,7 +53,7 @@ export function JournalReport() {
           form.handleSubmit();
         }}>
           <Col>
-            <h5>Journal Report Criteria</h5>
+            <h5>Transaction List With Splits Criteria</h5>
           </Col>
           <Col>
             <form.AppField name="startDate">
@@ -93,7 +93,7 @@ const defaultValues = {
   startDate: "",
 }
 
-const JournalReportSchema = z.object({
+const TransactionListWithSplitsSchema = z.object({
   endDate: z.string().min(1, { message: "End Date is required." }),
   startDate: z.string().min(1, { message: "Start Date is required." }),
 });

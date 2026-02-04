@@ -14,10 +14,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 // Public Objects ------------------------------------------------------------
 
-const isCi = process.env.CI === "true" || false; // For CI environments
+//const isCi = process.env.CI === "true" || false; // For CI environments
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
 
+/*
   if (isCi) {
     logger.error({
       context: "JournalReport.route",
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       {status: 500}
     );
   }
+*/
   logger.trace("JournalReport GET starting");
 
   try {
