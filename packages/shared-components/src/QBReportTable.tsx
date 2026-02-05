@@ -1,11 +1,11 @@
 // typescript
 import React from "react";
 
-export type Json = string | number | boolean | null | JsonObject | JsonArray;
-export interface JsonObject { [k: string]: Json; }
-export interface JsonArray { [n: number]: Json; }
+type Json = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject { [k: string]: Json; }
+interface JsonArray { [n: number]: Json; }
 
-export type ColLike = {
+type ColLike = {
   ColTitle?: string;
   ColType?: string;
   "#text"?: string;
@@ -16,19 +16,19 @@ export type ColLike = {
   amount?: string | number;
 } & Record<string, Json>;
 
-export type ColDataLike = ColLike | string | number | JsonObject;
+type ColDataLike = ColLike | string | number | JsonObject;
 
-export type ColumnsLike = {
+type ColumnsLike = {
   Column?: ColLike | ColLike[];
   Col?: ColLike | ColLike[];
   ColData?: ColDataLike | ColDataLike[];
 } & Record<string, Json>;
 
-export type RowsLike = {
+type RowsLike = {
   Row?: RowLike | RowLike[];
 } | RowLike[];
 
-export type RowLike = {
+type RowLike = {
   Rows?: RowsLike;
   Row?: RowLike | RowLike[];
   rows?: { row?: RowLike | RowLike[] } | RowLike[];
