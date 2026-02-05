@@ -1,11 +1,11 @@
 // typescript
 import React from "react";
 
-type Json = string | number | boolean | null | JsonObject | JsonArray;
-interface JsonObject { [k: string]: Json; }
-interface JsonArray { [n: number]: Json; }
+export type Json = string | number | boolean | null | JsonObject | JsonArray;
+export interface JsonObject { [k: string]: Json; }
+export interface JsonArray { [n: number]: Json; }
 
-type ColLike = {
+export type ColLike = {
   ColTitle?: string;
   ColType?: string;
   "#text"?: string;
@@ -16,19 +16,19 @@ type ColLike = {
   amount?: string | number;
 } & Record<string, Json>;
 
-type ColDataLike = ColLike | string | number | JsonObject;
+export type ColDataLike = ColLike | string | number | JsonObject;
 
-type ColumnsLike = {
+export type ColumnsLike = {
   Column?: ColLike | ColLike[];
   Col?: ColLike | ColLike[];
   ColData?: ColDataLike | ColDataLike[];
 } & Record<string, Json>;
 
-type RowsLike = {
+export type RowsLike = {
   Row?: RowLike | RowLike[];
 } | RowLike[];
 
-type RowLike = {
+export type RowLike = {
   Rows?: RowsLike;
   Row?: RowLike | RowLike[];
   rows?: { row?: RowLike | RowLike[] } | RowLike[];
@@ -39,29 +39,17 @@ type RowLike = {
   title?: string;
 } & Record<string, Json>;
 
-type ReportLike = {
-  Report?: ReportLike;
+export type Report = {
+  Report?: Report;
   Columns?: ColumnsLike;
   Rows?: RowsLike;
   Header?: { Columns?: ColumnsLike } & Record<string, Json>;
 } & Record<string, Json | RowsLike | ColumnsLike | RowLike | undefined>;
 
-interface QBReportTableProps {
-  report: unknown;
+export interface QBReportTableProps {
+  report: Report;
   className?: string;
 }
-
-const parseReportInput = (report: unknown): unknown => {
-  if (report == null) return report;
-  if (typeof report === "string") {
-    try {
-      return JSON.parse(report);
-    } catch {
-      return report;
-    }
-  }
-  return report;
-};
 
 const getHeaderLabel = (h: unknown): string => {
   if (h == null) return "";
@@ -142,7 +130,7 @@ const asObj = (x: unknown): Record<string, unknown> | undefined => {
 
 // Prefer top-level Columns/Column (contains ColTitle/ColType), then header variants
 const normalizeHeaders = (report: unknown): ColLike[] => {
-  const src = (report as ReportLike)?.Report ?? (report as ReportLike);
+  const src = (report as Report)?.Report ?? (report as Report);
   const srcObj = asObj(src);
 
   const headerObj = asObj(srcObj?.["Header"]);
@@ -212,7 +200,7 @@ const normalizeColData = (x: unknown): ColDataLike[] => {
 };
 
 export const QBReportTable: React.FC<QBReportTableProps> = ({ report, className }) => {
-  const parsedReport = parseReportInput(report);
+  const parsedReport = report;
   const topRows = normalizeRows(parsedReport);
   const explicitHeaders = normalizeHeaders(parsedReport);
 

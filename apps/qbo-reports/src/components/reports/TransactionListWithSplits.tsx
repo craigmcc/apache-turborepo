@@ -8,7 +8,7 @@
 // External Modules ----------------------------------------------------------
 
 import { useAppForm } from "@repo/bootstrap-tanstack-form/useAppForm";
-import { QBReportTable } from "@repo/shared-components/QBReportTable";
+import { QBReportTable, Report } from "@repo/shared-components/QBReportTable";
 import { useState} from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { z } from "zod";
@@ -19,7 +19,7 @@ import { z } from "zod";
 
 export function TransactionListWithSplits() {
 
-  const [reportData, setReportData] = useState<string>("");
+  const [report, setReport] = useState<Report>({});
   const [submitClicked, setSubmitClicked] = useState<boolean>(false);
 
   const form = useAppForm({
@@ -34,7 +34,7 @@ export function TransactionListWithSplits() {
           "Accept": "application/json",
         }
       });
-      setReportData(await response.text());
+      setReport(await response.json() as Report);
       setSubmitClicked(true);
     },
     validators: {
@@ -81,7 +81,7 @@ export function TransactionListWithSplits() {
         </Form>
       </Row>
       {submitClicked &&
-        <QBReportTable report={reportData}/> }
+        <QBReportTable report={report}/> }
     </Container>
   );
 }
