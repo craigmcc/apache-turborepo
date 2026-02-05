@@ -177,8 +177,23 @@ export const QBReportTable: React.FC<QBReportTableProps> = ({ report, className 
     return idCounterRef.current;
   };
 
-  const tableStyle: React.CSSProperties = { borderCollapse: 'collapse', width: '100%' };
-  const cellBaseStyle: React.CSSProperties = { border: '1px solid #e0e0e0', padding: '6px 8px', textAlign: 'left' };
+  // Use fixed table layout and viewport-limited max width so long content wraps
+  const tableStyle: React.CSSProperties = {
+    borderCollapse: 'collapse',
+    width: '100%',
+    tableLayout: 'fixed',
+    maxWidth: '100vw',
+  };
+
+  // Ensure cells break/wrap long content instead of forcing table width
+  const cellBaseStyle: React.CSSProperties = {
+    border: '1px solid #e0e0e0',
+    padding: '6px 8px',
+    textAlign: 'left',
+    wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
+    whiteSpace: 'normal',
+  };
 
   const renderRows = (rows: any[], level = 0): React.ReactNode[] => {
     return rows.flatMap((r: any, idx: number) => {
@@ -240,7 +255,7 @@ export const QBReportTable: React.FC<QBReportTableProps> = ({ report, className 
   };
 
   return (
-    <div className={className || 'qbo-report-table-wrapper'}>
+    <div className={className || 'qbo-report-table-wrapper'} style={{ width: '100%', maxWidth: '100vw' }}>
       <table className="qbo-report-table" style={tableStyle}>
         <thead>
           <tr>
