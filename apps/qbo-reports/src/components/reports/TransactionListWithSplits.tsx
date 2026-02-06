@@ -9,6 +9,7 @@
 
 import { useAppForm } from "@repo/bootstrap-tanstack-form/useAppForm";
 import { QBReportTable, Report } from "@repo/shared-components/QBReportTable";
+import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
 import { useState} from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { z } from "zod";
@@ -34,7 +35,12 @@ export function TransactionListWithSplits() {
           "Accept": "application/json",
         }
       });
-      setReport(await response.json() as Report);
+      const report = await response.json() as Report;
+      setReport(report);
+      logger.trace({
+        context: "TransactionListWithSplits.onSubmit",
+        report,
+      })
       setSubmitClicked(true);
     },
     validators: {

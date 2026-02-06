@@ -51,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // OPTIONAL PARAMETERS
     // Comma-delimited list of columns to include (Report Defaults if not present)
     const columns = params.get("columns") || /*null;*/
-      "tx_date,txn_type,doc_num,is_no_post,name,memo,account_name,nat_amount";
+      "tx_date,txn_type,doc_num,name,memo,account_name,nat_amount";
     // Filter by the transaction number to render for this report
     const docnum = params.get("docnum") || null;
     // Group by (none if not present)
