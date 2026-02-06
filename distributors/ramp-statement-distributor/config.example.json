@@ -1,0 +1,27 @@
+{
+  "database_path": "../../packages/ramp-db/ramp-db.db",
+  "output_dir": "./ramp_statements",
+  "logging": {
+    "log_dir": "./logs",
+    "log_file": "ramp_statement_distributor.log",
+    "retention_days": 30,
+    "log_level": "INFO"
+  },
+  "summary_report": {
+    "enabled": true,
+    "recipient": "treasurer@apache.org"
+  },
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "use_tls": true,
+    "from_address": "treasurer@apache.org",
+    "username": "treasurer@apache.org",
+    "password": "your-smtp-password-here OR set SMTP_PASSWORD environment variable"
+  },
+  "email_template": {
+    "subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date}",
+    "body": "Dear {department} Team,\n\nPlease find attached your Ramp credit card activity statement covering {from_date} to {to_date}.\n\nIf you have any questions or concerns about the transactions listed, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
+  }
+}
+
