@@ -28,7 +28,7 @@ export const getReportHeaders = (report: Report): string[] => {
  * Return a flattened array of the cell values from a Row of a QBO report,
  * in the order they appear in the report.
  *
- * @param report: Report): The QBO report object to extract row data from
+ * @param report The QBO report object to extract row data from
  * @returns An array of column values for each Row, in the order they appear in the Row
  */
 export const getReportRowValues = (report: Report): ColDataLike[] => {
