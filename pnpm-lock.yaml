@@ -906,6 +906,9 @@ importers:
       express:
         specifier: catalog:express
         version: 5.2.1
+      zod:
+        specifier: catalog:zod
+        version: 3.25.28
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

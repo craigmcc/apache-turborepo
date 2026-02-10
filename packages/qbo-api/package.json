@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@repo/shared-utils": "workspace:*",
-    "express": "catalog:express"
+    "express": "catalog:express",
+    "zod": "catalog:zod"
   }
 }
