@@ -1,6 +1,6 @@
-# Statement Distributor
+# Ramp Statement Distributor
 
-A Python tool for the Apache Software Foundation Treasury that automates the process of generating and distributing credit card activity statements to departments.
+A Python tool for the Apache Software Foundation Treasury that automates the process of generating and distributing Ramp credit card activity statements to departments.
 
 ## Overview
 
@@ -13,7 +13,7 @@ This tool:
 ## Prerequisites
 
 - [pyenv](https://github.com/pyenv/pyenv) - Python version management
-- Python 3.11+ (managed via pyenv)
+- Python 3.14+ (managed via pyenv - version defined at `/distributors/.python-version`)
 - Access to the ramp database file at `packages/ramp-db/ramp-db.db`
 - Access to an SMTP server for sending emails
 
@@ -30,7 +30,7 @@ cd distributors/ramp-statement-distributor
 
 This script will:
 - Check for pyenv installation
-- Install Python 3.11.0 if needed
+- Install Python 3.14.0 if needed (version managed at `/distributors/.python-version`)
 - Create a virtual environment
 - Install all dependencies
 
@@ -57,16 +57,16 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 ```
 
-### 2. Install Python 3.11 and set up the environment
+### 2. Install Python 3.14 and set up the environment
 
 ```bash
 cd distributors/ramp-statement-distributor
 
-# Install Python 3.11 (pyenv will use .python-version file)
-pyenv install 3.11.0
+# Install Python 3.14 (pyenv will use ../.python-version file)
+pyenv install 3.14.0
 
 # Verify the correct Python version is active
-python --version  # Should show Python 3.11.0
+python --version  # Should show Python 3.14.0
 ```
 
 ### 3. Create and activate a virtual environment

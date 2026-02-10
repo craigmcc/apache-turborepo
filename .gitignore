@@ -39,13 +39,18 @@ yarn-error.log*
 # Python virtual environments
 distributors/ramp-statement-distributor/.venv/
 distributors/ramp-statement-distributor/venv/
+distributors/bill-statement-distributor/.venv/
+distributors/bill-statement-distributor/venv/
 
 # Configuration files with sensitive data
 distributors/ramp-statement-distributor/config.json
+distributors/bill-statement-distributor/config.json
 
 # Output directory with statements
 distributors/ramp-statement-distributor/ramp_statements/
 distributors/ramp-statement-distributor/*.csv
+distributors/bill-statement-distributor/bill_statements/
+distributors/bill-statement-distributor/*.csv
 
 # Python cache and bytecode
 distributors/ramp-statement-distributor/__pycache__/
@@ -55,11 +60,23 @@ distributors/ramp-statement-distributor/*.pyo
 distributors/ramp-statement-distributor/*.pyd
 distributors/ramp-statement-distributor/*.pyw
 distributors/ramp-statement-distributor/*.pyz
+distributors/bill-statement-distributor/__pycache__/
+distributors/bill-statement-distributor/*.py[cod]
+distributors/bill-statement-distributor/*.pyc
+distributors/bill-statement-distributor/*.pyo
+distributors/bill-statement-distributor/*.pyd
+distributors/bill-statement-distributor/*.pyw
+distributors/bill-statement-distributor/*.pyz
 
 # Logs
 distributors/ramp-statement-distributor/logs/
 distributors/ramp-statement-distributor/*.log
 distributors/ramp-statement-distributor/*.log.*
+distributors/bill-statement-distributor/logs/
+distributors/bill-statement-distributor/*.log
+distributors/bill-statement-distributor/*.log.*
+
+distributors/shared/__pycache__
 
 # IDE
 .vscode/
