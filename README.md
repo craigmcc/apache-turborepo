@@ -30,6 +30,12 @@ The relevant packages (in the `packages` directory) are:
 | shared-utils                              | Shared utility functions that can be used by the applications and packages in this monorepo.                                                                            |
 | typescript-config                         | TypeScript configuration files, which can be used by the applications and packages in this monorepo.                                                                    |
 
+The standalone tools (in the *distributors* directory) are:
+
+| Tool                        | Description                                                                                                                                                                         |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ramp-statement-distributor  | Python tool to generate and distribute monthly credit card activity statements to departments via email. See [README](distributors/ramp-statement-distributor/README.md) for details. |
+
 ## 2. Installation
 
 ### 2.1 Install Global Dependencies
