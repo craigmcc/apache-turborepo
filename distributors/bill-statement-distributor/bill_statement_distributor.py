@@ -136,6 +136,7 @@ class BillStatementDistributor:
         # Query with joins to get related data
         # Note: GL accounts are stored in bills_classifications, linked via chartOfAccountId
         # Bills have vendorName stored directly, so vendor join is optional
+        # Approver subquery: concatenate approver names from bills_approvers + users, ordered by sortOrder
         query = """
         SELECT 
             b.invoiceDate,
@@ -144,8 +145,16 @@ class BillStatementDistributor:
             b.dueDate,
             b.amount,
             b.paidAmount,
-            b.paymentStatus,
             b.approvalStatus,
+            (SELECT GROUP_CONCAT(fullname, ', ')
+             FROM (
+               SELECT TRIM(COALESCE(u.firstName, '') || ' ' || COALESCE(u.lastName, '')) as fullname
+               FROM bills_approvers ba
+               JOIN users u ON ba.userId = u.id
+               WHERE ba.billId = b.id
+               ORDER BY COALESCE(ba.sortOrder, 0)
+             )) as approver,
+            b.paymentStatus,
             a.accountNumber as gl_account,
             a.name as gl_account_name
         FROM bills b
@@ -210,8 +219,9 @@ class BillStatementDistributor:
                 "Due Date",
                 "Amount (USD)",
                 "Paid Amount (USD)",
-                "Payment Status",
                 "Approval Status",
+                "Approver",
+                "Payment Status",
                 "GL Account",
                 "GL Account Name"
             ])
@@ -225,8 +235,9 @@ class BillStatementDistributor:
                     self._format_date(bill['dueDate']),
                     self._format_currency_amount(bill['amount']),
                     self._format_currency_amount(bill['paidAmount']),
-                    bill['paymentStatus'] or '',
                     bill['approvalStatus'] or '',
+                    bill.get('approver') or '',
+                    bill['paymentStatus'] or '',
                     bill['gl_account'] or '',
                     bill['gl_account_name'] or ''
                 ])

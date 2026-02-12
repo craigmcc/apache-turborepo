@@ -31,10 +31,11 @@ Generated statements include these columns:
 4. Due Date
 5. Amount (USD)
 6. Paid Amount (USD)
-7. Payment Status
-8. Approval Status
-9. GL Account
-10. GL Account Name
+7. Approval Status
+8. Approver
+9. Payment Status
+10. GL Account
+11. GL Account Name
 
 **Filename format:** `Bill-{account_group}-{from_date}-{to_date}.csv`
 
