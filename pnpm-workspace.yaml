@@ -57,6 +57,8 @@ catalogs:
     tsx: "4.19.4"
   typescript5:
     typescript: "5.8.3"
+  vitest:
+    vitest: "4.0.18"
   uidotdev:
     "@uidotdev/usehooks": "2.4.1"
   zod:

@@ -1,10 +1,23 @@
 /**
+ * DEPRECATED: This module's normalization helpers are being obsoleted.
+ * The preferred location for robust QBO parsing helpers is now
+ * `QboReportParser.ts` (helpers copied/rewritten there to handle nested
+ * row shapes and to produce the preferred ParsedRow format).
+ *
+ * Keep this file around for now for backward-compatibility, but avoid
+ * importing its internal helpers; they may be removed in a follow-up
+ * change once callers are migrated.
+ */
+
+/**
  * Helper functions for managing QuickBooks Online reports.
  * These are used to extract data from the often-nested report responses,
  * and to perform common transformations on that data.
  */
 
 // External Modules ----------------------------------------------------------
+
+import { serverLogger as logger } from "@repo/shared-utils/*";
 
 // Internal Modules ----------------------------------------------------------
 
@@ -33,8 +46,20 @@ export const getReportHeaders = (report: Report): string[] => {
  */
 export const getReportRowValues = (report: Report): ColDataLike[] => {
   const rows = normalizeRows(report);
+  logger.info({
+    "context": "QboReportHelpers.getReportRowValues.normalizeRows",
+    "numRows": rows.length,
+  });
   return rows.map((row) => {
+    logger.info({
+      "context": "QboReportHelpers.getReportRowValues.mapRow.in",
+      row,
+    })
     const values = normalizeColData(row?.ColData ?? row?.Columns);
+    logger.info({
+      "context": "QboReportHelpers.getReportRowValues.mapRow.out",
+      "values": values,
+    });
     return values.map(getCellValue);
   }).flat();
 }
@@ -189,4 +214,3 @@ const normalizeRows = (reportOrRows: unknown): RowLike[] => {
   }
   return [];
 };
-

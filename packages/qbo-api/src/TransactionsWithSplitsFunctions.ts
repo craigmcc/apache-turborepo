@@ -14,9 +14,9 @@ import z from "zod";
 
 // Internal Modules ----------------------------------------------------------
 
-import { getReportHeaders, getReportRowValues } from "@/QboReportHelpers";
-import { ColDataLike, Report } from "@/types/QboReportTypes";
-import { QboApiInfo } from "@/types/Types";
+import { getReportHeaders, getReportRowValues } from "./QboReportHelpers";
+import { ColDataLike, Report } from "./types/QboReportTypes";
+import { QboApiInfo } from "./types/Types";
 
 // Public Objects ------------------------------------------------------------
 
