@@ -18,9 +18,11 @@ class StatisticsTracker:
             'successful': 0,
             'failed': 0,
             'skipped': 0,
+            'no_activity': 0,
             'departments_processed': [],
             'departments_failed': [],  # Contains (name, reason) tuples
             'departments_skipped': [],
+            'departments_no_activity': [],
             'from_date': None,
             'to_date': None
         }
@@ -48,6 +50,11 @@ class StatisticsTracker:
         """Record a skipped department (no data)."""
         self.stats['skipped'] += 1
         self.stats['departments_skipped'].append(department_name)
+
+    def record_sent_no_activity(self, department_name: str) -> None:
+        """Record a department that received no-activity email (no CSV attachment)."""
+        self.stats['no_activity'] += 1
+        self.stats['departments_no_activity'].append(department_name)
     
     def get_stats(self) -> Dict:
         """Get the current statistics dictionary."""
@@ -68,7 +75,8 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
     total = stats['total_departments']
     successful = stats['successful']
     failed = stats['failed']
-    skipped = stats['skipped']
+    skipped = stats.get('skipped', 0)
+    no_activity = stats.get('no_activity', 0)
     from_date = stats['from_date']
     to_date = stats['to_date']
     
@@ -79,7 +87,9 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
     report.append(f"Date Range: {from_date} to {to_date}")
     report.append(f"Total Departments: {total}")
     report.append(f"Successful: {successful}")
-    report.append(f"Skipped (no transactions): {skipped}")
+    report.append(f"Sent (no activity): {no_activity}")
+    if skipped > 0:
+        report.append(f"Skipped (no transactions): {skipped}")
     report.append(f"Failed: {failed}")
     report.append("")
     
@@ -89,7 +99,13 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
             report.append(f"  - {dept}")
         report.append("")
     
-    if stats['departments_skipped']:
+    if stats.get('departments_no_activity'):
+        report.append("Departments Sent (No Activity):")
+        for dept in stats['departments_no_activity']:
+            report.append(f"  - {dept}")
+        report.append("")
+    
+    if stats.get('departments_skipped'):
         report.append("Departments Skipped (no transactions):")
         for dept in stats['departments_skipped']:
             report.append(f"  - {dept}")

@@ -71,7 +71,9 @@ The `config.json` file contains all configuration settings:
   },
   "email_template": {
     "subject": "Bill.com Statement - {department} - {from_date} to {to_date}",
-    "body": "Dear {department} Team,\n\nPlease find attached..."
+    "body": "Dear {department} Team,\n\nPlease find attached...",
+    "no_activity_subject": "Bill.com Statement - {department} - {from_date} to {to_date} (No Activity)",
+    "no_activity_body": "Dear {department} Team,\n\nThis is to confirm that no Bill.com activity occurred..."
   }
 }
 ```
@@ -89,7 +91,10 @@ The `config.json` file contains all configuration settings:
 | `summary_report.enabled` | Send summary report after distribution | `true` |
 | `summary_report.recipient` | Email recipient for summary report | `treasurer@apache.org` |
 | `smtp.*` | SMTP server settings for email delivery | - |
-| `email_template.*` | Email subject and body templates | - |
+| `email_template.subject` | Subject for emails with statement attachment | - |
+| `email_template.body` | Body for emails with statement attachment | - |
+| `email_template.no_activity_subject` | Subject for emails when no bills in date range | Derived from subject + "(No Activity)" |
+| `email_template.no_activity_body` | Body for no-activity emails (no attachment) | Fallback message |
 
 **Note:** The SMTP password can be provided in `config.json` or via the `SMTP_PASSWORD` environment variable (environment variable takes precedence if both are set).
 
@@ -198,17 +203,18 @@ When running without `--send-emails`:
 ### Production Mode (`--send-emails`)
 
 When running with `--send-emails`:
-- Statements are generated and saved
-- Emails are sent to department contacts with CSV attachments
+- Statements are generated and saved (for departments with activity)
+- Emails are sent to all department contacts: with CSV attachment when there is activity, or without attachment (no-activity notice) when there is none
 - Summary report is sent to treasurer (if enabled in config)
 - All actions are logged
 
-### Skipped Departments
+### Departments with No Activity
 
-Departments with no bills in the date range are automatically skipped:
+All departments receive an email each month. When a department has no bills in the date range:
 - No CSV file is generated
-- No email is sent
-- Logged as "skipped" in the summary report
+- An email is sent without attachment stating that no activity occurred
+- Uses the `no_activity_subject` and `no_activity_body` templates from config
+- Logged as "Sent (no activity)" in the summary report
 
 ## Logging
 
@@ -254,7 +260,7 @@ Example log output:
 
 ### Empty Statements
 
-**Issue:** Some departments show 0 bills
+**Issue:** Some departments show 0 bills (they will receive a no-activity email)
 
 **Possible Causes:**
 - No bills with invoice dates in the specified range for that department

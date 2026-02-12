@@ -65,6 +65,7 @@ python3 *_statement_distributor.py --config config.json \
 
 All distributors support:
 
+- **Monthly emails to all departments** - Every department receives an email each month; departments with no activity receive a no-activity notice (no CSV attachment)
 - **Dry-run mode** - Test without sending emails (default)
 - **Department filtering** - Process specific departments
 - **Date ranges** - Flexible date range selection (defaults to previous month)
@@ -108,7 +109,7 @@ Each distributor has its own `config.json` with:
 - Database path
 - Output directory
 - SMTP settings
-- Email templates
+- Email templates (including no-activity templates for departments with no data)
 - Logging preferences
 
 See individual distributor READMEs for details.

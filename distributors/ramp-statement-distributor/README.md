@@ -206,12 +206,14 @@ If using the environment variable, you can omit the `password` field from config
 
 ### Email Template
 
-Customize the email subject and body:
+Customize the email subject and body for both standard statements and no-activity notices:
 
 ```json
 {
   "subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date}",
-  "body": "Dear {department} Team,\n\n..."
+  "body": "Dear {department} Team,\n\n...",
+  "no_activity_subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date} (No Activity)",
+  "no_activity_body": "Dear {department} Team,\n\nThis is to confirm that no Ramp credit card activity occurred..."
 }
 ```
 
@@ -219,6 +221,8 @@ Available placeholders:
 - `{department}`: Department name
 - `{from_date}`: Start date (YYYY-MM-DD)
 - `{to_date}`: End date (YYYY-MM-DD)
+
+**Behavior:** All departments receive an email each month. Departments with transactions get the standard email with CSV attachment. Departments with no transactions get `no_activity_subject` and `no_activity_body` (no attachment). If `no_activity_subject` or `no_activity_body` is missing, fallback text is used.
 
 **Note:** The `{month}` placeholder has been removed. Use `{from_date}` and `{to_date}` for explicit date ranges that work with any time period (monthly, multi-month, or ad-hoc ranges).
 

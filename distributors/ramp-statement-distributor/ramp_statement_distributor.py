@@ -304,11 +304,34 @@ class StatementDistributor:
         # Query transactions first to check if any exist
         transactions = self.query_transactions(account_group, from_date, to_date)
         
-        # Skip departments with no transactions
+        # Send no-activity email when department has no transactions
         if len(transactions) == 0:
-            logger.info(f"Skipping {name}: no transactions found for date range")
-            self.stats_tracker.record_skipped(name)
-            return True  # Not a failure, just skipped
+            logger.info(f"Sending no-activity email to {name}: no transactions found for date range")
+            no_activity_subject = self.email_template.get(
+                'no_activity_subject',
+                self.email_template.get('subject', '') + ' (No Activity)'
+            ).format(department=name, from_date=from_date, to_date=to_date)
+            no_activity_body = self.email_template.get(
+                'no_activity_body',
+                "Dear {department} Team,\n\nNo Ramp credit card activity occurred for your department during {from_date} to {to_date}.\n\nIf you have questions, contact treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
+            ).format(department=name, from_date=from_date, to_date=to_date)
+            success = send_email(
+                self.smtp_config,
+                email,
+                no_activity_subject,
+                no_activity_body,
+                attachment_path=None,
+                dry_run=not send_emails,
+                logger=logger
+            )
+            if success:
+                self.stats_tracker.record_sent_no_activity(name)
+            else:
+                self.stats_tracker.record_failure(
+                    name,
+                    "Failed to send no-activity email (see logs for details)"
+                )
+            return success
 
         # Generate statement
         statement_path = self.generate_statement(
@@ -411,7 +434,7 @@ class StatementDistributor:
         logger.info(
             f"Processing complete. "
             f"Successful: {stats['successful']}, "
-            f"Skipped: {stats['skipped']}, "
+            f"Sent (no activity): {stats.get('no_activity', 0)}, "
             f"Failed: {stats['failed']}"
         )
 
