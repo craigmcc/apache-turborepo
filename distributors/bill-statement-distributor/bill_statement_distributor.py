@@ -2,15 +2,15 @@
 """
 Apache Treasury - Bill.com Statement Distributor
 
-This script generates accounts payable statements for each department
+This script generates accounts payable statements for each account group
 by querying the bill-db SQLite database directly and distributes them via email.
 
 Usage:
     python bill_statement_distributor.py --config config.json
     python bill_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30
     python bill_statement_distributor.py --config config.json --from-date 2024-01-01 --to-date 2024-12-31
-    python bill_statement_distributor.py --config config.json --departments Infrastructure,Marketing
-    python bill_statement_distributor.py --config config.json --list-departments
+    python bill_statement_distributor.py --config config.json --account-groups Infrastructure,Marketing
+    python bill_statement_distributor.py --config config.json --list-account-groups
     python bill_statement_distributor.py --config config.json --dry-run
 """
 
@@ -27,7 +27,7 @@ from typing import Dict, List, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared.logging_config import setup_logging
 from shared.email_sender import send_email
-from shared.department_manager import load_departments, filter_departments, list_departments
+from shared.account_group_manager import load_account_groups, filter_account_groups, list_account_groups
 from shared.account_groups import is_account_in_group
 from shared.date_utils import get_date_range
 from shared.formatters import format_amount
@@ -72,9 +72,9 @@ class BillStatementDistributor:
         script_dir = Path(__file__).parent
         self.account_groups_path = script_dir / '../../packages/shared-utils/src/AccountGroups.json'
         
-        # Load departments from AccountGroups.json using shared utility
-        self.departments = load_departments(self.account_groups_path)
-        logger.info(f"Loaded {len(self.departments)} departments from AccountGroups.json")
+        # Load account groups from AccountGroups.json using shared utility
+        self.account_groups = load_account_groups(self.account_groups_path)
+        logger.info(f"Loaded {len(self.account_groups)} account groups from AccountGroups.json")
         
         # Summary report configuration
         self.summary_config = self.config.get('summary_report', {
@@ -122,7 +122,7 @@ class BillStatementDistributor:
         Query bills directly from the database.
         
         Args:
-            account_group: The department/account group name
+            account_group: The account group name
             from_date: Start date in YYYY-MM-DD format
             to_date: End date in YYYY-MM-DD format
             
@@ -241,7 +241,7 @@ class BillStatementDistributor:
         Generate a Bill.com statement from the database.
 
         Args:
-            account_group: The department/account group name
+            account_group: The account group name
             from_date: Start date in YYYY-MM-DD format
             to_date: End date in YYYY-MM-DD format
 
@@ -310,18 +310,18 @@ class BillStatementDistributor:
             logger.error(f"Error sending summary report: {e}")
             return False
 
-    def process_department(
+    def process_account_group(
         self,
-        department: Dict,
+        ag: Dict,
         from_date: str,
         to_date: str,
         send_emails: bool = False
     ) -> bool:
         """
-        Process a single department: generate statement and send email.
+        Process a single account group: generate statement and send email.
 
         Args:
-            department: Department configuration dictionary
+            ag: Account group configuration dictionary
             from_date: Start date for the statement
             to_date: End date for the statement
             send_emails: If True, actually send emails; if False (default), dry-run mode
@@ -329,34 +329,34 @@ class BillStatementDistributor:
         Returns:
             True if processing was successful, False otherwise
         """
-        account_group = department.get('account_group')
-        email = department.get('email')
-        name = department.get('name', account_group or 'Unknown')
+        account_group = ag.get('account_group')
+        email = ag.get('email')
+        name = ag.get('name', account_group or 'Unknown')
 
         if not account_group or not email:
-            logger.error(f"Invalid department configuration: {department}")
+            logger.error(f"Invalid account group configuration: {ag}")
             self.stats_tracker.record_failure(
                 name,
-                "Invalid department configuration (missing account_group or email)"
+                "Invalid account group configuration (missing account_group or email)"
             )
             return False
 
-        logger.info(f"Processing department: {name}")
+        logger.info(f"Processing account group: {name}")
 
         # Query bills first to check if any exist
         bills = self.query_bills(account_group, from_date, to_date)
         
-        # Send no-activity email when department has no bills
+        # Send no-activity email when account group has no bills
         if len(bills) == 0:
             logger.info(f"Sending no-activity email to {name}: no bills found for date range")
             no_activity_subject = self.email_template.get(
                 'no_activity_subject',
                 self.email_template.get('subject', '') + ' (No Activity)'
-            ).format(department=name, from_date=from_date, to_date=to_date)
+            ).format(account_group=name, from_date=from_date, to_date=to_date)
             no_activity_body = self.email_template.get(
                 'no_activity_body',
-                "Dear {department} Team,\n\nNo Bill.com activity occurred for your department during {from_date} to {to_date}.\n\nIf you have questions, contact treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
-            ).format(department=name, from_date=from_date, to_date=to_date)
+                "Dear {account_group} Team,\n\nNo Bill.com activity occurred for your account group during {from_date} to {to_date}.\n\nIf you have questions, contact treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
+            ).format(account_group=name, from_date=from_date, to_date=to_date)
             success = send_email(
                 self.smtp_config,
                 email,
@@ -391,13 +391,13 @@ class BillStatementDistributor:
 
         # Prepare email
         subject = self.email_template.get('subject', '').format(
-            department=name,
+            account_group=name,
             from_date=from_date,
             to_date=to_date
         )
 
         body = self.email_template.get('body', '').format(
-            department=name,
+            account_group=name,
             from_date=from_date,
             to_date=to_date
         )
@@ -429,7 +429,7 @@ class BillStatementDistributor:
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
         send_emails: bool = False,
-        department_filter: Optional[str] = None
+        account_group_filter: Optional[str] = None
     ) -> int:
         """
         Run the statement generation and distribution process.
@@ -438,7 +438,7 @@ class BillStatementDistributor:
             from_date: Optional start date in YYYY-MM-DD format
             to_date: Optional end date in YYYY-MM-DD format
             send_emails: If True, actually send emails; if False (default), dry-run mode
-            department_filter: Optional comma-separated list of departments to process
+            account_group_filter: Optional comma-separated list of account groups to process
 
         Returns:
             Exit code (0 for success, 1 for failure)
@@ -448,10 +448,10 @@ class BillStatementDistributor:
         if not send_emails:
             logger.info("Running in DRY RUN mode - emails will not be sent (use --send-emails to send)")
 
-        # Filter departments if specified using shared utility
-        departments_to_process = filter_departments(self.departments, department_filter)
-        if department_filter:
-            logger.info(f"Filtering to {len(departments_to_process)} department(s) out of {len(self.departments)} total")
+        # Filter account groups if specified using shared utility
+        account_groups_to_process = filter_account_groups(self.account_groups, account_group_filter)
+        if account_group_filter:
+            logger.info(f"Filtering to {len(account_groups_to_process)} account group(s) out of {len(self.account_groups)} total")
 
         # Get date range using shared utility
         from_date_str, to_date_str = get_date_range(from_date, to_date)
@@ -459,13 +459,13 @@ class BillStatementDistributor:
         logger.info(f"Processing statements for {from_date_str} to {to_date_str}")
 
         # Initialize statistics
-        self.stats_tracker.set_total_departments(len(departments_to_process))
+        self.stats_tracker.set_total_account_groups(len(account_groups_to_process))
         self.stats_tracker.set_date_range(from_date_str, to_date_str)
 
-        # Process each department
-        for department in departments_to_process:
-            self.process_department(
-                department,
+        # Process each account group
+        for ag in account_groups_to_process:
+            self.process_account_group(
+                ag,
                 from_date_str,
                 to_date_str,
                 send_emails
@@ -500,13 +500,15 @@ def main():
         help='Path to configuration JSON file (default: config.json)'
     )
     parser.add_argument(
-        '--departments',
-        help='Comma-separated list of departments to process (case-insensitive). If not specified, all departments are processed.'
+        '--account-groups',
+        dest='account_groups',
+        help='Comma-separated list of account groups to process (case-insensitive). If not specified, all account groups are processed.'
     )
     parser.add_argument(
-        '--list-departments',
+        '--list-account-groups',
         action='store_true',
-        help='List all available departments and exit'
+        dest='list_account_groups',
+        help='List all available account groups and exit'
     )
 
     # Date specification options
@@ -543,19 +545,19 @@ def main():
     global logger
     logger = setup_logging(args.config, __name__)
 
-    # Create distributor to load departments
+    # Create distributor to load account groups
     distributor = BillStatementDistributor(args.config)
 
-    # Handle --list-departments (takes precedence, exits immediately)
-    if args.list_departments:
-        list_departments(distributor.departments)
+    # Handle --list-account-groups (takes precedence, exits immediately)
+    if args.list_account_groups:
+        list_account_groups(distributor.account_groups)
 
     # Validate date arguments
     if args.to_date and not args.from_date:
         parser.error("--to-date requires --from-date")
         sys.exit(1)
 
-    exit_code = distributor.run(args.from_date, args.to_date, args.send_emails, args.departments)
+    exit_code = distributor.run(args.from_date, args.to_date, args.send_emails, args.account_groups)
     sys.exit(exit_code)
 
 

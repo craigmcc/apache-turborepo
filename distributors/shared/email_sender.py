@@ -2,7 +2,7 @@
 Email sending utilities with SMTP support.
 
 Provides SMTP email functionality with attachment support for sending
-statement CSVs to department contacts.
+statement CSVs to account group contacts.
 """
 
 import logging

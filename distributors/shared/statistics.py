@@ -14,15 +14,15 @@ class StatisticsTracker:
     def __init__(self):
         """Initialize statistics tracker with zero counts."""
         self.stats = {
-            'total_departments': 0,
+            'total_account_groups': 0,
             'successful': 0,
             'failed': 0,
             'skipped': 0,
             'no_activity': 0,
-            'departments_processed': [],
-            'departments_failed': [],  # Contains (name, reason) tuples
-            'departments_skipped': [],
-            'departments_no_activity': [],
+            'account_groups_processed': [],
+            'account_groups_failed': [],  # Contains (name, reason) tuples
+            'account_groups_skipped': [],
+            'account_groups_no_activity': [],
             'from_date': None,
             'to_date': None
         }
@@ -32,29 +32,29 @@ class StatisticsTracker:
         self.stats['from_date'] = from_date
         self.stats['to_date'] = to_date
     
-    def set_total_departments(self, count: int) -> None:
-        """Set the total number of departments to process."""
-        self.stats['total_departments'] = count
+    def set_total_account_groups(self, count: int) -> None:
+        """Set the total number of account groups to process."""
+        self.stats['total_account_groups'] = count
     
-    def record_success(self, department_name: str) -> None:
-        """Record a successful department processing."""
+    def record_success(self, account_group_name: str) -> None:
+        """Record a successful account group processing."""
         self.stats['successful'] += 1
-        self.stats['departments_processed'].append(department_name)
+        self.stats['account_groups_processed'].append(account_group_name)
     
-    def record_failure(self, department_name: str, reason: str) -> None:
-        """Record a failed department processing."""
+    def record_failure(self, account_group_name: str, reason: str) -> None:
+        """Record a failed account group processing."""
         self.stats['failed'] += 1
-        self.stats['departments_failed'].append((department_name, reason))
+        self.stats['account_groups_failed'].append((account_group_name, reason))
     
-    def record_skipped(self, department_name: str) -> None:
-        """Record a skipped department (no data)."""
+    def record_skipped(self, account_group_name: str) -> None:
+        """Record a skipped account group (no data)."""
         self.stats['skipped'] += 1
-        self.stats['departments_skipped'].append(department_name)
+        self.stats['account_groups_skipped'].append(account_group_name)
 
-    def record_sent_no_activity(self, department_name: str) -> None:
-        """Record a department that received no-activity email (no CSV attachment)."""
+    def record_sent_no_activity(self, account_group_name: str) -> None:
+        """Record an account group that received no-activity email (no CSV attachment)."""
         self.stats['no_activity'] += 1
-        self.stats['departments_no_activity'].append(department_name)
+        self.stats['account_groups_no_activity'].append(account_group_name)
     
     def get_stats(self) -> Dict:
         """Get the current statistics dictionary."""
@@ -72,7 +72,7 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
     Returns:
         Formatted summary report text
     """
-    total = stats['total_departments']
+    total = stats['total_account_groups']
     successful = stats['successful']
     failed = stats['failed']
     skipped = stats.get('skipped', 0)
@@ -85,7 +85,7 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
     report.append("=" * 50)
     report.append("")
     report.append(f"Date Range: {from_date} to {to_date}")
-    report.append(f"Total Departments: {total}")
+    report.append(f"Total Account Groups: {total}")
     report.append(f"Successful: {successful}")
     report.append(f"Sent (no activity): {no_activity}")
     if skipped > 0:
@@ -93,28 +93,28 @@ def generate_summary_report(stats: Dict, title: str = "Statement Distributor") -
     report.append(f"Failed: {failed}")
     report.append("")
     
-    if stats['departments_processed']:
-        report.append("Departments Processed Successfully:")
-        for dept in stats['departments_processed']:
-            report.append(f"  - {dept}")
+    if stats['account_groups_processed']:
+        report.append("Account Groups Processed Successfully:")
+        for ag in stats['account_groups_processed']:
+            report.append(f"  - {ag}")
         report.append("")
     
-    if stats.get('departments_no_activity'):
-        report.append("Departments Sent (No Activity):")
-        for dept in stats['departments_no_activity']:
-            report.append(f"  - {dept}")
+    if stats.get('account_groups_no_activity'):
+        report.append("Account Groups Sent (No Activity):")
+        for ag in stats['account_groups_no_activity']:
+            report.append(f"  - {ag}")
         report.append("")
     
-    if stats.get('departments_skipped'):
-        report.append("Departments Skipped (no transactions):")
-        for dept in stats['departments_skipped']:
-            report.append(f"  - {dept}")
+    if stats.get('account_groups_skipped'):
+        report.append("Account Groups Skipped (no transactions):")
+        for ag in stats['account_groups_skipped']:
+            report.append(f"  - {ag}")
         report.append("")
     
-    if stats['departments_failed']:
-        report.append("Departments Failed:")
-        for dept, reason in stats['departments_failed']:
-            report.append(f"  - {dept}: {reason}")
+    if stats['account_groups_failed']:
+        report.append("Account Groups Failed:")
+        for ag, reason in stats['account_groups_failed']:
+            report.append(f"  - {ag}: {reason}")
         report.append("")
     
     if failed > 0:

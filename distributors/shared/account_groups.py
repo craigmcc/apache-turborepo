@@ -2,7 +2,7 @@
 GL account group filtering utilities.
 
 Provides functionality to check if GL account numbers fall within
-configured department ranges from AccountGroups.json.
+configured account group ranges from AccountGroups.json.
 """
 
 import json
@@ -17,7 +17,7 @@ def load_account_group_ranges(account_groups_path: Path, account_group: str) -> 
     
     Args:
         account_groups_path: Path to AccountGroups.json file
-        account_group: Name of the account group (department name)
+        account_group: Name of the account group (account group name)
         
     Returns:
         List of range dictionaries with 'start' and 'end' keys
@@ -43,11 +43,11 @@ def is_account_in_group(gl_account: str, account_group: str, account_groups_path
     Check if GL account code falls within account group ranges.
     
     Uses string-based comparison to check if the GL account number
-    falls within any of the configured ranges for the department.
+    falls within any of the configured ranges for the account group.
     
     Args:
         gl_account: GL account number as string (e.g., "6450")
-        account_group: Name of the account group (department name)
+        account_group: Name of the account group (account group name)
         account_groups_path: Path to AccountGroups.json file
         
     Returns:

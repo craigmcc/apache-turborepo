@@ -20,9 +20,9 @@
     "password": "your-smtp-password-here OR set SMTP_PASSWORD environment variable"
   },
   "email_template": {
-    "subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date}",
-    "body": "Dear {department} Team,\n\nPlease find attached your Ramp credit card activity statement covering {from_date} to {to_date}.\n\nIf you have any questions or concerns about the transactions listed, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury",
-    "no_activity_subject": "Ramp Credit Card Activity - {department} - {from_date} to {to_date} (No Activity)",
-    "no_activity_body": "Dear {department} Team,\n\nThis is to confirm that no Ramp credit card activity occurred for your department during the period {from_date} to {to_date}.\n\nIf you have any questions, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
+    "subject": "Ramp Credit Card Activity - {account_group} - {from_date} to {to_date}",
+    "body": "Dear {account_group} Team,\n\nPlease find attached your Ramp credit card activity statement covering {from_date} to {to_date}.\n\nIf you have any questions or concerns about the transactions listed, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury",
+    "no_activity_subject": "Ramp Credit Card Activity - {account_group} - {from_date} to {to_date} (No Activity)",
+    "no_activity_body": "Dear {account_group} Team,\n\nThis is to confirm that no Ramp credit card activity occurred for your account group during the period {from_date} to {to_date}.\n\nIf you have any questions, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
   }
 }
