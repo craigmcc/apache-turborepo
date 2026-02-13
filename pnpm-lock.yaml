@@ -920,6 +920,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/express':
         specifier: catalog:express
         version: 5.0.6
@@ -1140,6 +1143,15 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  packages/vitest-config:
+    devDependencies:
+      typescript:
+        specifier: catalog:typescript5
+        version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
 packages:
 
@@ -8033,7 +8045,7 @@ snapshots:
 
   estree-walker@3.0.3:
     dependencies:
-      '@types/estree': 1.0.7
+      '@types/estree': 1.0.8
 
   esutils@2.0.3: {}
 

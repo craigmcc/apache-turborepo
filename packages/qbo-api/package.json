@@ -20,6 +20,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@types/express": "catalog:express",
     "@types/node": "catalog:node22",
     "eslint": "catalog:eslint",
