@@ -1,7 +1,6 @@
-// Export a plain config object (typed as any) to avoid pulling in Vitest/Vite
-// type definitions at package build time. Consumers (their vitest.config.ts)
-// will import this module at runtime, and Vitest will accept the plain object.
-const baseConfig: any = {
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
@@ -21,6 +20,4 @@ const baseConfig: any = {
     functions: 70,
     lines: 70,
   },
-};
-
-export default baseConfig;
+} as any);
