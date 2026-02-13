@@ -3,9 +3,6 @@
   "exports": {
     "./*": "./dist/index.js"
   },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
-  },
   "license": "Apache-2.0",
   "name": "@repo/bill-refresh",
   "private": true,
@@ -15,18 +12,18 @@
     "check-types": "dotenvx run --quiet -- tsc --noEmit",
     "dev": "dotenvx run --quiet -- tsc --watch",
     "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
-    "start": "dotenvx run --quiet -- tsx ./dist/index.js"
+    "start": "dotenvx run --quiet -- tsx ./dist/index.js",
+    "test:ci": "vitest --run"
   },
   "type": "module",
   "version": "0.0.0",
   "devDependencies": {
-    "@types/jest": "catalog:jest29",
     "@types/node": "catalog:node22",
     "eslint": "catalog:eslint",
-    "jest": "catalog:jest29",
-    "ts-jest": "catalog:jest29",
     "tsx": "catalog:tsx",
-    "typescript": "catalog:typescript5"
+    "typescript": "catalog:typescript5",
+    "@repo/vitest-config": "workspace:*",
+    "vitest": "catalog:vitest"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "catalog:dotenvx",

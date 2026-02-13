@@ -2,9 +2,6 @@
   "exports": {
     "./*": "./dist/index.js"
   },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
-  },
   "license": "Apache-2.0",
   "name": "@repo/shared-utils",
   "private": true,
@@ -13,8 +10,8 @@
     "check-types": "tsc --noEmit",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
-    "test": "jest --watch",
-    "test:ci": "jest",
+    "test": "vitest",
+    "test:ci": "vitest --run",
     "zod": "catalog:zod"
   },
   "type": "module",
@@ -26,12 +23,10 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/jest": "catalog:jest29",
+    "@repo/vitest-config": "workspace:*",
     "eslint": "catalog:eslint",
-    "jest": "catalog:jest29",
-    "ts-jest": "catalog:jest29",
+    "vitest": "catalog:vitest",
     "typescript": "catalog:typescript5"
   }
 }

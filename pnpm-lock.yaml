@@ -171,7 +171,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pino:
         specifier: catalog:pino
         version: 9.7.0
@@ -200,12 +200,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/jest-presets':
+      '@repo/vitest-config':
         specifier: workspace:*
-        version: link:../../packages/jest-presets
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+        version: link:../../packages/vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
@@ -224,15 +221,12 @@ importers:
       eslint-config-next:
         specifier: catalog:eslint
         version: 15.3.2(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   apps/bill-refresh:
     dependencies:
@@ -255,27 +249,24 @@ importers:
         specifier: workspace:*
         version: link:../../packages/typescript-config
     devDependencies:
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../packages/vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       tsx:
         specifier: catalog:tsx
         version: 4.19.4
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   apps/bootstrap-alone:
     dependencies:
@@ -305,7 +296,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pino:
         specifier: catalog:pino
         version: 9.7.0
@@ -390,7 +381,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pino:
         specifier: catalog:pino
         version: 9.7.0
@@ -549,7 +540,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pino:
         specifier: catalog:pino
         version: 9.7.0
@@ -631,7 +622,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       pino:
         specifier: catalog:pino
         version: 9.7.0
@@ -660,12 +651,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/jest-presets':
+      '@repo/vitest-config':
         specifier: workspace:*
-        version: link:../../packages/jest-presets
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+        version: link:../../packages/vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
@@ -684,15 +672,12 @@ importers:
       eslint-config-next:
         specifier: catalog:eslint
         version: 15.3.2(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   apps/ramp-refresh:
     dependencies:
@@ -715,27 +700,24 @@ importers:
         specifier: workspace:*
         version: link:../../packages/typescript-config
     devDependencies:
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../../packages/vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       tsx:
         specifier: catalog:tsx
         version: 4.19.4
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/bill-api:
     dependencies:
@@ -746,30 +728,24 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/bill-db:
     dependencies:
@@ -803,7 +779,7 @@ importers:
         version: 0.511.0(react@19.1.0)
       next:
         specifier: catalog:next15
-        version: 15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react:
         specifier: catalog:react19
         version: 19.1.0
@@ -823,15 +799,12 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/react':
         specifier: catalog:react19
         version: 19.1.5
@@ -841,15 +814,12 @@ importers:
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/eslint-config:
     devDependencies:
@@ -963,30 +933,24 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/ramp-db:
     dependencies:
@@ -1037,15 +1001,12 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       '@types/node':
         specifier: catalog:node22
         version: 22.15.21
@@ -1061,15 +1022,12 @@ importers:
       eslint-config-next:
         specifier: catalog:eslint
         version: 15.3.2(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/shared-utils:
     dependencies:
@@ -1086,27 +1044,21 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@types/jest':
-        specifier: catalog:jest29
-        version: 29.5.14
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
       eslint:
         specifier: catalog:eslint
         version: 9.27.0(jiti@2.4.2)
-      jest:
-        specifier: catalog:jest29
-        version: 29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3))
-      ts-jest:
-        specifier: catalog:jest29
-        version: 29.3.4(@babel/core@7.27.1)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.1))(jest@29.7.0(@types/node@22.15.21)(ts-node@10.9.2(@types/node@22.15.21)(typescript@5.8.3)))(typescript@5.8.3)
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vitest:
+        specifier: catalog:vitest
+        version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
 
   packages/typescript-config: {}
 
@@ -9250,7 +9202,7 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  next@15.5.10(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next@15.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@next/env': 15.5.10
       '@swc/helpers': 0.5.15
@@ -9258,7 +9210,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
-      styled-jsx: 5.1.6(@babel/core@7.27.1)(react@19.1.0)
+      styled-jsx: 5.1.6(react@19.1.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 15.5.7
       '@next/swc-darwin-x64': 15.5.7
@@ -10127,12 +10079,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  styled-jsx@5.1.6(@babel/core@7.27.1)(react@19.1.0):
+  styled-jsx@5.1.6(react@19.1.0):
     dependencies:
       client-only: 0.0.1
       react: 19.1.0
-    optionalDependencies:
-      '@babel/core': 7.27.1
 
   supports-color@5.5.0:
     dependencies:

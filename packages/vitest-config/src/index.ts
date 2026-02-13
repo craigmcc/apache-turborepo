@@ -6,6 +6,6 @@ export default defineConfig({
     globals: true,
     clearMocks: true,
     include: ['**/src/**/*.test.{ts,tsx}'],
+    passWithNoTests: true,
   },
 });
-
