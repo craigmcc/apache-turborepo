@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "vitest": "catalog:vitest",
+    "vite": "catalog:vite",
     "typescript": "catalog:typescript5"
   },
   "type": "module"
