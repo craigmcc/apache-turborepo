@@ -7,7 +7,8 @@
     "sourceMap": false,
     "stripInternal": true,
     "moduleResolution": "node16",
-    "module": "Node16"
+    "module": "Node16",
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
