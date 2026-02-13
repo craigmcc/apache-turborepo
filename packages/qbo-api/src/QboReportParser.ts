@@ -144,7 +144,7 @@ const normalizeRowsLocal = (reportOrRows: unknown): RowLike[] => {
       const r = rowsObj["row"];
       return Array.isArray(r) ? (r as RowLike[]) : [r as RowLike];
     }
-    if (Array.isArray(rowsObj)) return rowsObj as RowLike[];
+    if (Array.isArray(rowsObj)) return rowsObj.flatMap((e) => normalizeRowsLocal(e));
   }
   if (rr["rows"] && Array.isArray(rr["rows"])) {
     return rr["rows"] as RowLike[];
@@ -157,12 +157,14 @@ const normalizeRowsLocal = (reportOrRows: unknown): RowLike[] => {
  */
 export const parseColumns = (report: Report): ParsedColumn[] => {
 
-  const input = asObject(report.Columns);
+  // Support wrapped report objects: { Report: { Columns: ... } }
+  const src = (report as unknown as Record<string, unknown>)?.Report ?? report;
+  const input = asObject((src as Record<string, unknown>)?.Columns);
   if (!input) {
     logger.warn({
       context: "QboReportParser.parseColumns",
       message: "Report columns are missing or not an object",
-      columns: report.Columns,
+      columns: (src as Record<string, unknown>)?.Columns,
     });
     return [];
   }
@@ -199,12 +201,14 @@ export const parseColumns = (report: Report): ParsedColumn[] => {
  */
 export const parseHeader = (report: Report): ParsedHeader | undefined => {
 
-  const input = asObject(report.Header);
+  // Support wrapped report objects: { Report: { Header: ... } }
+  const src = (report as unknown as Record<string, unknown>)?.Report ?? report;
+  const input = asObject((src as Record<string, unknown>)?.Header);
   if (!input) {
     logger.warn({
       context: "QboReportParser.parseHeader",
       message: "Report header is missing or not an object",
-      header: report.Header,
+      header: (src as Record<string, unknown>)?.Header,
     });
     return undefined;
   }
@@ -253,7 +257,17 @@ export const parseRows = (report: Report): ParsedRow[] => {
         return { value: String(cd) } as { id?: string; value: string };
       }
       const obj = cd as Record<string, unknown>;
-      const id = typeof obj.id === "string" ? obj.id : (typeof obj.Id === "string" ? obj.Id : (typeof obj.name === "string" ? obj.name : undefined));
+      // Try several locations for an identifier: top-level id/Id/name, then inside a nested value object.
+      let id: string | undefined = undefined;
+      if (typeof obj.id === "string") id = obj.id;
+      else if (typeof obj.Id === "string") id = obj.Id;
+      else if (typeof obj.name === "string") id = obj.name;
+      else if (obj.value && typeof obj.value === "object") {
+        const v = obj.value as Record<string, unknown>;
+        if (typeof v.id === "string") id = v.id;
+        else if (typeof v.Id === "string") id = v.Id;
+        else if (typeof v.name === "string") id = v.name;
+      }
       const value = getCellValueLocal(obj);
       return { id, value } as { id?: string; value: string };
     });
@@ -281,7 +295,3 @@ export const parseRows = (report: Report): ParsedRow[] => {
   topRows.forEach((tr: RowLike) => processRow(tr as Record<string, unknown>));
   return parsed;
 }
-
-// Reference exported functions to satisfy some linters/static checkers that
-// flag exported-but-unused symbols in the local workspace scan.
-void parseReport;
