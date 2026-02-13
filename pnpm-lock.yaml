@@ -242,9 +242,6 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../../packages/jest-presets
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -687,9 +684,6 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/jest-presets':
-        specifier: workspace:*
-        version: link:../../packages/jest-presets
       '@repo/ramp-api':
         specifier: workspace:*
         version: link:../../packages/ramp-api

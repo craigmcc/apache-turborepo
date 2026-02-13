@@ -30,7 +30,6 @@
     "@repo/bill-api": "workspace:*",
     "@repo/bill-db": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   }
 }

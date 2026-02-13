@@ -28,7 +28,6 @@
   "dependencies": {
     "@dotenvx/dotenvx": "catalog:dotenvx",
     "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/ramp-api": "workspace:*",
     "@repo/ramp-db": "workspace:*",
     "@repo/typescript-config": "workspace:*"

@@ -8,9 +8,6 @@
   "private": true,
   "version": "0.0.0",
   "devDependencies": {
-    "@types/jest": "catalog:jest29",
-    "jest": "catalog:jest29",
-    "jest-environment-jsdom": "catalog:jest29",
-    "ts-jest": "catalog:jest29"
+    "typescript": "catalog:typescript5"
   }
 }
