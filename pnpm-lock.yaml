@@ -107,6 +107,10 @@ catalogs:
     '@uidotdev/usehooks':
       specifier: 2.4.1
       version: 2.4.1
+  vite:
+    vite:
+      specifier: 7.3.1
+      version: 7.3.1
   vitest:
     vitest:
       specifier: 4.0.18
@@ -1073,6 +1077,9 @@ importers:
       typescript:
         specifier: catalog:typescript5
         version: 5.8.3
+      vite:
+        specifier: catalog:vite
+        version: 7.3.1(@types/node@22.15.21)(jiti@2.4.2)(tsx@4.19.4)
       vitest:
         specifier: catalog:vitest
         version: 4.0.18(@types/node@22.15.21)(jiti@2.4.2)(jsdom@20.0.3)(tsx@4.19.4)
