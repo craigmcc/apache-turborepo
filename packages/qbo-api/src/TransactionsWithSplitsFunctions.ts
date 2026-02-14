@@ -9,14 +9,14 @@
 
 // External Modules ----------------------------------------------------------
 
+import { parseReport } from "@repo/qbo-api/QboReportParser";
+import { Report } from "@repo/qbo-api/types/QboReportTypes";
+import { ParsedReport } from "@repo/qbo-api/types/QboReportParsedTypes";
+import { QboApiInfo } from "@repo/qbo-api/types/Types";
 import { serverLogger as logger } from "@repo/shared-utils/*";
 import z from "zod";
 
 // Internal Modules ----------------------------------------------------------
-
-import { getReportHeaders, getReportRowValues } from "./QboReportHelpers";
-import { ColDataLike, Report } from "./types/QboReportTypes";
-import { QboApiInfo } from "./types/Types";
 
 // Public Objects ------------------------------------------------------------
 
@@ -31,14 +31,6 @@ export type TransactionsWithSplitsParams = {
 }
 
 /**
- * Return object for TransactionsWithSplits().
- */
-export type TransactionWithSplitsResults = {
-  headers: string[];
-  rows: ColDataLike[];
-}
-
-/**
  * Fetch TransactionsWithSplits report data from the QBO API, for the given date range.
  *
  * @param apiInfo - QBO API connection information, including base URL and access token
@@ -46,7 +38,7 @@ export type TransactionWithSplitsResults = {
  *
  * @throws Error if parameter validation fails, or if the API request fails or returns an error response
  */
-export async function fetchTransactionsWithSplits(apiInfo: QboApiInfo, params: TransactionsWithSplitsParams): Promise<TransactionWithSplitsResults> {
+export async function fetchTransactionsWithSplits(apiInfo: QboApiInfo, params: TransactionsWithSplitsParams): Promise<ParsedReport> {
 
   // Validate parameters
   const parseResult = ParamsSchema.safeParse(params);
@@ -97,9 +89,7 @@ export async function fetchTransactionsWithSplits(apiInfo: QboApiInfo, params: T
   // Parse and return the report data, or report any parsing errors
   try {
     const report = await response.json() as Report;
-    const headers = getReportHeaders(report);
-    const rows = getReportRowValues(report);
-    return { headers, rows };
+    return ( parseReport(report) );
   } catch (err) {
     logger.error({
       context: "TransactionsWithSplitsFunctions.fetchTransactionsWithSplits",

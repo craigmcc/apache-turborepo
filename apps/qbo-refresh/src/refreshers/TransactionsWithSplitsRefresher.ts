@@ -19,23 +19,26 @@ export async function refreshTransactionsWithSplits(
   endDate: string,
 ): Promise<void> {
 
-  const currentTime = new Date().toISOString();
-
   // Fetch all transactions with splits from QBO API
-  const reportData = await fetchTransactionsWithSplits(apiInfo, {startDate, endDate});
+  const parsedReport =
+    await fetchTransactionsWithSplits(apiInfo, {startDate, endDate});
   logger.info({
     context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.fetched",
-    headers: reportData.headers,
-    totalRows: reportData.rows.length,
+    startDate,
+    endDate,
+    totalColumns: parsedReport.columns.length,
+    totalRows: parsedReport.rows.length,
   });
 
-  // Filter out empty or invalid rows
-  // TODO - add filtering logic here
-
-  // Add the transactions with splits to the database
-  for (let i = 0; i < reportData.rows.length; i++) {
-    console.info(`${i + 1}:` + JSON.stringify(reportData.rows[i]));
-    // TODO - add to database
+  // Document the first stuff for debugging
+  console.info("Header:" + JSON.stringify(parsedReport.header));
+  for (let i = 0; i < parsedReport.columns.length; i++) {
+    console.info(`Column ${i + 1}:` + JSON.stringify(parsedReport.columns[i]));
   }
+  for (let i = 0; i < 400; i++) {
+    console.info(`Row    ${i + 1}:` + JSON.stringify(parsedReport.rows[i]));
+  }
+
+  // TODO: Add the transactions with splits to the database
 
 }
