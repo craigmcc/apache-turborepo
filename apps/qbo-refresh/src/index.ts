@@ -62,7 +62,7 @@ export async function main() {
   });
   await refreshAccounts(apiInfo);
   await refreshJournalEntries(apiInfo);
-  await refreshTransactionsWithSplits(apiInfo, "2025-12-01", "2025-12-31");
+  await refreshTransactionsWithSplits(apiInfo, "2001-01-01", "2999-12-31");
   logger.info({
     context: "qbo-refresh.finished",
   });

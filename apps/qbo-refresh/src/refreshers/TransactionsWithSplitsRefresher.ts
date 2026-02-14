@@ -26,18 +26,20 @@ export async function refreshTransactionsWithSplits(
     context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.fetched",
     startDate,
     endDate,
+    header: parsedReport.header,
     totalColumns: parsedReport.columns.length,
     totalRows: parsedReport.rows.length,
   });
 
   // Document the first stuff for debugging
-  console.info("Header:" + JSON.stringify(parsedReport.header));
   for (let i = 0; i < parsedReport.columns.length; i++) {
-    console.info(`Column ${i + 1}:` + JSON.stringify(parsedReport.columns[i]));
+    console.info(`Column ${i}:` + JSON.stringify(parsedReport.columns[i]));
   }
-  for (let i = 0; i < 400; i++) {
-    console.info(`Row    ${i + 1}:` + JSON.stringify(parsedReport.rows[i]));
-  }
+  /*
+    for (let i = 0; i < 100; i++) {
+      console.info(`Row    ${i + 1}:` + JSON.stringify(parsedReport.rows[i]));
+    }
+  */
 
   // TODO: Add the transactions with splits to the database
 
