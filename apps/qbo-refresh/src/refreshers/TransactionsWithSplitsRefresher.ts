@@ -23,13 +23,18 @@ export async function refreshTransactionsWithSplits(
   // Fetch all transactions with splits from QBO API
   const parsedReport =
     await fetchTransactionsWithSplits(apiInfo, {startDate, endDate});
+  // The QBO report parser now normalizes dates (fills missing tx_date values),
+  // so we can use the parsed rows directly.
+  const normalizedRows = parsedReport.rows;
+
   logger.info({
     context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.fetched",
     startDate,
     endDate,
     header: parsedReport.header,
     columns: parsedReport.columns,
-    totalRows: parsedReport.rows.length,
+    fetchedRows: parsedReport.rows.length,
+    totalRows: normalizedRows.length,
   });
 
   // Delete existing transactions in the database for the given date range
@@ -54,9 +59,12 @@ export async function refreshTransactionsWithSplits(
   }
 
   // Insert new transactions with splits into the database
-  for (let index = 0; index < parsedReport.rows.length; index++) {
-    const row = parsedReport.rows[index]!;
-    const accountId = accountMap.get(row.columns[5]!.value.substring(0, 4));
+  for (let index = 0; index < normalizedRows.length; index++) {
+    const row = normalizedRows[index]!;
+    // Guard access to the account column - it may be missing on some rows
+    const acctColVal = row.columns[5]?.value;
+    const acctNumPrefix = acctColVal ? acctColVal.substring(0, 4) : undefined;
+    const accountId = acctNumPrefix ? accountMap.get(acctNumPrefix) : undefined;
 //    const transaction: TransactionCreateArgs["data"] = {
     const transaction: Transaction = {
       id: BigInt(index), // use row index as ID since report data does not include a unique identifier
@@ -78,7 +86,7 @@ export async function refreshTransactionsWithSplits(
   }
   logger.info({
     context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.inserted",
-    insertedCount: parsedReport.rows.length,
+    insertedCount: normalizedRows.length,
   });
 
 }

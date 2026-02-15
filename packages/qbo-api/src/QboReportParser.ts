@@ -15,6 +15,7 @@ import type {
   ParsedHeaderOption,
   ParsedReport,
   ParsedRow,
+  ParsedRowColumn,
 } from "./types/QboReportParsedTypes";
 import type { Report, RowLike, ColDataLike } from "./types/QboReportTypes";
 
@@ -25,11 +26,74 @@ import type { Report, RowLike, ColDataLike } from "./types/QboReportTypes";
  */
 export const parseReport = (report: Report) => {
   logger.info({ context: "QboReportParser.parseReport.in" });
+  const columns = parseColumns(report);
+  const header = parseHeader(report);
+  const rows = parseRows(report);
+  // Normalize dates in rows by inheriting the last non-empty value for the
+  // report's tx_date column (if present). This makes downstream consumers
+  // (like refreshers) resilient to split/child rows that omit the date.
+  const normalizedRows = normalizeDatesInParsedRows(rows, columns);
   return {
-    columns: parseColumns(report),
-    header: parseHeader(report),
-    rows: parseRows(report),
+    columns,
+    header,
+    rows: normalizedRows,
   } as unknown as ParsedReport;
+}
+
+// Normalize parsed rows so that rows without a date inherit the most recent
+// preceding non-empty transaction date. We locate the date column by looking
+// for a column of type "tx_date"; as a fallback we match a column whose
+// title includes "date".
+function normalizeDatesInParsedRows(rows: ParsedRow[], columns: ParsedColumn[]): ParsedRow[] {
+  if (!Array.isArray(rows) || rows.length === 0) return rows;
+  const dateColIndex = columns.findIndex((c) => (c.type ?? '').toLowerCase().includes('tx_date'));
+  // fallback: find title containing 'date'
+  const finalIndex = dateColIndex >= 0 ? dateColIndex : columns.findIndex((c) => (c.title ?? '').toLowerCase().includes('date'));
+  if (finalIndex < 0) return rows; // no date column found
+
+  let lastDate: string | null = null;
+  const normalized = rows.map((r) => {
+    const newRow: ParsedRow = {
+      ...r,
+      columns: Array.isArray(r.columns) ? r.columns.map((c) => ({ ...c })) : [],
+    } as ParsedRow;
+    const raw = newRow.columns[finalIndex]?.value ?? "";
+    const isZeroDate = raw === "" || raw === "0-00-00" || /^0[-/]/.test(raw);
+    if (!isZeroDate) {
+      lastDate = raw;
+    } else if (lastDate) {
+      if (!newRow.columns[finalIndex]) newRow.columns[finalIndex] = { id: undefined, value: lastDate } as ParsedRowColumn;
+      else newRow.columns[finalIndex].value = lastDate;
+    } else {
+      // Leading zero-like placeholder with no prior date to inherit: normalize to empty string
+      if (!newRow.columns[finalIndex]) newRow.columns[finalIndex] = { id: undefined, value: "" } as ParsedRowColumn;
+      else newRow.columns[finalIndex].value = "";
+    }
+    return newRow;
+  });
+
+  // Telemetry / logging: report rows that still have empty date values after normalization.
+  const missing: { index: number; sample: string }[] = [];
+  for (let i = 0; i < normalized.length; i++) {
+    const row = normalized[i];
+    const cols = row?.columns ?? [];
+    const v = cols[finalIndex]?.value ?? "";
+    if (!v || v.toString().trim() === "") {
+      const sample = cols.slice(0, 4).map((c) => c.value ?? "").join(" | ");
+      missing.push({ index: i, sample });
+    }
+  }
+  if (missing.length > 0) {
+    // Log a warning with count and up to 5 samples for debugging; avoid dumping entire rows.
+    logger.warn({
+      context: "QboReportParser.normalizeDates.missingDates",
+      message: "Some rows still missing transaction date after normalization",
+      missingCount: missing.length,
+      samples: missing.slice(0, 5),
+    });
+  }
+
+  return normalized;
 }
 
 // Private Objects -----------------------------------------------------------

@@ -283,3 +283,71 @@ describe('QboReportParser extra variants', () => {
     expect(rows[0]!.columns[0]!.value).toBe('childX');
   });
 });
+
+describe('QboReportParser.date normalization', () => {
+  it('inherits tx_date values when child rows omit the date (ColType tx_date)', () => {
+    const report = {
+      Columns: { Column: [ { ColTitle: 'Date', ColType: 'tx_date' }, { ColTitle: 'Amount', ColType: 'number' } ] },
+      Rows: {
+        Row: [
+          { ColData: [ '2021-01-01', 100 ] },
+          { ColData: [ '0-00-00', 50 ] }, // should inherit 2021-01-01
+          { ColData: [ '', 25 ] },       // should inherit 2021-01-01
+          { ColData: [ '2021-01-02', 200 ] },
+          { ColData: [ '0-00-00', 75 ] }  // should inherit 2021-01-02
+        ]
+      }
+    } as unknown as Report;
+
+    const pr = parseReport(report);
+    expect(pr.rows).toHaveLength(5);
+    expect(pr.rows[0]!.columns[0]!.value).toBe('2021-01-01');
+    expect(pr.rows[1]!.columns[0]!.value).toBe('2021-01-01');
+    expect(pr.rows[2]!.columns[0]!.value).toBe('2021-01-01');
+    expect(pr.rows[3]!.columns[0]!.value).toBe('2021-01-02');
+    expect(pr.rows[4]!.columns[0]!.value).toBe('2021-01-02');
+  });
+
+  it('falls back to header title containing date when tx_date type is absent', () => {
+    const report = {
+      Columns: { Column: [ { ColTitle: 'Txn Date', ColType: 'string' }, { ColTitle: 'Amount', ColType: 'number' } ] },
+      Rows: {
+        Row: [
+          { ColData: [ '2022-03-10', 10 ] },
+          { ColData: [ '0-00-00', 20 ] },
+          { ColData: [ '', 30 ] }
+        ]
+      }
+    } as unknown as Report;
+
+    const pr = parseReport(report);
+    expect(pr.rows).toHaveLength(3);
+    expect(pr.rows[0]!.columns[0]!.value).toBe('2022-03-10');
+    expect(pr.rows[1]!.columns[0]!.value).toBe('2022-03-10');
+    expect(pr.rows[2]!.columns[0]!.value).toBe('2022-03-10');
+  });
+
+  it('does not invent dates when the report starts with missing dates (leading-empty)', () => {
+    const report = {
+      Columns: { Column: [ { ColTitle: 'Date', ColType: 'tx_date' }, { ColTitle: 'Amount', ColType: 'number' } ] },
+      Rows: {
+        Row: [
+          { ColData: [ '0-00-00', 10 ] }, // leading missing
+          { ColData: [ '', 20 ] },       // leading missing
+          { ColData: [ '2023-05-01', 30 ] },
+          { ColData: [ '0-00-00', 40 ] }  // should inherit 2023-05-01
+        ]
+      }
+    } as unknown as Report;
+
+    const pr = parseReport(report);
+    expect(pr.rows).toHaveLength(4);
+    // first two rows have no prior date to inherit -> remain empty string
+    expect(pr.rows[0]!.columns[0]!.value).toBe('');
+    expect(pr.rows[1]!.columns[0]!.value).toBe('');
+    // third row has explicit date
+    expect(pr.rows[2]!.columns[0]!.value).toBe('2023-05-01');
+    // fourth row should inherit the last non-empty date
+    expect(pr.rows[3]!.columns[0]!.value).toBe('2023-05-01');
+  });
+});
