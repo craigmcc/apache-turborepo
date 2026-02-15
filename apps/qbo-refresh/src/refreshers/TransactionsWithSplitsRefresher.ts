@@ -6,8 +6,9 @@
 
 import { fetchTransactionsWithSplits } from "@repo/qbo-api/TransactionsWithSplitsFunctions";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
-//import { dbQbo, TransactionWithSplits } from "@repo/qbo-db/*";
+import {dbQbo, Transaction } from "@repo/qbo-db/*";
 import { serverLogger as logger } from "@repo/shared-utils/*";
+//type TransactionCreateArgs = Prisma.TransactionCreateArgs;
 
 // Internal Modules ----------------------------------------------------------
 
@@ -27,20 +28,63 @@ export async function refreshTransactionsWithSplits(
     startDate,
     endDate,
     header: parsedReport.header,
-    totalColumns: parsedReport.columns.length,
+    columns: parsedReport.columns,
     totalRows: parsedReport.rows.length,
   });
 
-  // Document the first stuff for debugging
-  for (let i = 0; i < parsedReport.columns.length; i++) {
-    console.info(`Column ${i}:` + JSON.stringify(parsedReport.columns[i]));
+  // Delete existing transactions in the database for the given date range
+  const deleteResult = await dbQbo.transaction.deleteMany({
+    where: {
+      date: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+  });
+  logger.info({
+    context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.deleted",
+    deletedCount: deleteResult.count,
+  });
+
+  // Look up existing accounts in the database to validate account IDs and avoid creating duplicates
+  const accountMap = new Map<string, string>();
+  const accounts = await dbQbo.account.findMany({});
+  for (const account of accounts) {
+    accountMap.set(account.acctNum!, account.id);
   }
-  /*
-    for (let i = 0; i < 100; i++) {
-      console.info(`Row    ${i + 1}:` + JSON.stringify(parsedReport.rows[i]));
+
+  // Insert new transactions with splits into the database
+  for (let index = 0; index < parsedReport.rows.length; index++) {
+    const row = parsedReport.rows[index]!;
+    const accountId = accountMap.get(row.columns[5]!.value.substring(0, 4));
+//    const transaction: TransactionCreateArgs["data"] = {
+    const transaction: Transaction = {
+      id: BigInt(index), // use row index as ID since report data does not include a unique identifier
+      date: stringOrNull(row.columns[0]?.value),
+      type: stringOrNull(row.columns[1]?.value),
+      documentNumber: stringOrNull(row.columns[2]?.value),
+      name: stringOrNull(row.columns[3]?.value),
+      memo: stringOrNull(row.columns[4]?.value),
+      accountId: accountId ?? null,
+      amount: row.columns[6]?.value ? parseFloat(row.columns[6].value) : null,
+    };
+    const result = await dbQbo.transaction.create({data: transaction});
+    if (index < 20) {
+      logger.info({
+        context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.inserting",
+        result,
+      });
     }
-  */
+  }
+  logger.info({
+    context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.inserted",
+    insertedCount: parsedReport.rows.length,
+  });
 
-  // TODO: Add the transactions with splits to the database
+}
 
+// Private Objects -----------------------------------------------------------
+
+function stringOrNull(value: string | undefined): string | null {
+  return value === "" ? null : value ?? null;
 }
