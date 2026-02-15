@@ -14,6 +14,10 @@ import { config as baseConfig } from "./base.js";
  * */
 export const nextJsConfig = [
   ...baseConfig,
+  // Ignore Next.js build output to avoid scanning generated files
+  {
+    ignores: [".next/**"],
+  },
   js.configs.recommended,
   eslintConfigPrettier,
   ...tseslint.configs.recommended,
@@ -44,6 +48,14 @@ export const nextJsConfig = [
       ...pluginReactHooks.configs.recommended.rules,
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
+    },
+  },
+  // Allow the auto-generated next-env.d.ts to use triple-slash references
+  // without producing lint warnings (the file should not be edited).
+  {
+    files: ["**/next-env.d.ts"],
+    rules: {
+      "@typescript-eslint/triple-slash-reference": "off",
     },
   },
 ];
