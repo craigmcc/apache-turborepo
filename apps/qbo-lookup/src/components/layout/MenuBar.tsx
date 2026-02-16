@@ -62,6 +62,10 @@ export function MenuBar() {
               eventKey="JournalLines"
               title="Journal Lines"
             />
+            <Tab
+              eventKey="Transactions"
+              title="Transactions"
+            />
           </Tabs>
         </Col>
       </Row>
@@ -76,4 +80,5 @@ const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
   [ "Accounts", "/accounts"],
   [ "JournalEntries", "/journalEntries" ],
   [ "JournalLines", "/journalLines" ],
+  [ "Transactions", "/transactions" ],
 ]);

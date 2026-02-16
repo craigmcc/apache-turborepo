@@ -7,7 +7,7 @@
 import {
   Account,
   JournalEntry,
-  JournalEntryLine,
+  JournalEntryLine, Transaction,
 } from "@repo/qbo-db/client";
 
 // Public Types --------------------------------------------------------------
@@ -16,6 +16,7 @@ export type AccountPlus = Account & {
   childAccounts?: AccountPlus[] | null;
   journalEntryLines?: JournalEntryLinePlus[] | null;
   parentAccount?: AccountPlus | null;
+  transactions?: TransactionPlus[] | null;
 };
 
 export type JournalEntryPlus = JournalEntry & {
@@ -26,3 +27,7 @@ export type JournalEntryLinePlus = JournalEntryLine & {
   account?: AccountPlus | null;
   journalEntry?: JournalEntryPlus | null;
 };
+
+export type TransactionPlus = Transaction & {
+  account?: AccountPlus | null;
+}

@@ -62,7 +62,14 @@ export async function refreshTransactionsWithSplits(
   for (let index = 0; index < normalizedRows.length; index++) {
     const row = normalizedRows[index]!;
     // Guard access to the account column - it may be missing on some rows
-    const acctColVal = row.columns[5]?.value;
+    const acctColVal = row.columns[5]?.value || null;
+    if (!acctColVal || acctColVal.length < 4) {
+      logger.warn({
+        context: "TransactionsWithSplitsRefresher.refreshTransactionsWithSplits.missingAccount",
+        rowIndex: index,
+        acctColVal,
+      });
+    }
     const acctNumPrefix = acctColVal ? acctColVal.substring(0, 4) : undefined;
     const accountId = acctNumPrefix ? accountMap.get(acctNumPrefix) : undefined;
 //    const transaction: TransactionCreateArgs["data"] = {

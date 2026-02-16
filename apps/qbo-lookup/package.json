@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev:production": "dotenvx run -f .env.production --quiet -- next dev --turbopack --port 3002",
-    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- next dev --turbopack --port 3002",
+    "dev:production": "dotenvx run -f .env.production --quiet -- next dev --turbopack --port 3003",
+    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- next dev --turbopack --port 3003",
     "lint": "eslint .",
-    "start:production": "dotenvx run -f .env.production --quiet -- next start --port 3002",
-    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- next start --port 3002"
+    "start:production": "dotenvx run -f .env.production --quiet -- next start --port 3003",
+    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- next start --port 3003"
   },
   "type": "module",
   "version": "0.1.0",
