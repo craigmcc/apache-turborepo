@@ -146,7 +146,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       },
     }),
 
-    columnHelper.accessor(row => formatString(row.memo), {
+    columnHelper.accessor(row => formatString(row.memo, 40), {
       enableSorting: false,
       header: "Memo/Description",
       id: "memo",
@@ -155,7 +155,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     columnHelper.display({
       header: "Name",
       cell: info => {
-        return formatString(info.row.original.name);
+        return formatString(info.row.original.name, 40);
       },
     }),
 

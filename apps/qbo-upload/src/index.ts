@@ -56,34 +56,108 @@ export async function main() {
     rows: rows.length,
   })
 
-  // Validate that we can skip the correct rows
+  // Load a map of account numbers to account IDs
+  const accounts = await dbQbo.account.findMany({
+    select: {
+      id: true,
+      acctNum: true,
+    },
+    where: {
+      acctNum: {
+        not: null,
+      },
+    }
+  });
+  const accountMap = new Map<string, string>();
+  for (const account of accounts) {
+    accountMap.set(account.acctNum!, account.id);
+  }
+  logger.info({
+    context: "qbo-upload.accounts",
+    accounts: accounts.length,
+  });
+
+  // Delete all existing transactions in the database
+  const deleteResult = await dbQbo.transaction.deleteMany({});
+  logger.info({
+    context: "qbo-upload.deleted",
+    deletedCount: deleteResult.count,
+  });
+
+// Write non-skipped rows to the database
+  let rowsAccountsMissing = 0;
   let rowsSkipped = 0;
   let rowsKept = 0;
+//  let rowsZero = 0;
   for (const row of rows) {
+    if (row[1] === "Date") { // This is the header row
+      continue;
+    }
     if (row[0] !== "") {
-      logger.info({
-        context: "qbo-upload.csv-row-skipped",
-        row,
-      });
       rowsSkipped++;
+      if (rowsSkipped < 20) {
+        logger.trace({
+          context: "qbo-upload.csv-row-skipped",
+          row,
+        });
+      }
+/*
+    } else if (Number(row[9]) === 0) {
+      rowsZero++;
+      if (rowsZero < 20) {
+        logger.trace({
+          context: "qbo-upload.csv-row-zero   ",
+          row,
+        });
+      }
+*/
+    } else if (!accountMap.has(row[6]!.substring(0, 4))) {
+      rowsAccountsMissing++;
+      if (rowsAccountsMissing < 20) {
+        logger.trace({
+          context: "qbo-upload.csv-row-account",
+          row,
+        });
+      }
     } else {
       rowsKept++;
       if (rowsKept < 20) {
-        logger.info({
+        logger.trace({
           context: "qbo-upload.csv-row-kept   ",
           row,
         });
       }
+      const amount = row[7]!.length > 0 ? parseFloat(row[7]!)
+        : (row[8]!.length > 0 ? -parseFloat(row[8]!) : null);
+      const transaction: Transaction = {
+        id: BigInt(rowsKept), // use row index as ID since report data does not include a unique identifier
+        date: rearrangeDate(row[1]!),
+        type: row[2] || null,
+        documentNumber: row[3] || null,
+        name: row[4] || null,
+        memo: row[5] || null,
+        accountId: accountMap.get(row[6]!.substring(0, 4))!,
+        amount: amount,
+      };
+      await dbQbo.transaction.create({data: transaction});
     }
   }
   logger.info({
     context: "qbo-upload.csv-validation",
+    rowsAccountsMissing,
     rowsSkipped,
     rowsKept,
+//    rowsZero,
   });
 
   // TODO - Upload the rows to the QBO database
 
+}
+
+function rearrangeDate(input: string): string {
+  return input.substring(6, 10) + "-"
+    + input.substring(0, 2) + "-"
+    + input.substring(3, 5);
 }
 
 // Main Program ----------------------------------------------------------------
