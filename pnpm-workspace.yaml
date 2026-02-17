@@ -4,6 +4,8 @@ catalogs:
     react-bootstrap: "2.10.10"
   clsx:
     clsx: "2.1.1"
+  csv:
+    csv-parse: "6.1.0"
   date-fns:
     date-fns: "4.1.0"
   dotenvx:
