@@ -20,7 +20,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-//import { BookUp } from "lucide-react";
+import { BookUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import Col from "react-bootstrap/Col";
 //import Button from "react-bootstrap/Button";
@@ -31,7 +31,7 @@ import Row from "react-bootstrap/Row";
 
 import { TransactionPlus } from "@/types/types";
 //import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
-//import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
+import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
 import {formatAccountNumberAndName, formatString} from "@/lib/Formatters";
 
 // Public Objects ------------------------------------------------------------
@@ -46,7 +46,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   const [accountFilter, setAccountFilter] = useState<string>("");
   const [accountGroupFilter, setAccountGroupFilter] = useState<string>("All");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-//  const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus | null>(null);
+  const [currentTransaction, setCurrentTransaction] = useState<TransactionPlus | null>(null);
   const [fromDateFilter, setFromDateFilter] = useState<string>("");
   const [memoFilter, setMemoFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -54,7 +54,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     pageSize: 10,
   });
 //  const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
-//  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
+  const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "gl_account", desc: false },
     { id: "date", desc: false },
@@ -99,19 +99,18 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
 
   }, [accountFilter, accountGroupFilter, fromDateFilter, memoFilter, toDateFilter]);
 
-/*
-  // Handle the "CSV Export" modal close
-  function handleCsvExportClose() {
-    setShowCsvExport(false);
-  }
+  /*
+    // Handle the "CSV Export" modal close
+    function handleCsvExportClose() {
+      setShowCsvExport(false);
+    }
 
-  // Handle the "CSV Export" modal open
-  function handleCsvExportOpen() {
-    setShowCsvExport(true);
-  }
-*/
+    // Handle the "CSV Export" modal open
+    function handleCsvExportOpen() {
+      setShowCsvExport(true);
+    }
+  */
 
-/*
   // Handle the "More Info" modal close
   function handleMoreInfoClose() {
     setCurrentTransaction(null);
@@ -123,7 +122,6 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
     setCurrentTransaction(transaction);
     setShowMoreInfo(true);
   }
-*/
 
   // Column definitions for the Transactions table
   const columns = useMemo(() => [
@@ -173,32 +171,30 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       id: "account_group",
     }),
 
-    /*
-        columnHelper.display({
-          cell: info => {
-            return (
-              <span>
-              <BookUp
-                onClick={() => handleMoreInfoOpen(info.row.original)}
-                style={{ cursor: "context-menu" }}
-              />
-            </span>
-            );
-          },
-          header: "Info",
-          id: "moreInfo",
-        }),
-    */
+    columnHelper.display({
+      cell: info => {
+        return (
+          <span>
+          <BookUp
+            onClick={() => handleMoreInfoOpen(info.row.original)}
+            style={{ cursor: "context-menu" }}
+          />
+        </span>
+        );
+      },
+      header: "Info",
+      id: "moreInfo",
+    }),
 
   ], []);
 
   const table = useReactTable({
-    data: allTransactions,
     columns,
+    data: allTransactions,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     initialState: {
       columnVisibility: {
         account_group: false,
@@ -220,7 +216,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       <Row>
         <h1 className="header text-center">
           <span className="me-5">Transactions Table</span>
-{/*
+          {/*
           <Button
             className="bg-info"
             onClick={handleCsvExportOpen}
@@ -288,7 +284,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         table={table}
       />
 
-{/*
+      {/*
       <TransactionsCsvExport
         journalEntries={table.getSortedRowModel().flatRows.map(row => row.original)}
         hide={handleCsvExportClose}
@@ -296,13 +292,11 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
       />
 */}
 
-{/*
       <TransactionMoreInfo
         hide={handleMoreInfoClose}
         transaction={currentTransaction}
         show={showMoreInfo}
       />
-*/}
 
     </Container>
   );
@@ -376,4 +370,3 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
   return true; // Cell value is within the date range
 
 }
-
