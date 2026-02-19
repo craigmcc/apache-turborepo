@@ -50,7 +50,7 @@ export function TransactionMoreInfo({ transaction, hide, show }: TransactionMore
           <Row>
 
             <Col xs={12} md={5} className="me-3">
-              <h5 className="bg-primary-subtle">Transaction Information 1</h5>
+              <h5 className="bg-primary-subtle">Transaction Information</h5>
               <Table size="sm" bordered>
                 <tbody>
                 <tr>
