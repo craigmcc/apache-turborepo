@@ -32,7 +32,7 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { JournalEntryLinePlus } from "@/types/types";
-//import { JournalLinesCsvExport } from "@/components/journalLines/JournalLinesCsvExport";
+import { JournalLinesCsvExport } from "@/components/journalLines/JournalLinesCsvExport";
 import { JournalLineMoreInfo } from "@/components/journalLines/JournalLineMoreInfo";
 import {
   formatAccountNumberAndName,
@@ -282,13 +282,11 @@ export function JournalLinesTable({ allJournalLines }: JournalLinesTableProps) {
         table={table}
       />
 
-{/*
       <JournalLinesCsvExport
         hide={handleCsvExportClose}
         lines={table.getSortedRowModel().flatRows.map(row => row.original)}
         show={showCsvExport}
       />
-*/}
 
       <JournalLineMoreInfo
         hide={handleMoreInfoClose}
