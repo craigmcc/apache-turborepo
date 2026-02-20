@@ -127,8 +127,18 @@ export async function main() {
           row,
         });
       }
-      const amount = row[7]!.length > 0 ? parseFloat(row[7]!)
-        : (row[8]!.length > 0 ? -parseFloat(row[8]!) : null);
+      // Parse amount from columns 7 (positive) or 8 (negative). Trim and remove commas first.
+      const rawAmountStr: string | null = (row[7] && row[7]!.length > 0)
+        ? row[7]!.trim().replace(/,/g, "")
+        : ((row[8] && row[8]!.length > 0)
+            ? `-${row[8]!.trim().replace(/,/g, "")}`
+            : null);
+      let parsedAmount: number | null = null;
+      if (rawAmountStr !== null) {
+        const p = parseFloat(rawAmountStr);
+        parsedAmount = Number.isFinite(p) ? p : null;
+      }
+      const amount = parsedAmount;
       const transaction: Transaction = {
         id: BigInt(rowsKept), // use row index as ID since report data does not include a unique identifier
         date: rearrangeDate(row[1]!),
@@ -140,6 +150,15 @@ export async function main() {
         amount: amount,
       };
       await dbQbo.transaction.create({data: transaction});
+/*
+      if (transaction.documentNumber === "23345") {
+        logger.info({
+          context: "qbo-upload.csv-row-created",
+          row,
+          transaction,
+        });
+      }
+*/
     }
   }
   logger.info({
