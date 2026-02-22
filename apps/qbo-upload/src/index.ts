@@ -14,7 +14,7 @@ import fs from "node:fs";
 import { exit } from "node:process";
 import { parseArgs } from "node:util";
 import { dbQbo, Transaction } from "@repo/qbo-db/*";
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 
 // Internal Modules -----------------------------------------------------------
 

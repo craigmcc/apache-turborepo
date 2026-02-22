@@ -13,7 +13,7 @@
     "dev": "dotenvx run --quiet -- tsc --watch",
     "lint": "dotenvx run --quiet -- eslint . --max-warnings 0",
     "start": "dotenvx run --quiet -- tsx ./dist/index.js",
-    "test:ci": "vitest --run"
+    "test:cix": "vitest --run"
   },
   "type": "module",
   "version": "0.0.0",

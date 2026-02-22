@@ -8,7 +8,7 @@ import { fetchJournalEntries } from "@repo/qbo-api/JournalEntryFunctions";
 import { QboJournalEntry, QboJournalEntryLineDetail } from "@repo/qbo-api/types/Finance";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
 import { dbQbo, JournalEntry, JournalEntryLine } from "@repo/qbo-db/*";
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 
 // Internal Modules ----------------------------------------------------------
 

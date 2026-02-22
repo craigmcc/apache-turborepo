@@ -7,7 +7,7 @@
 import { fetchTransactionsWithSplits } from "@repo/qbo-api/TransactionsWithSplitsFunctions";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
 import {dbQbo, Transaction } from "@repo/qbo-db/*";
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 //type TransactionCreateArgs = Prisma.TransactionCreateArgs;
 
 // Internal Modules ----------------------------------------------------------

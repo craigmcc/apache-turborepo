@@ -17,7 +17,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 
 // Internal Modules ----------------------------------------------------------
 

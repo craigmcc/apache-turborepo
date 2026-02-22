@@ -13,7 +13,7 @@ import { parseReport } from "@repo/qbo-api/QboReportParser";
 import { Report } from "@repo/qbo-api/types/QboReportTypes";
 import { ParsedReport } from "@repo/qbo-api/types/QboReportParsedTypes";
 import { QboApiInfo } from "@repo/qbo-api/types/Types";
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 import z from "zod";
 
 // Internal Modules ----------------------------------------------------------

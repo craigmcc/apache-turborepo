@@ -5,7 +5,7 @@
 // External Imports ----------------------------------------------------------
 
 import { dbBill} from "@repo/bill-db/*";
-import { isAccountInGroup } from "@repo/shared-utils/*";
+import { isAccountInGroup } from "@repo/shared-utils";
 import { NextRequest } from "next/server";
 
 // Internal Imports ----------------------------------------------------------

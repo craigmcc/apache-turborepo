@@ -4,7 +4,7 @@
 
 // External Modules ----------------------------------------------------------
 
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 import { exec } from "node:child_process";
 import * as crypto from "node:crypto";
 import express from "express";

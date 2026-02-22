@@ -5,7 +5,7 @@
 // External Imports ----------------------------------------------------------
 
 import { dbRamp } from "@repo/ramp-db/*";
-import { isAccountInGroup } from "@repo/shared-utils/*";
+import { isAccountInGroup } from "@repo/shared-utils";
 import { NextRequest } from "next/server";
 
 // Internal Imports ----------------------------------------------------------

@@ -8,7 +8,7 @@
 
 import {AccountGroupFilter, DataTable} from "@repo/shared-components/DataTable";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
-import { clientLogger as logger, isAccountInGroup} from "@repo/shared-utils/*";
+import { clientLogger as logger, isAccountInGroup} from "@repo/shared-utils";
 import {
   ColumnFiltersState,
   createColumnHelper, FilterFn,
@@ -32,6 +32,7 @@ import Row from "react-bootstrap/Row";
 import { TransactionPlus } from "@/types/types";
 import { TransactionsCsvExport } from "@/components/transactions/TransactionsCsvExport";
 import { TransactionMoreInfo } from "@/components/transactions/TransactionMoreInfo";
+import { TransactionsXlsxExport } from "@/components/transactions/TransactionsXlsxExport";
 import {formatAccountNumberAndName, formatString} from "@/lib/Formatters";
 
 // Public Objects ------------------------------------------------------------
@@ -55,6 +56,7 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   });
   const [showCsvExport, setShowCsvExport] = useState<boolean>(false);
   const [showMoreInfo, setShowMoreInfo] = useState<boolean>(false);
+  const [showXlsxExport, setShowXlsxExport] = useState<boolean>(false);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "gl_account", desc: false },
     { id: "date", desc: false },
@@ -119,6 +121,16 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
   function handleMoreInfoOpen(transaction: TransactionPlus) {
     setCurrentTransaction(transaction);
     setShowMoreInfo(true);
+  }
+
+  // Handle the "XLSX Export" modal close
+  function handleXlsxExportClose() {
+    setShowXlsxExport(false);
+  }
+
+  // Handle the "XLSX Export" modal open
+  function handleXlsxExportOpen() {
+    setShowXlsxExport(true);
   }
 
   // Column definitions for the Transactions table
@@ -215,11 +227,18 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         <h1 className="header text-center">
           <span className="me-5">Transactions Table</span>
           <Button
-            className="bg-info"
+            className="bg-info me-2"
             onClick={handleCsvExportOpen}
             size="lg"
           >
             Export CSV
+          </Button>
+          <Button
+            className="bg-info"
+            onClick={handleXlsxExportOpen}
+            size="lg"
+          >
+            Export XLSX
           </Button>
         </h1>
       </Row>
@@ -290,6 +309,12 @@ export function TransactionsTable({ allTransactions }: TransactionsTableProps) {
         hide={handleMoreInfoClose}
         transaction={currentTransaction}
         show={showMoreInfo}
+      />
+
+      <TransactionsXlsxExport
+        hideAction={handleXlsxExportClose}
+        show={showXlsxExport}
+        transactions={table.getSortedRowModel().flatRows.map(row => row.original)}
       />
 
     </Container>

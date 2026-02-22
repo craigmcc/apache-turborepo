@@ -1,9 +1,20 @@
 {
+  "name": "@repo/shared-utils",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    "./*": "./dist/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*.js",
+      "require": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    }
   },
   "license": "Apache-2.0",
-  "name": "@repo/shared-utils",
   "private": true,
   "scripts": {
     "build": "tsc",

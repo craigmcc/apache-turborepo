@@ -65,6 +65,8 @@ catalogs:
     vite: "7.3.1"
   uidotdev:
     "@uidotdev/usehooks": "2.4.1"
+  xlsx:
+    "@e965/xlsx": "0.20.3"
   zod:
     zod: "3.25.28"
 packages:
