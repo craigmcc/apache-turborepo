@@ -50,4 +50,22 @@ describe('trimEmptyRows', () => {
     expect(rowsProp!.length).toBe(2);
   });
 
+  it('should create !ref and slice !rows when !ref is absent', () => {
+    const cells = { A1: { v: 'H' }, B1: { v: 'H2' }, A2: { v: 'x' }, B5: { v: '' } };
+    const longRows: Record<string, unknown>[] = [];
+    for (let i = 0; i < 10; i++) longRows.push({} as Record<string, unknown>);
+    // No '!ref' provided here
+    const ws = makeWorksheet(cells, undefined, longRows);
+
+    trimEmptyRows(ws, 1);
+
+    // expected startCol A, endCol B, and finalEndRow should be 2
+    expect(ws['!ref']).toBe('A1:B2');
+    // cell beyond row 2 should be removed
+    expect(ws['B5']).toBeUndefined();
+    const rowsProp = ws['!rows'] as unknown[] | undefined;
+    expect(Array.isArray(rowsProp)).toBe(true);
+    expect(rowsProp!.length).toBe(2);
+  });
+
 });

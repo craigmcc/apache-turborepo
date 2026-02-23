@@ -74,7 +74,7 @@ export function trimEmptyRows(ws: Record<string, unknown>, dataRowCount: number)
   const refEndValue = refParts2.length > 1 ? refParts2[1] : refParts2[0];
   const endMatch = refEndValue ? refEndValue.match(/([A-Z]+)(\d+)$/i) : null;
   if (!endMatch || !endMatch[2]) return;
-  const endRow = Number(endMatch[2]);
+//  const endRow = Number(endMatch[2]);
 
   const expectedEndRow = Math.max(1, 1 + Math.max(0, dataRowCount));
   const finalEndRow = Math.max(expectedEndRow, maxRowWithValue);

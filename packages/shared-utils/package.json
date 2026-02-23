@@ -4,14 +4,14 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./*": {
+      "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
-      "require": "./dist/*.js",
-      "types": "./dist/*.d.ts"
+      "require": "./dist/*.js"
     }
   },
   "license": "Apache-2.0",
@@ -22,7 +22,7 @@
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest",
-    "test:ci": "vitest --run",
+    "test:ci": "vitest --run --coverage",
     "zod": "catalog:zod"
   },
   "type": "module",
@@ -36,6 +36,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:vitest",
     "eslint": "catalog:eslint",
     "vitest": "catalog:vitest",
     "typescript": "catalog:typescript5",
