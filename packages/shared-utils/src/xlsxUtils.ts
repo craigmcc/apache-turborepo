@@ -79,17 +79,18 @@ export function trimEmptyRows(ws: Record<string, unknown>, dataRowCount: number)
   const expectedEndRow = Math.max(1, 1 + Math.max(0, dataRowCount));
   const finalEndRow = Math.max(expectedEndRow, maxRowWithValue);
 
-  if (maxRowWithValue < endRow) {
-    for (const k of cellKeys) {
-      const m = k.match(/([A-Z]+)(\d+)$/i);
-      if (!m) continue;
-      const row = Number(m[2]);
-      if (row > finalEndRow) delete (ws as Record<string, unknown>)[k];
-    }
-    (ws as Record<string, unknown>)["!ref"] = `${startCol}1:${endCol}${finalEndRow}`;
-    const rowsProp = (ws as Record<string, unknown>)["!rows"];
-    if (Array.isArray(rowsProp)) {
-      (ws as Record<string, unknown>)["!rows"] = (rowsProp as unknown[]).slice(0, finalEndRow) as unknown;
-    }
+  // Regardless of whether the existing '!ref' matched the trimmed range, ensure
+  // that any cell keys beyond the finalEndRow are removed and the '!rows' array
+  // is sliced to the finalEndRow to avoid writers adding extra blank rows.
+  for (const k of cellKeys) {
+    const m = k.match(/([A-Z]+)(\d+)$/i);
+    if (!m) continue;
+    const row = Number(m[2]);
+    if (row > finalEndRow) delete (ws as Record<string, unknown>)[k];
+  }
+  (ws as Record<string, unknown>)["!ref"] = `${startCol}1:${endCol}${finalEndRow}`;
+  const rowsProp = (ws as Record<string, unknown>)["!rows"];
+  if (Array.isArray(rowsProp)) {
+    (ws as Record<string, unknown>)["!rows"] = (rowsProp as unknown[]).slice(0, finalEndRow) as unknown;
   }
 }

@@ -54,9 +54,13 @@ export function TransactionsXlsxExport({ transactions, hideAction, show }: Trans
       worksheet["!cols"] = WIDTHS;
     }
 
+//    alert("Before Trim(" + rows.length + "): " + JSON.stringify(worksheet));
+
     // Trim any trailing empty rows that some writers may add. Provide the number of data rows
     // we wrote so the helper can use header + dataRowCount as the expected range baseline.
     trimEmptyRows(worksheet, rows.length);
+
+//    alert("After Trim (" + rows.length + "): " + JSON.stringify(worksheet));
 
     // json_to_sheet writes a header row at row 1, so data starts at row 2.
     const startRow = 2;
@@ -92,6 +96,8 @@ export function TransactionsXlsxExport({ transactions, hideAction, show }: Trans
         cell.z = "#,##0.00";
       }
     }
+
+//    alert("After Extra(" + rows.length + "): " + JSON.stringify(worksheet));
 
     // Add the worksheet to a new workbook and name the sheet "Transactions".
     const workbook = utils.book_new();

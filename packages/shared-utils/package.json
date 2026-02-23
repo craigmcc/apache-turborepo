@@ -38,6 +38,7 @@
     "@repo/vitest-config": "workspace:*",
     "eslint": "catalog:eslint",
     "vitest": "catalog:vitest",
-    "typescript": "catalog:typescript5"
+    "typescript": "catalog:typescript5",
+    "exceljs": "catalog:exceljs"
   }
 }
