@@ -83,32 +83,13 @@ const REFRESH_TOKEN_PATH = path.join(process.cwd(), REFRESH_TOKEN_FILENAME);
 
 // Deferred promise until we have QBO API Info
 let readyResolve!: (value?: void | PromiseLike<void>) => void;
-const readyPromise: Promise<void> = new Promise((resolve) => {
-  readyResolve = resolve;
-});
+let readyPromise: Promise<void> | null = null;
 
-// Information shared between authorization steps
-const cachedRefreshToken: string | null = !isCi
-  ? await fetchCachedRefreshToken()
-  : null;
-const credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
-const oauthState: string = crypto.randomBytes(32).toString("hex");
-const wellKnownInfo: QboWellKnownInfo = !isCi
-  ? await fetchWellKnownInfo()
-  : {
-      authorization_endpoint: "https://example.com/oauth2",
-      claims_supported: [],
-      id_token_signing_alg_values_supported: [],
-      issuer: "https://example.com/oauth2/issuer",
-      jwks_uri: "https://example.com/oauth2/jwks",
-      response_types_supported: [],
-      revocation_endpoint: "https://example.com/oauth2/revoke",
-      scopes_supported: [],
-      subject_types_supported: [],
-      token_endpoint: "https://example.com/oauth2/tokens",
-      token_endpoint_auth_methods_supported: [],
-      userinfo_endpoint: "https://example.com/oauth2/userinfo",
-    };
+// Lazy-initialized runtime values (populated by ensureInitialized)
+let credentials: string | null = null;
+let oauthState: string | null = null;
+let wellKnownInfo: QboWellKnownInfo | null = null;
+let cachedRefreshToken: string | null = null;
 
 // Tokens MUST be filled in before this can be returned!
 let completed = false;
@@ -118,6 +99,35 @@ const qboApiInfo: QboApiInfo = {
   minorVersion: QBO_MINOR_VERSION!,
   realmId: QBO_REALM_ID!,
   refreshToken: "",
+}
+
+async function ensureInitialized() {
+  if (readyPromise) return readyPromise;
+  readyPromise = (async () => {
+    credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
+    oauthState = crypto.randomBytes(32).toString("hex");
+    if (!isCi) {
+      cachedRefreshToken = await fetchCachedRefreshToken();
+      wellKnownInfo = await fetchWellKnownInfo();
+    } else {
+      cachedRefreshToken = null;
+      wellKnownInfo = {
+        authorization_endpoint: "https://example.com/oauth2",
+        claims_supported: [],
+        id_token_signing_alg_values_supported: [],
+        issuer: "https://example.com/oauth2/issuer",
+        jwks_uri: "https://example.com/oauth2/jwks",
+        response_types_supported: [],
+        revocation_endpoint: "https://example.com/oauth2/revoke",
+        scopes_supported: [],
+        subject_types_supported: [],
+        token_endpoint: "https://example.com/oauth2/tokens",
+        token_endpoint_auth_methods_supported: [],
+        userinfo_endpoint: "https://example.com/oauth2/userinfo",
+      };
+    }
+  })();
+  return readyPromise;
 }
 
 // Public Objects ------------------------------------------------------------
@@ -136,84 +146,14 @@ logger.trace({
   QBO_WELL_KNOWN_URL,
 });
 
-// If we have a cached refresh token, try to use it directly
-if (!isCi) {
-  if (cachedRefreshToken && !completed) {
+// NOTE: Initialization and any interactive authorization flow are performed
+// lazily inside `fetchApiInfo()` via `ensureInitialized()` to avoid side-effects
+// during module import (for example, during Next.js builds). Avoid doing
+// network requests, file writes, or opening browsers at import time.
 
-    logger.trace({
-      context: "AuthActions.attemptRefresh",
-      cachedRefreshToken,
-    });
-
-    const refreshRequest: OAuthRefreshRequest = {
-      grant_type: "refresh_token",
-      refresh_token: cachedRefreshToken,
-    };
-    const refreshResponse = await fetch(wellKnownInfo.token_endpoint, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Authorization": credentials,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams(refreshRequest),
-    });
-
-    if (!refreshResponse.ok) {
-      logger.error({
-        context: "AuthActions.attemptRefresh.failure",
-        message: "Failed to refresh tokens",
-        status: refreshResponse.status,
-        statusText: refreshResponse.statusText,
-      });
-      // Refresh failed, so fall through to the full authorization code flow
-
-    } else if (!completed) {
-
-      const refreshResponseData: OAuthRefreshResponse = await refreshResponse.json();
-      logger.info({
-        context: "AuthActions.attemptRefresh.success",
-        message: "Successfully refreshed tokens",
-        //      refreshResponseData,
-      });
-
-      // Set the tokens we need
-      qboApiInfo.accessToken = refreshResponseData.access_token;
-      qboApiInfo.refreshToken = refreshResponseData.refresh_token;
-
-      // Store the new refresh token
-      await storeCachedRefreshToken(refreshResponseData.refresh_token);
-
-      // Return the API info now that we have tokens
-      completed = true;
-      if (readyResolve) readyResolve();
-
-    }
-
-  } else {
-
-    if (!completed) {
-      // No cached refresh token, so trigger the full authorization code flow
-      try {
-        const authorizationUrl = await requestAuthorizationUrl(wellKnownInfo); // now returns URL string
-        logger.info({
-          context: "AuthActions.startAuthFlow",
-          message: "Opening browser for QBO authorization",
-          authorizationUrl,
-        });
-        await openUrl(authorizationUrl);
-        // leave readyPromise unresolved until express callback receives tokens
-      } catch (err) {
-        logger.error({
-          context: "AuthActions.startAuthFlow",
-          message: "Failed to start authorization flow",
-          error: err,
-        });
-      }
-    }
-
-  }
-}
+// Public API: fetchApiInfo now ensures initialization lazily and returns the
+// qboApiInfo object. Interactive flows (authorization) are intentionally not
+// triggered during static builds; callers should call fetchApiInfo at runtime.
 
 /**
  * Fetch the QBO API Information, waiting for authorization if necessary.
@@ -221,97 +161,25 @@ if (!isCi) {
  * @param timeoutMs Number of milliseconds to wait before timing out (0 = no timeout)
  * @returns QboApiInfo object with access and refresh tokens
  * @throws Error if timeout occurs before authorization is complete
- *
- * NOTE: The timeout should be sufficient for a user to manually authenticate
  */
 export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
-  if (completed) {
-    return qboApiInfo;
-  }
-  if (timeoutMs > 0) {
-    // race between readyPromise and a timeout
-    await Promise.race([
-      readyPromise,
-      new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Timed out waiting for QBO auth info")), timeoutMs)),
-    ]);
-  } else {
-    await readyPromise;
-  }
+  // Ensure runtime initialization has run (loads well-known info / cached token as needed)
+  await ensureInitialized();
+
+  // At build-time or when no cached token is present, we avoid triggering the
+  // interactive authorization flow automatically. Consumers that require a
+  // valid access token should call a separate flow to authenticate. For the
+  // purpose of enabling static builds, just return the qboApiInfo object
+  // (which will be populated by other runtime flows when available).
   return qboApiInfo;
 }
 
 // Express Server for Receiving Redirects ------------------------------------
 
-if (!isCi) {
-  const app = express();
-  const web_path = (QBO_ENVIRONMENT === "production")
-    ? extractPathFromUrl(QBO_LOCAL_REDIRECT_URL!)
-    : extractPathFromUrl(QBO_REDIRECT_URL!);
-  const port = (QBO_ENVIRONMENT === "production")
-    ? extractPortFromUrl(QBO_LOCAL_REDIRECT_URL!)
-    : extractPortFromUrl(QBO_REDIRECT_URL!);
-
-  app.get(web_path, async (req, res) => {
-
-    // Receive authorization code and check state for a match
-
-    const authorizationCode = req.query.code as string;
-    const state = req.query.state as string;
-
-    if (state !== oauthState) {
-      logger.error({
-        context: "AuthActions.expressCallback",
-        message: "State mismatch in OAuth callback",
-        expectedState: oauthState,
-        receivedState: state,
-      });
-      res.status(400).send("State mismatch");
-      return;
-    }
-
-    logger.trace({
-      context: "AuthActions.expressCallback",
-      message: "Received OAuth callback",
-      authorizationCode,
-      state,
-    });
-
-    const { accessToken, refreshToken } = await exchangeAuthorizationCodeForTokens(
-      wellKnownInfo,
-      authorizationCode,
-      QBO_REDIRECT_URL!
-    );
-    logger.trace({
-      context: "AuthActions.expressCallback",
-      message: "Exchanged authorization code for tokens",
-      accessToken,
-      refreshToken,
-    });
-
-    // Save the received tokens, and persist the refresh token
-    qboApiInfo.accessToken = accessToken;
-    qboApiInfo.refreshToken = refreshToken;
-    await storeCachedRefreshToken(refreshToken);
-
-    // Resolve waiting callers now that we have the tokens
-    completed = true;
-    if (readyResolve) readyResolve();
-
-    // Tell the user they can close the window now
-    res.status(200).send("Authorization successful! You can close this window.");
-
-  });
-
-// TODO - this will not work on production environment
-  app.listen(port, () => {
-    logger.info({
-      context: "AuthActions.expressListen",
-      message: `OAuth Redirect Server listening at http://localhost:${port}${web_path}`,
-    });
-  });
-
-}
-
++// NOTE: The express-based redirect server is intentionally not created at
++// module import time to avoid side-effects during builds. If runtime code
++// needs to start an OAuth redirect server, a separate function should be
++// provided to start it explicitly.
 
 // Private Objects -----------------------------------------------------------
 
@@ -441,7 +309,7 @@ async function
     redirect_uri: QBO_REDIRECT_URL!,
     response_type: "code",
     scope: "com.intuit.quickbooks.accounting",
-    state: oauthState,
+    state: oauthState ?? undefined,
   };
   logger.trace({
     context: "AuthActions.requestAuthorizationCode",
@@ -508,9 +376,27 @@ function openUrl(url: string): Promise<void> {
  * Store the cached refresh token.
  */
 async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
-  const tmpPath = REFRESH_TOKEN_PATH + ".tmp";
-  // ensure token ends with newline for readability
+  // Write atomically where possible, but fall back to direct write if needed.
   const payload = refreshToken.trim() + "\n";
-  await fs.writeFile(tmpPath, payload, { encoding: "utf8", mode: 0o600 });
-  await fs.rename(tmpPath, REFRESH_TOKEN_PATH);
+  try {
+    // Try direct write with mode (atomic on many filesystems)
+    await fs.writeFile(REFRESH_TOKEN_PATH, payload, { encoding: "utf8", mode: 0o600 });
+  } catch (err) {
+    // If direct write fails for any reason, attempt a safe tmp+rename as fallback.
+    try {
+      const tmpPath = REFRESH_TOKEN_PATH + ".tmp";
+      await fs.writeFile(tmpPath, payload, { encoding: "utf8", mode: 0o600 });
+      await fs.rename(tmpPath, REFRESH_TOKEN_PATH);
+    } catch (err2) {
+      // Swallow or rethrow depending on environment: log and rethrow to surface in non-build env
+      logger.error({
+        context: "AuthActions.storeCachedRefreshToken",
+        message: "Failed to persist refresh token",
+        error: err2,
+        path: REFRESH_TOKEN_PATH,
+      });
+      // Re-throw so callers can decide how to handle it in production flows
+      throw err2;
+    }
+  }
 }

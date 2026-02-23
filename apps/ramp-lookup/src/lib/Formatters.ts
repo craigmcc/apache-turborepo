@@ -4,7 +4,7 @@
 
 // Internal Imports ----------------------------------------------------------
 
-import { Timestamps } from "@repo/shared-utils/Timestamps";
+import { Timestamps } from "@repo/shared-utils";
 import {
   CardPlus,
   DepartmentPlus,

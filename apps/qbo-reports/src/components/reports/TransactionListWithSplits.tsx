@@ -9,7 +9,7 @@
 
 import { useAppForm } from "@repo/bootstrap-tanstack-form/useAppForm";
 import { QBReportTable, Report } from "@repo/shared-components/QBReportTable";
-import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
+import { clientLogger as logger } from "@repo/shared-utils";
 import { useState} from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { z } from "zod";

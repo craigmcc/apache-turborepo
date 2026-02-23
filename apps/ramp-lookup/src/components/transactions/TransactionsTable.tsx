@@ -9,7 +9,7 @@
 import { DataTable } from "@repo/shared-components/DataTable";
 import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
-import { isAccountInGroup } from "@repo/shared-utils/AccountGroups";
+import { isAccountInGroup } from "@repo/shared-utils";
 import {
   ColumnFiltersState,
   createColumnHelper,

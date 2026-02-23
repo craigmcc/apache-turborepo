@@ -370,4 +370,3 @@ function isValidYMD(dateString: string): boolean {
   }
   return date.toISOString().startsWith(dateString);
 }
-

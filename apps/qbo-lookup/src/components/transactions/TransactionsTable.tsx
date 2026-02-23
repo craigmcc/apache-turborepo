@@ -6,9 +6,10 @@
 
 // External Imports ----------------------------------------------------------
 
-import {AccountGroupFilter, DataTable} from "@repo/shared-components/DataTable";
+import { DataTable } from "@repo/shared-components/DataTable";
+import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
-import { clientLogger as logger, isAccountInGroup} from "@repo/shared-utils";
+import { clientLogger as logger, isAccountInGroup } from "@repo/shared-utils";
 import {
   ColumnFiltersState,
   createColumnHelper, FilterFn,
