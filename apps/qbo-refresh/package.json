@@ -9,7 +9,7 @@
   "scripts": {
     "dotenv": "dotenvx",
     "build": "tsc",
-    "check-types": "dotenvx run --quiet -- tsc --noEmit",
+    "check-types": "dotenvx run -f .env.sandbox --quiet -- tsc --noEmit",
     "dev": "dotenvx run -f .env.sandbox --quiet -- tsc --watch",
     "lint": "dotenvx --ignore=MISSING_ENV_FILE run --quiet -- eslint . --max-warnings 0",
     "start:production": "dotenvx run -f .env.production --quiet -- tsx ./dist/index.js",
