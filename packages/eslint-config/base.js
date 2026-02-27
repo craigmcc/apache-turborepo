@@ -27,6 +27,7 @@ export const config = [
     },
   },
   {
-    ignores: ["dist/**"],
+    // Ignore generated output directories and coverage reports by default
+    ignores: ["coverage/**", "dist/**"],
   },
 ];

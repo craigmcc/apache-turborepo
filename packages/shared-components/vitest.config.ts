@@ -1,11 +1,14 @@
-import base, { reactTestOptions } from '@repo/vitest-config';
+import { reactBase } from '@repo/vitest-config';
 import { defineConfig } from 'vitest/config';
 
+const baseTest = ((reactBase as unknown) as Record<string, unknown>).test as
+  | Record<string, unknown>
+  | undefined;
+
 export default defineConfig({
-  ...base,
+  ...reactBase,
   test: {
-    ...base.test,
-    ...reactTestOptions,
+    ...(baseTest || {}),
     include: ['src/**/*.test.{ts,tsx}'],
   },
 });
