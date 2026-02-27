@@ -21,7 +21,7 @@
   },
   "email_template": {
     "subject": "Bill.com Statement - {account_group} - {from_date} to {to_date}",
-    "body": "Dear {account_group} Team,\n\nPlease find attached your Bill.com accounts payable statement covering {from_date} to {to_date}.\n\nThis statement includes all bills with invoice dates within the specified period, showing vendor information, invoice details, amounts, payment status, and GL account classifications.\n\nIf you have any questions or concerns about the bills listed, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury",
+    "body": "Dear {account_group} Team,\n\nPlease find attached your Bill.com accounts payable statement covering {from_date} to {to_date}.\n\nSee https://s.apache.org/review_bill_statements for reviewing guidance.\n\nIf you have any questions please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury",
     "no_activity_subject": "Bill.com Statement - {account_group} - {from_date} to {to_date} (No Activity)",
     "no_activity_body": "Dear {account_group} Team,\n\nThis is to confirm that no Bill.com activity occurred for your account group during the period {from_date} to {to_date}.\n\nIf you have any questions, please contact the Treasury team at treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
   }

@@ -8,6 +8,13 @@ This directory contains statement distributor tools that generate and email fina
 
 ## Prerequisites
 
+**Important:** The statement distributors read from local SQLite databases. Before distributing monthly statements, you must refresh these databases so they contain the latest data from Bill.com and Ramp.
+
+- **For Ramp statements:** Run [ramp-refresh](../README.md#28-populate-the-local-database-with-ramp-content)
+- **For Bill.com statements:** Run [bill-refresh](../README.md#25-populate-the-local-database-with-bill-content)
+
+Then...
+
 - [pyenv](https://github.com/pyenv/pyenv) - Python version management
 - Python 3.14+ (version defined at `distributors/.python-version`)
 - Access to the local databases (populated by bill-refresh and ramp-refresh)
@@ -32,15 +39,6 @@ When using pyenv, it will automatically detect and use this version when you're 
 
 See per-distributor READMEs for data-specific details (CSV column format, distributor-specific troubleshooting).
 
-## Before Running: Refresh Databases
-
-**Important:** The statement distributors read from local SQLite databases. Before distributing monthly statements, you must refresh these databases so they contain the latest data from Bill.com and Ramp.
-
-- **For Ramp statements:** Run [ramp-refresh](../README.md#28-populate-the-local-database-with-ramp-content)
-- **For Bill.com statements:** Run [bill-refresh](../README.md#25-populate-the-local-database-with-bill-content)
-
-**Recommended monthly workflow:** Run both refreshers first, then run the statement distributors.
-
 ## Shared Utilities
 
 All distributors leverage the `shared/` package, which provides:
@@ -52,6 +50,19 @@ All distributors leverage the `shared/` package, which provides:
 - **Date utilities** - Parsing and range calculation
 - **Formatters** - Amount and date formatting
 - **Statistics** - Tracking and summary reports
+
+## Installation
+
+Run the automated setup script from the distributor directory:
+
+```bash
+cd ramp-statement-distributor  # or bill-statement-distributor
+./setup.sh
+cp config.example.json config.json
+# Edit config.json with your settings
+```
+
+The setup script will check for pyenv, install Python 3.14.0 if needed, create a virtual environment, and install dependencies.
 
 ## Quick Start
 
@@ -67,6 +78,9 @@ cd ramp-statement-distributor  # or bill-statement-distributor
 # Run setup
 ./setup.sh
 
+# Print CLI options
+python3 *_statement_distributor.py
+
 # List available account groups
 python3 *_statement_distributor.py --config config.json --list-account-groups
 
@@ -79,30 +93,6 @@ python3 *_statement_distributor.py --config config.json \
   --from-date 2024-01-01 --to-date 2024-01-31 \
   --send-emails
 ```
-
-## Installation
-
-### Quick Setup (Recommended)
-
-Run the automated setup script from the distributor directory:
-
-```bash
-cd ramp-statement-distributor  # or bill-statement-distributor
-./setup.sh
-cp config.example.json config.json
-# Edit config.json with your settings
-```
-
-The setup script will check for pyenv, install Python 3.14.0 if needed, create a virtual environment, and install dependencies.
-
-### Manual Setup
-
-1. Install [pyenv](https://github.com/pyenv/pyenv) and add to your shell configuration
-2. Install Python 3.14.0: `pyenv install 3.14.0`
-3. Navigate to the distributor and create virtual environment: `python -m venv .venv`
-4. Activate: `source .venv/bin/activate` (macOS/Linux)
-5. Install dependencies: `pip install -r requirements.txt`
-6. Copy and edit config: `cp config.example.json config.json`
 
 ## Configuration
 
@@ -139,37 +129,6 @@ Account groups are loaded from `packages/shared-utils/src/AccountGroups.json`. E
 
 Only account groups with `groupEmail` receive statements. Account groups without email are skipped with a warning.
 
-## Usage
-
-### Command-Line Options
-
-| Option | Description |
-|--------|-------------|
-| `--config PATH` | Configuration file (default: config.json) |
-| `--from-date YYYY-MM-DD` | Start date (default: first day of previous month) |
-| `--to-date YYYY-MM-DD` | End date (default: last day of previous month) |
-| `--account-groups LIST` | Comma-separated account groups (case-insensitive) |
-| `--list-account-groups` | List account groups and exit |
-| `--send-emails` | Actually send emails (default: dry-run) |
-
-### Examples
-
-```bash
-# List account groups
-python3 *_statement_distributor.py --config config.json --list-account-groups
-
-# Dry-run for specific date range (no emails sent)
-python3 *_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30
-
-# Single account group
-python3 *_statement_distributor.py --config config.json --account-groups Infrastructure
-
-# Production: send emails
-python3 *_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30 --send-emails
-```
-
-**Note:** Always run in dry-run mode first to verify output before sending emails.
-
 ## Email Behavior
 
 ### Dry-Run Mode (Default)
@@ -183,23 +142,13 @@ python3 *_statement_distributor.py --config config.json --from-date 2024-11-01 -
 
 - Statements are generated and saved
 - Emails sent to all account group contacts: with CSV attachment when there is activity, or without attachment (no-activity notice) when there is none
+- Every email to account group contacts (with or without attachment) is BCC'd to the treasurer, using the same address as `summary_report.recipient`, so the treasurer receives a copy of all account-group emails
 - Summary report sent to treasurer (if enabled)
 - All actions are logged
 
 ### Account Groups with No Activity
 
 All account groups receive an email each month. When an account group has no data in the date range, an email is sent without attachment stating that no activity occurred, using `no_activity_subject` and `no_activity_body` from config.
-
-## Automation
-
-To run monthly via cron, add a job (e.g. `crontab -e`):
-
-```cron
-# Run on the 1st of each month at 9:00 AM
-0 9 1 * * cd /path/to/distributors/ramp-statement-distributor && source .venv/bin/activate && python ramp_statement_distributor.py --send-emails >> /var/log/ramp-statement-distributor.log 2>&1
-```
-
-Use `--send-emails` for the cron job to actually send emails. Activate the virtual environment before running.
 
 ## Output
 
@@ -235,32 +184,13 @@ Use `--send-emails` for the cron job to actually send emails. Activate the virtu
 
 All distributors support:
 
-- **Monthly emails to all account groups** - Every account group receives an email each month; account groups with no activity receive a no-activity notice (no CSV attachment)
+- **Emails to all account groups** - Every account group should receive a email each month; account groups with no activity receive a no-activity notice (no CSV attachment)
 - **Dry-run mode** - Test without sending emails (default)
 - **Account group filtering** - Process specific account groups
 - **Date ranges** - Flexible date range selection (defaults to previous month)
 - **Summary reports** - Execution summaries emailed to treasurer
 - **Robust logging** - Console and rotating file logs
 - **Consistent CLI** - Same command-line interface across all tools
-
-## Architecture
-
-```
-distributors/
-├── .python-version              # Python 3.14.0 (shared)
-├── shared/                      # Shared utilities package
-│   ├── email_sender.py
-│   ├── logging_config.py
-│   ├── account_group_manager.py
-│   ├── account_groups.py
-│   ├── date_utils.py
-│   ├── formatters.py
-│   └── statistics.py
-├── ramp-statement-distributor/
-│   └── ramp_statement_distributor.py
-└── bill-statement-distributor/
-    └── bill_statement_distributor.py
-```
 
 ## Adding New Distributors
 
@@ -278,7 +208,6 @@ Expected code savings: ~400 lines by reusing shared utilities.
 For questions or issues:
 - Email: treasurer@apache.org
 - Check individual distributor logs in their `logs/` directory
-- Review implementation details in `IMPLEMENTATION_SUMMARY.md`
 
 ## License
 

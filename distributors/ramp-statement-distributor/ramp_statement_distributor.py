@@ -301,6 +301,8 @@ class StatementDistributor:
 
         logger.info(f"Processing account group: {name}")
 
+        bcc_address = self.summary_config.get('recipient', 'treasurer@apache.org')
+
         # Query transactions first to check if any exist
         transactions = self.query_transactions(account_group, from_date, to_date)
         
@@ -322,7 +324,8 @@ class StatementDistributor:
                 no_activity_body,
                 attachment_path=None,
                 dry_run=not send_emails,
-                logger=logger
+                logger=logger,
+                bcc=bcc_address
             )
             if success:
                 self.stats_tracker.record_sent_no_activity(name)
@@ -368,7 +371,8 @@ class StatementDistributor:
             body,
             statement_path,
             dry_run=not send_emails,
-            logger=logger
+            logger=logger,
+            bcc=bcc_address
         )
         
         # Track results

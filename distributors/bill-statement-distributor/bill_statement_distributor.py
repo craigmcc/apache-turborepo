@@ -354,6 +354,8 @@ class BillStatementDistributor:
 
         logger.info(f"Processing account group: {name}")
 
+        bcc_address = self.summary_config.get('recipient', 'treasurer@apache.org')
+
         # Query bills first to check if any exist
         bills = self.query_bills(account_group, from_date, to_date)
         
@@ -375,7 +377,8 @@ class BillStatementDistributor:
                 no_activity_body,
                 attachment_path=None,
                 dry_run=not send_emails,
-                logger=logger
+                logger=logger,
+                bcc=bcc_address
             )
             if success:
                 self.stats_tracker.record_sent_no_activity(name)
@@ -421,7 +424,8 @@ class BillStatementDistributor:
             body,
             statement_path,
             dry_run=not send_emails,
-            logger=logger
+            logger=logger,
+            bcc=bcc_address
         )
         
         # Track results

@@ -13,7 +13,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Union
 
 
 def send_email(
@@ -23,7 +23,8 @@ def send_email(
     body: str,
     attachment_path: Optional[Path] = None,
     dry_run: bool = False,
-    logger: Optional[logging.Logger] = None
+    logger: Optional[logging.Logger] = None,
+    bcc: Optional[Union[str, List[str]]] = None
 ) -> bool:
     """
     Send an email with optional attachment via SMTP.
@@ -42,6 +43,7 @@ def send_email(
         attachment_path: Optional path to file to attach
         dry_run: If True, don't actually send the email (default: False)
         logger: Optional logger instance for logging
+        bcc: Optional email address or list of addresses to BCC
         
     Returns:
         True if email was sent successfully (or dry run), False otherwise
@@ -51,8 +53,9 @@ def send_email(
     
     if dry_run:
         attachment_msg = f"with attachment {attachment_path.name}" if attachment_path else "without attachment"
+        bcc_msg = f" and BCC {', '.join(bcc if isinstance(bcc, list) else [bcc])}" if bcc else ""
         logger.info(
-            f"[DRY RUN] Would send email to {recipient} {attachment_msg}"
+            f"[DRY RUN] Would send email to {recipient} {attachment_msg}{bcc_msg}"
         )
         return True
     
@@ -62,6 +65,9 @@ def send_email(
         msg['From'] = smtp_config.get('from_address')
         msg['To'] = recipient
         msg['Subject'] = subject
+        if bcc:
+            bcc_list = [bcc] if isinstance(bcc, str) else bcc
+            msg['Bcc'] = ', '.join(bcc_list)
         
         # Add body
         msg.attach(MIMEText(body, 'plain'))
