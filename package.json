@@ -9,7 +9,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "test:ci": "turbo run test:ci",
+    "test:ci": "turbo run build && turbo run test:ci && pnpm coverage:merge",
     "coverage:merge": "node ./scripts/merge-coverage.js",
     "test:ci:merged": "turbo run test:ci && pnpm coverage:merge"
   },
