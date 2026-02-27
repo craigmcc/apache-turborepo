@@ -7,7 +7,7 @@
     "dev": "next dev --turbopack --port 3000",
     "lint": "eslint .",
     "start": "next start",
-    "test:ci": "vitest --run"
+    "test:ci": "vitest --run --coverage"
   },
   "type": "module",
   "version": "0.1.0",

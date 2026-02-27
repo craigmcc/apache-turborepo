@@ -9,14 +9,21 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "test:ci": "turbo run test:ci"
+    "test:ci": "turbo run test:ci",
+    "coverage:merge": "node ./scripts/merge-coverage.js",
+    "test:ci:merged": "turbo run test:ci && pnpm coverage:merge"
   },
   "devDependencies": {
     "exceljs": "4.3.0",
     "prettier": "^3.5.3",
     "turbo": "^2.7.3",
     "typescript": "5.8.2",
-    "vitest": "4.0.18"
+    "vitest": "4.0.18",
+    "@vitest/coverage-v8": "4.0.18",
+    "fast-glob": "^3.2.12",
+    "istanbul-lib-coverage": "^3.2.0",
+    "istanbul-lib-report": "^3.0.0",
+    "istanbul-reports": "^3.0.0"
   },
   "packageManager": "pnpm@10.10.0",
   "engines": {

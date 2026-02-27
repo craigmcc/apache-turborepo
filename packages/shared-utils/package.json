@@ -40,6 +40,7 @@
     "eslint": "catalog:eslint",
     "vitest": "catalog:vitest",
     "typescript": "catalog:typescript5",
-    "exceljs": "catalog:exceljs"
+    "exceljs": "catalog:exceljs",
+    "@repo/testing-react": "workspace:*"
   }
 }
