@@ -18,9 +18,9 @@ fi
 
 echo "✓ pyenv is installed"
 
-# Get the required Python version from .python-version
-PYTHON_VERSION=$(cat .python-version)
-echo "Required Python version: $PYTHON_VERSION"
+# Get the required Python version from ../.python-version (shared across all distributors)
+PYTHON_VERSION=$(cat ../.python-version)
+echo "Required Python version: $PYTHON_VERSION (from /distributors/.python-version)"
 
 # Check if the required Python version is installed
 if ! pyenv versions --bare | grep -q "^${PYTHON_VERSION}$"; then

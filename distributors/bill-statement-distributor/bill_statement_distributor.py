@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Apache Treasury - Credit Card Statement Distributor
+Apache Treasury - Bill.com Statement Distributor
 
-This script generates credit card activity statements for each account group
-by querying the ramp-db SQLite database directly and distributes them via email.
+This script generates accounts payable statements for each account group
+by querying the bill-db SQLite database directly and distributes them via email.
 
 Usage:
-    python ramp_statement_distributor.py --config config.json
-    python ramp_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30
-    python ramp_statement_distributor.py --config config.json --from-date 2024-01-01 --to-date 2024-12-31
-    python ramp_statement_distributor.py --config config.json --account-groups Infrastructure,Marketing
-    python ramp_statement_distributor.py --config config.json --list-account-groups
-    python ramp_statement_distributor.py --config config.json --dry-run
+    python bill_statement_distributor.py --config config.json
+    python bill_statement_distributor.py --config config.json --from-date 2024-11-01 --to-date 2024-11-30
+    python bill_statement_distributor.py --config config.json --from-date 2024-01-01 --to-date 2024-12-31
+    python bill_statement_distributor.py --config config.json --account-groups Infrastructure,Marketing
+    python bill_statement_distributor.py --config config.json --list-account-groups
+    python bill_statement_distributor.py --config config.json --dry-run
 """
 
 import argparse
@@ -30,7 +30,7 @@ from shared.email_sender import send_email
 from shared.account_group_manager import load_account_groups, filter_account_groups, list_account_groups
 from shared.account_groups import is_account_in_group
 from shared.date_utils import get_date_range
-from shared.formatters import format_accounting_date, format_amount
+from shared.formatters import format_amount
 from shared.statistics import StatisticsTracker, generate_summary_report
 
 
@@ -38,8 +38,8 @@ from shared.statistics import StatisticsTracker, generate_summary_report
 logger = None
 
 
-class StatementDistributor:
-    """Handles generation and distribution of monthly credit card statements."""
+class BillStatementDistributor:
+    """Handles generation and distribution of monthly Bill.com statements."""
 
     def __init__(self, config_path: str):
         """
@@ -51,7 +51,7 @@ class StatementDistributor:
         self.config = self._load_config(config_path)
         self.smtp_config = self.config.get('smtp', {})
         self.email_template = self.config.get('email_template', {})
-        self.output_dir = Path(self.config.get('output_dir', './statements'))
+        self.output_dir = Path(self.config.get('output_dir', './bill_statements'))
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Set database path from config
@@ -61,7 +61,7 @@ class StatementDistributor:
         else:
             # Default to standard location
             script_dir = Path(__file__).parent
-            self.database_path = script_dir / '../../packages/ramp-db/ramp-db.db'
+            self.database_path = script_dir / '../../packages/bill-db/bill-db.db'
         
         # Verify database exists
         if not self.database_path.exists():
@@ -97,14 +97,29 @@ class StatementDistributor:
             logger.error(f"Invalid JSON in configuration file: {e}")
             sys.exit(1)
 
-    def query_transactions(
+    def _format_date(self, date_str: Optional[str]) -> str:
+        """
+        Format date for display.
+        
+        Args:
+            date_str: Date string (YYYY-MM-DD format expected from SQLite)
+            
+        Returns:
+            Formatted date string or empty string if None
+        """
+        if not date_str:
+            return ''
+        # SQLite dates are typically YYYY-MM-DD format, which is already readable
+        return date_str
+
+    def query_bills(
         self,
         account_group: str,
         from_date: str,
         to_date: str
     ) -> List[Dict]:
         """
-        Query transactions directly from the database.
+        Query bills directly from the database.
         
         Args:
             account_group: The account group name
@@ -112,81 +127,119 @@ class StatementDistributor:
             to_date: End date in YYYY-MM-DD format
             
         Returns:
-            List of transaction dictionaries
+            List of bill dictionaries
         """
         conn = sqlite3.connect(self.database_path)
         conn.row_factory = sqlite3.Row  # Return rows as dictionaries
         cursor = conn.cursor()
         
         # Query with joins to get related data
-        # Note: GL accounts are stored in line item accounting field selections, not transaction-level selections
+        # Note: GL accounts are stored in bills_classifications, linked via chartOfAccountId
+        # Bills have vendorName stored directly, so vendor join is optional
+        # Approver subquery: concatenate approver names from bills_approvers + users, ordered by sortOrder
         query = """
         SELECT 
-            t.accounting_date,
-            u.first_name || ' ' || u.last_name as user_name,
-            c.display_name as card_name,
-            c.last_four,
-            t.original_transaction_amount_amt,
-            t.original_transaction_amount_cc,
-            t.amount_amt,
-            t.amount_cc,
-            t.merchant_name,
-            t.state,
-            tliafs.external_code as gl_account
-        FROM transactions t
-        LEFT JOIN cards c ON t.card_id = c.id
-        LEFT JOIN users u ON t.card_holder_user_id = u.id
-        LEFT JOIN transactions_line_items tli ON t.id = tli.transaction_id
-        LEFT JOIN transactions_line_items_accounting_field_selections tliafs 
-            ON t.id = tliafs.transaction_id 
-            AND tli.index_line_item = tliafs.index_line_item
-            AND tliafs.category_info_type = 'GL_ACCOUNT'
-        WHERE t.accounting_date >= ? AND t.accounting_date <= ?
-        ORDER BY tliafs.external_code, t.accounting_date
+            b.invoiceDate,
+            COALESCE(v.name, b.vendorName) as vendor_name,
+            b.invoiceNumber,
+            b.dueDate,
+            b.amount,
+            b.paidAmount,
+            b.approvalStatus,
+            (SELECT GROUP_CONCAT(fullname, ', ')
+             FROM (
+               SELECT TRIM(COALESCE(u.firstName, '') || ' ' || COALESCE(u.lastName, '')) as fullname
+               FROM bills_approvers ba
+               JOIN users u ON ba.userId = u.id
+               WHERE ba.billId = b.id
+               ORDER BY COALESCE(ba.sortOrder, 0)
+             )) as approver,
+            b.paymentStatus,
+            a.accountNumber as gl_account,
+            a.name as gl_account_name
+        FROM bills b
+        LEFT JOIN vendors v ON b.vendorId = v.id
+        LEFT JOIN bills_classifications bc ON b.id = bc.billId
+        LEFT JOIN accounts a ON bc.chartOfAccountId = a.id
+        WHERE b.invoiceDate >= ? AND b.invoiceDate <= ?
+        ORDER BY a.accountNumber, b.invoiceDate
         """
         
-        from_datetime = from_date + "T00:00:00.000Z"
-        to_datetime = to_date + "T23:59:59.999Z"
-        
-        cursor.execute(query, (from_datetime, to_datetime))
+        cursor.execute(query, (from_date, to_date))
         rows = cursor.fetchall()
         conn.close()
         
         # Filter by account group using shared utility
+        # Note: Some bills may not have classifications, so we skip those without GL accounts
         filtered_rows = [
             dict(row) for row in rows 
-            if is_account_in_group(row['gl_account'] or '', account_group, self.account_groups_path)
+            if row['gl_account'] and is_account_in_group(
+                row['gl_account'],
+                account_group,
+                self.account_groups_path
+            )
         ]
         
         return filtered_rows
 
-    def generate_csv_from_transactions(
+    def _format_currency_amount(self, amount: Optional[float]) -> str:
+        """
+        Format currency amount to dollar string.
+        
+        Args:
+            amount: Amount as float (e.g., 123.45 for $123.45)
+            
+        Returns:
+            Formatted amount string like "$1,234.56"
+        """
+        if amount is None:
+            return '$0.00'
+        return f"${amount:,.2f}"
+
+    def generate_csv_from_bills(
         self,
-        transactions: List[Dict],
+        bills: List[Dict],
         output_path: Path
     ) -> None:
-        """Generate CSV file from transaction data."""
+        """
+        Generate CSV file from bill data.
+        
+        Args:
+            bills: List of bill dictionaries from database query
+            output_path: Path where CSV should be written
+        """
         with open(output_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             
             # Write header
             writer.writerow([
-                "Accounting Date-Time", "User Name", "Card Name", "Last 4",
-                "Original Amount", "Settled Amount", "Merchant", "GL Account", "State"
+                "Invoice Date",
+                "Vendor Name",
+                "Invoice Number",
+                "Due Date",
+                "Amount (USD)",
+                "Paid Amount (USD)",
+                "Approval Status",
+                "Approver",
+                "Payment Status",
+                "GL Account",
+                "GL Account Name"
             ])
             
-            # Write data rows using shared formatters
-            for t in transactions:
+            # Write data rows
+            for bill in bills:
                 writer.writerow([
-                    format_accounting_date(t['accounting_date']),
-                    t['user_name'] or '',
-                    t['card_name'] or '',
-                    t['last_four'] or '',
-                    format_amount(t['original_transaction_amount_amt'], t['original_transaction_amount_cc']),
-                    format_amount(t['amount_amt'], t['amount_cc']),
-                    t['merchant_name'] or '',
-                    t['gl_account'] or '',
-                    t['state'] or ''
+                    self._format_date(bill['invoiceDate']),
+                    bill['vendor_name'] or '',
+                    bill['invoiceNumber'] or '',
+                    self._format_date(bill['dueDate']),
+                    self._format_currency_amount(bill['amount']),
+                    self._format_currency_amount(bill['paidAmount']),
+                    bill['approvalStatus'] or '',
+                    bill.get('approver') or '',
+                    bill['paymentStatus'] or '',
+                    bill['gl_account'] or '',
+                    bill['gl_account_name'] or ''
                 ])
 
     def generate_statement(
@@ -196,7 +249,7 @@ class StatementDistributor:
         to_date: str
     ) -> Optional[Path]:
         """
-        Generate a credit card statement from the database.
+        Generate a Bill.com statement from the database.
 
         Args:
             account_group: The account group name
@@ -212,16 +265,16 @@ class StatementDistributor:
         )
 
         try:
-            # Query transactions from database
-            transactions = self.query_transactions(account_group, from_date, to_date)
+            # Query bills from database
+            bills = self.query_bills(account_group, from_date, to_date)
 
             # Generate CSV file
-            filename = f"Ramp-{account_group}-{from_date}-{to_date}.csv"
+            filename = f"Bill-{account_group}-{from_date}-{to_date}.csv"
             file_path = self.output_dir / filename
 
-            self.generate_csv_from_transactions(transactions, file_path)
+            self.generate_csv_from_bills(bills, file_path)
 
-            logger.info(f"Generated statement with {len(transactions)} transactions: {file_path}")
+            logger.info(f"Generated statement with {len(bills)} bills: {file_path}")
             return file_path
 
         except Exception as e:
@@ -246,8 +299,8 @@ class StatementDistributor:
             return False
         
         stats = self.stats_tracker.get_stats()
-        subject = f"Ramp Statement Distribution Summary - {stats['from_date']} to {stats['to_date']}"
-        body = generate_summary_report(stats, "Ramp Statement Distributor")
+        subject = f"Bill.com Statement Distribution Summary - {stats['from_date']} to {stats['to_date']}"
+        body = generate_summary_report(stats, "Bill.com Statement Distributor")
         
         logger.info(f"Sending summary report to {recipient}")
         
@@ -276,7 +329,7 @@ class StatementDistributor:
         send_emails: bool = False
     ) -> bool:
         """
-        Process a single account group: download statement and send email.
+        Process a single account group: generate statement and send email.
 
         Args:
             ag: Account group configuration dictionary
@@ -303,19 +356,19 @@ class StatementDistributor:
 
         bcc_address = self.summary_config.get('recipient', 'treasurer@apache.org')
 
-        # Query transactions first to check if any exist
-        transactions = self.query_transactions(account_group, from_date, to_date)
+        # Query bills first to check if any exist
+        bills = self.query_bills(account_group, from_date, to_date)
         
-        # Send no-activity email when account group has no transactions
-        if len(transactions) == 0:
-            logger.info(f"Sending no-activity email to {name}: no transactions found for date range")
+        # Send no-activity email when account group has no bills
+        if len(bills) == 0:
+            logger.info(f"Sending no-activity email to {name}: no bills found for date range")
             no_activity_subject = self.email_template.get(
                 'no_activity_subject',
                 self.email_template.get('subject', '') + ' (No Activity)'
             ).format(account_group=name, from_date=from_date, to_date=to_date)
             no_activity_body = self.email_template.get(
                 'no_activity_body',
-                "Dear {account_group} Team,\n\nNo Ramp credit card activity occurred for your account group during {from_date} to {to_date}.\n\nIf you have questions, contact treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
+                "Dear {account_group} Team,\n\nNo Bill.com activity occurred for your account group during {from_date} to {to_date}.\n\nIf you have questions, contact treasurer@apache.org.\n\nBest regards,\nApache Software Foundation Treasury"
             ).format(account_group=name, from_date=from_date, to_date=to_date)
             success = send_email(
                 self.smtp_config,
@@ -405,7 +458,7 @@ class StatementDistributor:
         Returns:
             Exit code (0 for success, 1 for failure)
         """
-        logger.info("Starting statement distribution process")
+        logger.info("Starting Bill.com statement distribution process")
 
         if not send_emails:
             logger.info("Running in DRY RUN mode - emails will not be sent (use --send-emails to send)")
@@ -454,7 +507,7 @@ class StatementDistributor:
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='Generate and distribute credit card statements for specified date ranges'
+        description='Generate and distribute Bill.com statements for specified date ranges'
     )
     parser.add_argument(
         '--config',
@@ -508,7 +561,7 @@ def main():
     logger = setup_logging(args.config, __name__)
 
     # Create distributor to load account groups
-    distributor = StatementDistributor(args.config)
+    distributor = BillStatementDistributor(args.config)
 
     # Handle --list-account-groups (takes precedence, exits immediately)
     if args.list_account_groups:
