@@ -21,7 +21,6 @@
     "@repo/vitest-config": "workspace:*",
     "@testing-library/react": "catalog:testing-library",
     "@testing-library/user-event": "catalog:testing-library",
-    "@testing-library/jest-dom": "catalog:testing-library",
     "msw": "catalog:msw",
     "whatwg-fetch": "catalog:whatwg-fetch",
     "next-router-mock": "catalog:next-router-mock",
