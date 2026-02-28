@@ -67,3 +67,26 @@ import { server } from '@repo/testing-react/dist/msw/server';
 Notes
 - `renderWithProviders` returns the `user` helper typed as a small `UserEventLike` interface to avoid leaking internal `@testing-library/user-event` types in the package d.ts. If you need fuller typing, import `@testing-library/user-event` directly in your test file.
 - The package provides `dist/vitest.setup.js` which the shared vitest config references for React tests.
+
+Compatibility with Vitest and `@testing-library/jest-dom`
+
+This package keeps `@testing-library/jest-dom` as a devDependency even though the name contains "jest". That's intentional: `@testing-library/jest-dom` only provides a set of DOM matchers (e.g. `toBeInTheDocument`) and works fine with Vitest when you explicitly register its matchers with Vitest's `expect`.
+
+Example `vitest.setup.ts` (already included in `dist`):
+
+```ts
+/// <reference types="vitest" />
+import { beforeAll, afterEach, afterAll, expect } from 'vitest';
+import matchers from '@testing-library/jest-dom/matchers';
+import 'whatwg-fetch';
+import { server } from './msw/server';
+
+// Register the jest-dom matchers with Vitest's expect
+expect.extend(matchers as any);
+
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+Keep `@testing-library/jest-dom` as-is — it's safe and common to use it with Vitest.

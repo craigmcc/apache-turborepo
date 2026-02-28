@@ -7,15 +7,27 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js",
-    "./msw/*": "./dist/msw/*.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": {
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
+    },
+    "./msw/*": {
+      "import": "./dist/msw/*.js",
+      "types": "./dist/msw/*.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
     "test": "vitest",
     "test:ci": "vitest --run --coverage"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "catalog:testing-library"
   },
   "devDependencies": {
     "@repo/vitest-config": "workspace:*",
