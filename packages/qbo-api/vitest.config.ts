@@ -3,9 +3,5 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   ...base,
-  test: {
-    ...base.test,
-    include: ['src/**/*.test.{ts,tsx}'],
-    // package-specific overrides can go here
-  },
+  // package-specific overrides can go in test if needed in future
 });

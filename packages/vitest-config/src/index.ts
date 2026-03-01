@@ -7,6 +7,7 @@ import * as fs from 'fs';
 
 const req = createRequire(import.meta.url);
 let resolvedReactSetupFile: string | undefined;
+let resolvedActSetupFile: string | undefined;
 try {
   // First try resolving as a package (this may return a node_modules path)
   resolvedReactSetupFile = req.resolve('@repo/testing-react/dist/vitest.setup.js');
@@ -33,10 +34,38 @@ try {
   }
 }
 
+// Resolve our internal act-setup file so it can be included before other setup files
+try {
+  // Prefer resolving the built package path first
+  try {
+    resolvedActSetupFile = req.resolve('@repo/vitest-config/dist/act-setup.js');
+  } catch (e) {
+    const actCandidates = [
+      path.resolve(process.cwd(), 'node_modules/@repo/vitest-config/dist/act-setup.js'),
+      path.resolve(process.cwd(), 'packages/vitest-config/dist/act-setup.js'),
+      path.resolve(process.cwd(), 'packages/vitest-config/src/act-setup.ts'),
+    ];
+    for (const c of actCandidates) {
+      if (fs.existsSync(c)) {
+        resolvedActSetupFile = c;
+        break;
+      }
+    }
+    if (!resolvedActSetupFile) {
+      // Fallback to a package specifier; vitest/vite should be able to resolve it
+      resolvedActSetupFile = '@repo/vitest-config/dist/act-setup.js';
+    }
+  }
+} catch (e) {
+  resolvedActSetupFile = '@repo/vitest-config/dist/act-setup.js';
+}
+
 // Debug log to help trace resolution during test runs
 try {
   // eslint-disable-next-line no-console
   console.debug('vitest-config: resolved reactSetupFile ->', resolvedReactSetupFile);
+  // eslint-disable-next-line no-console
+  console.debug('vitest-config: resolved actSetupFile ->', resolvedActSetupFile);
 } catch (e) {
   /* ignore */
 }
@@ -68,7 +97,8 @@ export const reactSetupFile = resolvedReactSetupFile;
 
 export const reactTestOptions = {
   environment: 'jsdom',
-  setupFiles: [reactSetupFile],
+  // Ensure act-setup runs first, then the repo testing-react setup (if available)
+  setupFiles: [resolvedActSetupFile, reactSetupFile].filter(Boolean),
 };
 
 // base default export
