@@ -381,7 +381,7 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
     initialCellValue.substring(5, 7) + // Month part
     initialCellValue.substring(8, 10); // Day part
 
-  const [fromDate, toDate] = value.split("|");
+  const [fromDate = '', toDate = ''] = value.split("|");
 //  console.log(`initialCellValue: ${initialCellValue}, compareCellValue: ${compareCellValue}, fromDate: ${fromDate}, toDate: ${toDate}`);
   if ((fromDate.length >= 8) && (compareCellValue < fromDate.substring(0, 8))) {
     return false; // Cell value is before the "from" date

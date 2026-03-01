@@ -1,9 +1,29 @@
 {
   "exports": {
-    "./base": "./base.json",
-    "./nextjs": "./nextjs.json",
-    "./node": "./node.json",
-    "./react-library": "./react-library.json"
+    "./base": {
+      "import": "./base.json",
+      "require": "./base.json",
+      "default": "./base.json"
+    },
+    "./base.json": "./base.json",
+    "./nextjs": {
+      "import": "./nextjs.json",
+      "require": "./nextjs.json",
+      "default": "./nextjs.json"
+    },
+    "./nextjs.json": "./nextjs.json",
+    "./node": {
+      "import": "./node.json",
+      "require": "./node.json",
+      "default": "./node.json"
+    },
+    "./node.json": "./node.json",
+    "./react-library": {
+      "import": "./react-library.json",
+      "require": "./react-library.json",
+      "default": "./react-library.json"
+    },
+    "./react-library.json": "./react-library.json"
   },
   "license": "Apache-2.0",
   "name": "@repo/typescript-config",

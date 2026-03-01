@@ -379,7 +379,7 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
     return true; // Invalid date value in the row, so just accept it
   }
 
-  const [fromDate, toDate] = value.split("|");
+  const [fromDate = '', toDate = ''] = value.split("|");
 //  console.log(`initialCellValue: ${initialCellValue}, compareCellValue: ${compareCellValue}, fromDate: ${fromDate}, toDate: ${toDate}`);
   if ((fromDate.length >= 10) && (initialCellValue < fromDate.substring(0, 10))) {
     return false; // Cell value is before the "from" date

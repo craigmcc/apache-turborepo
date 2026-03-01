@@ -103,11 +103,14 @@ export function formatGlAccount(transaction: TransactionPlus, index=0): string {
   //   * It assumes that no other line items will be paid attention to.
   //   * With our current Ramp setup, the data matches these assumptions.
   const tliafs = transaction.line_item_accounting_field_selections;
-  if (tliafs && (tliafs.length > 0) && (tliafs[index].category_info_type === "GL_ACCOUNT")) {
-    return `${tliafs[index].external_code} - ${tliafs[index].name}`;
-  } else {
-    return "n/a";
+  // Guard against undefined or missing entries safely.
+  if (Array.isArray(tliafs) && tliafs.length > index && tliafs[index]?.category_info_type === "GL_ACCOUNT") {
+    const external = tliafs[index]?.external_code ?? '';
+    const name = tliafs[index]?.name ?? '';
+    const combined = [external, name].filter(Boolean).join(' - ');
+    return combined || 'n/a';
   }
+  return 'n/a';
 }
 
 /**
