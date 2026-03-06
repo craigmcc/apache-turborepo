@@ -267,5 +267,66 @@ describe('AuthFunctions init flow', () => {
       expect(String(err)).toMatch(/Timeout waiting for authorization/);
     }
   });
-});
 
+  it('exchangeAuthorizationCodeForTokens returns tokens for valid response', async () => {
+    vi.resetModules();
+    process.env.QBO_CLIENT_ID = 'cid';
+    process.env.QBO_CLIENT_SECRET = 'csecret';
+    const wellKnown = {
+      token_endpoint: 'https://token',
+    } as any;
+
+    // Mock fetch to return token response
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'exch-access', refresh_token: 'exch-refresh' }) });
+    (global as any).fetch = mockFetch;
+
+    const { exchangeAuthorizationCodeForTokens } = await import('./AuthFunctions');
+    const tokens = await exchangeAuthorizationCodeForTokens(wellKnown, 'some-code', 'http://localhost:12345/redirect');
+    expect(tokens.accessToken).toBe('exch-access');
+    expect(tokens.refreshToken).toBe('exch-refresh');
+  });
+
+  it('startInteractiveAuthorization works with injected opener', async () => {
+    vi.resetModules();
+    delete process.env.CI;
+    process.env.QBO_CLIENT_ID = 'cid';
+    process.env.QBO_CLIENT_SECRET = 'csecret';
+
+    // ensure no token file exists
+    const tokenPath = path.join(process.cwd(), `.env.${process.env.QBO_ENVIRONMENT}.qbo_refresh_token.txt`);
+    try { await fsp.unlink(tokenPath); } catch { /* ignore */ }
+
+    const wellKnown = {
+      authorization_endpoint: 'https://auth',
+      token_endpoint: 'https://token',
+    } as any;
+
+    // fetch: token exchange
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) });
+    (global as any).fetch = mockFetch;
+
+    const http = await import('node:http');
+
+    // injected opener that receives authUrl and triggers the redirect callback
+    const openUrlFn = async (authUrl: string) => {
+      const parsed = new URL(authUrl);
+      const state = parsed.searchParams.get('state');
+      const redirectBase = process.env.QBO_REDIRECT_URL!;
+      const redirectUrl = new URL(redirectBase);
+      redirectUrl.searchParams.set('code', 'code-from-auth');
+      if (state) redirectUrl.searchParams.set('state', state);
+      await new Promise<void>((resolve) => {
+        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
+      });
+    };
+
+    const mod = await import('./AuthFunctions');
+    // call the exported startInteractiveAuthorization directly with opener
+    await mod.startInteractiveAuthorization(wellKnown, openUrlFn);
+
+    // after completion, fetchApiInfo should return the populated info
+    const info = await mod.fetchApiInfo(0).catch((e) => { throw e; });
+    expect(info.accessToken).toBe('injected-access');
+    expect(info.refreshToken).toBe('injected-refresh');
+  });
+});

@@ -455,103 +455,133 @@ async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
 }
 
 /**
- * Start the interactive authorization flow.
+ * Exchange an authorization code for an access token and refresh token.
+ * Extracted into its own function to make it testable.
  */
- async function startInteractiveAuthorization(wellKnown: QboWellKnownInfo): Promise<void> {
-   return new Promise<void>((resolve, reject) => {
-     if (!wellKnown) return reject(new Error('Well-known info required for interactive auth'));
-     if (!QBO_REDIRECT_URL) return reject(new Error('QBO_REDIRECT_URL is not configured'));
+export async function exchangeAuthorizationCodeForTokens(
+  wellKnownInfo: QboWellKnownInfo,
+  authorizationCode: string,
+  redirectUrl: string
+): Promise<{ accessToken: string; refreshToken: string }> {
+  const tokenReq = new URLSearchParams({
+    code: authorizationCode,
+    grant_type: 'authorization_code',
+    redirect_uri: redirectUrl,
+  });
+  const basic = Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, 'utf8').toString('base64');
+  const tokenResp = await fetch(wellKnownInfo.token_endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${basic}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: tokenReq.toString(),
+  });
+  if (!tokenResp.ok) {
+    const t = await tokenResp.text().catch(() => '');
+    throw new Error(`Token exchange failed: ${tokenResp.status} ${tokenResp.statusText} ${t}`);
+  }
+  const tokenResponseData = await tokenResp.json() as { access_token?: string; refresh_token?: string };
+  return {
+    accessToken: tokenResponseData.access_token ?? '',
+    refreshToken: tokenResponseData.refresh_token ?? '',
+  };
+}
 
-     const redirectPath = extractPathFromUrl(QBO_REDIRECT_URL);
-     const redirectPort = extractPortFromUrl(QBO_REDIRECT_URL);
+/**
+ * Start the interactive authorization flow.
+ * Accepts an optional openUrlFn so callers/tests can inject a custom opener.
+ */
+export async function startInteractiveAuthorization(
+  wellKnown: QboWellKnownInfo,
+  openUrlFn?: (url: string) => Promise<void>
+): Promise<void> {
+  const opener = openUrlFn ?? openUrl;
+  // Ensure a state value exists for the OAuth flow. This is normally
+  // populated during ensureInitialized(), but callers may invoke the
+  // interactive flow directly (for example in tests), so generate one here
+  // if it's missing.
+  if (!oauthState) oauthState = crypto.randomBytes(32).toString('hex');
+  return new Promise<void>((resolve, reject) => {
+    if (!wellKnown) return reject(new Error('Well-known info required for interactive auth'));
+    if (!QBO_REDIRECT_URL) return reject(new Error('QBO_REDIRECT_URL is not configured'));
 
-     const app = express();
-     let server: ReturnType<typeof app.listen> | null = null;
+    const redirectPath = extractPathFromUrl(QBO_REDIRECT_URL);
+    const redirectPort = extractPortFromUrl(QBO_REDIRECT_URL);
 
-     const cleanup = () => {
-       try { if (server) server.close(); } catch { /* ignore */ }
-     };
+    const app = express();
+    let server: ReturnType<typeof app.listen> | null = null;
 
-     app.get(redirectPath, async (req, res) => {
-       try {
-         const q = req.query as Record<string, string | undefined>;
-         const code = q.code;
-         const state = q.state;
-         const error = q.error;
-         const error_description = q.error_description;
-         if (error) {
-           logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'OAuth returned error', error, error_description });
-           res.status(400).send(`<h1>Authorization failed</h1><p>${String(error)} - ${String(error_description)}</p>`);
-           cleanup();
-           return reject(new Error(`OAuth error: ${error}`));
-         }
-         if (!code) {
-           res.status(400).send('<h1>Missing authorization code</h1>');
-           cleanup();
-           return reject(new Error('Missing authorization code'));
-         }
-         if (!state || state !== oauthState) {
-           res.status(400).send('<h1>Invalid state</h1>');
-           cleanup();
-           return reject(new Error('Invalid OAuth state'));
-         }
+    const cleanup = () => {
+      try { if (server) server.close(); } catch { /* ignore */ }
+    };
 
-         // Exchange the authorization code for tokens (inline to avoid symbol resolution issues)
-         const tokenReq = new URLSearchParams({
-           code: code as string,
-           grant_type: 'authorization_code',
-           redirect_uri: QBO_REDIRECT_URL!,
-         });
-         const basic = Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, 'utf8').toString('base64');
-         const tokenResp = await fetch(wellKnown.token_endpoint, {
-           method: 'POST',
-           headers: {
-             'Authorization': `Basic ${basic}`,
-             'Content-Type': 'application/x-www-form-urlencoded',
-           },
-           body: tokenReq.toString(),
-         });
-         if (!tokenResp.ok) {
-           const t = await tokenResp.text().catch(() => '');
-           // Reject the outer promise rather than throwing, so lint won't
-           // complain about throwing an exception that is immediately caught.
-           cleanup();
-           reject(new Error(`Token exchange failed: ${tokenResp.status} ${tokenResp.statusText} ${t}`));
-           return;
-         }
-         const tokenResponseData = await tokenResp.json() as { access_token?: string; refresh_token?: string };
-         qboApiInfo.accessToken = tokenResponseData.access_token ?? '';
-         qboApiInfo.refreshToken = tokenResponseData.refresh_token ?? '';
-         // persist refresh token
-         try { await storeCachedRefreshToken(tokenResponseData.refresh_token ?? ''); } catch { logger.warn({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed to store refresh token' }); }
+    app.get(redirectPath, async (req, res) => {
+      try {
+        const q = req.query as Record<string, string | undefined>;
+        const code = q.code;
+        const state = q.state;
+        const error = q.error;
+        const error_description = q.error_description;
+        if (error) {
+          logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'OAuth returned error', error, error_description });
+          res.status(400).send(`<h1>Authorization failed</h1><p>${String(error)} - ${String(error_description)}</p>`);
+          cleanup();
+          return reject(new Error(`OAuth error: ${error}`));
+        }
+        if (!code) {
+          res.status(400).send('<h1>Missing authorization code</h1>');
+          cleanup();
+          return reject(new Error('Missing authorization code'));
+        }
+        if (!state || state !== oauthState) {
+          res.status(400).send('<h1>Invalid state</h1>');
+          cleanup();
+          return reject(new Error('Invalid OAuth state'));
+        }
 
-         completed = true;
-         res.send('<h1>Authorization complete</h1><p>You may close this window.</p>');
-         cleanup();
-         return resolve();
-       } catch (e) {
-         logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed during authorization callback', error: e });
-         try { res.status(500).send('<h1>Authorization error</h1>'); } catch { /* ignore */ }
-         cleanup();
-         return reject(e);
-       }
-     });
+        // Use the extracted helper to exchange code -> tokens
+        let tokens;
+        try {
+          tokens = await exchangeAuthorizationCodeForTokens(wellKnown, code as string, QBO_REDIRECT_URL!);
+        } catch (ex) {
+          logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Token exchange failed', error: ex });
+          cleanup();
+          return reject(ex);
+        }
 
-     server = app.listen(redirectPort, () => {
-       logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: `Listening for OAuth redirect on port ${redirectPort} path ${redirectPath}` });
-     });
+        qboApiInfo.accessToken = tokens.accessToken;
+        qboApiInfo.refreshToken = tokens.refreshToken;
+        // persist refresh token
+        try { await storeCachedRefreshToken(tokens.refreshToken ?? ''); } catch { logger.warn({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed to store refresh token' }); }
 
-     (async () => {
-       try {
-         const authUrl = await requestAuthorizationUrl(wellKnown);
-         logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Opening browser for interactive authorization', authUrl });
-         await openUrl(authUrl);
-       } catch (e) {
-         cleanup();
-         return reject(e);
-       }
-     })();
-   });
+        completed = true;
+        res.send('<h1>Authorization complete</h1><p>You may close this window.</p>');
+        cleanup();
+        return resolve();
+      } catch (e) {
+        logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed during authorization callback', error: e });
+        try { res.status(500).send('<h1>Authorization error</h1>'); } catch { /* ignore */ }
+        cleanup();
+        return reject(e);
+      }
+    });
+
+    server = app.listen(redirectPort, () => {
+      logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: `Listening for OAuth redirect on port ${redirectPort} path ${redirectPath}` });
+    });
+
+    (async () => {
+      try {
+        const authUrl = await requestAuthorizationUrl(wellKnown);
+        logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Opening browser for interactive authorization', authUrl });
+        await opener(authUrl);
+      } catch (e) {
+        cleanup();
+        return reject(e);
+      }
+    })();
+  });
  }
 
 /**
