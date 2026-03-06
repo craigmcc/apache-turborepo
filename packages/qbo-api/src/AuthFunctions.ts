@@ -354,6 +354,20 @@ async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
 }
 
 /**
+ * Re-export internal exchangeAuthorizationCodeForTokens for tests that import it
+ * from the public module. This keeps the implementation private while making
+ * the helper available where tests expect it.
+ */
+export async function exchangeAuthorizationCodeForTokens(
+  wellKnownInfo: QboWellKnownInfo,
+  authorizationCode: string,
+  redirectUrl: string
+): Promise<{ accessToken: string; refreshToken: string }> {
+  const m = await import('./internal/AuthInternal');
+  return m.exchangeAuthorizationCodeForTokens(wellKnownInfo, authorizationCode, redirectUrl);
+}
+
+/**
  * Start the interactive authorization flow.
  * Accepts an optional openUrlFn so callers/tests can inject a custom opener.
  */
