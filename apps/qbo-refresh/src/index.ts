@@ -9,7 +9,7 @@
 // External Modules ----------------------------------------------------------
 
 import { exit } from "node:process";
-import { fetchApiInfo } from "@repo/qbo-api/AuthFunctions";
+import { fetchApiInfo, initAuth } from "@repo/qbo-api/AuthFunctions";
 import { serverLogger as logger } from "@repo/shared-utils";
 
 // Internal Modules -----------------------------------------------------------
@@ -56,6 +56,9 @@ export async function main() {
   });
 */
 
+  // Initialize auth subsystem (attempt refresh from cached token) before
+  // requesting API info. This avoids making API calls with an empty token.
+  await initAuth();
   const apiInfo = await fetchApiInfo(API_TIMEOUT);
   logger.info({
     context: "qbo-refresh.started",

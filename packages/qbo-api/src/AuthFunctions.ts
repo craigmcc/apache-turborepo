@@ -14,13 +14,10 @@ import path from "path";
 // Internal Modules ----------------------------------------------------------
 
 import {
-  OAuthAuthorizationRequest,
-  OAuthRefreshRequest,
-  OAuthRefreshResponse,
-  OAuthTokenRequest,
-  QboApiInfo,
-  QboWellKnownInfo
-} from "@/types/Types";
+   OAuthAuthorizationRequest,
+   QboApiInfo,
+   QboWellKnownInfo
+ } from "@/types/Types";
 
 // Private Objects -----------------------------------------------------------
 
@@ -40,7 +37,7 @@ const QBO_REDIRECT_URL = process.env.QBO_REDIRECT_URL;
 const QBO_WELL_KNOWN_URL = process.env.QBO_WELL_KNOWN_URL;
 
 logger.info({
-  context: "AuthActions.initialization",
+  context: "AuthFunctions.initialization",
   CI,
   NODE_ENV,
   isCi,
@@ -82,11 +79,9 @@ const REFRESH_TOKEN_PATH = path.join(process.cwd(), REFRESH_TOKEN_FILENAME);
 // Private Objects -----------------------------------------------------------
 
 // Deferred promise until we have QBO API Info
-let readyResolve!: (value?: void | PromiseLike<void>) => void;
 let readyPromise: Promise<void> | null = null;
 
 // Lazy-initialized runtime values (populated by ensureInitialized)
-let credentials: string | null = null;
 let oauthState: string | null = null;
 let wellKnownInfo: QboWellKnownInfo | null = null;
 let cachedRefreshToken: string | null = null;
@@ -103,38 +98,103 @@ const qboApiInfo: QboApiInfo = {
 
 async function ensureInitialized() {
   if (readyPromise) return readyPromise;
-  readyPromise = (async () => {
-    credentials = "Basic " + Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`).toString("base64");
-    oauthState = crypto.randomBytes(32).toString("hex");
-    if (!isCi) {
-      cachedRefreshToken = await fetchCachedRefreshToken();
-      wellKnownInfo = await fetchWellKnownInfo();
-    } else {
-      cachedRefreshToken = null;
-      wellKnownInfo = {
-        authorization_endpoint: "https://example.com/oauth2",
-        claims_supported: [],
-        id_token_signing_alg_values_supported: [],
-        issuer: "https://example.com/oauth2/issuer",
-        jwks_uri: "https://example.com/oauth2/jwks",
-        response_types_supported: [],
-        revocation_endpoint: "https://example.com/oauth2/revoke",
-        scopes_supported: [],
-        subject_types_supported: [],
-        token_endpoint: "https://example.com/oauth2/tokens",
-        token_endpoint_auth_methods_supported: [],
-        userinfo_endpoint: "https://example.com/oauth2/userinfo",
-      };
-    }
-  })();
+
+  // Create a readyPromise that resolves when initial init (including any
+  // refresh-token based token retrieval) has completed.
+  readyPromise = new Promise<void>((resolve) => {
+    (async () => {
+      try {
+        oauthState = crypto.randomBytes(32).toString("hex");
+
+        if (!isCi) {
+          cachedRefreshToken = await fetchCachedRefreshToken();
+          wellKnownInfo = await fetchWellKnownInfo();
+
+          // If we have a cached refresh token, attempt to obtain an access token
+          if (cachedRefreshToken) {
+            try {
+              const refreshed = await refreshAccessTokenUsingRefreshToken(wellKnownInfo!, cachedRefreshToken);
+              qboApiInfo.accessToken = refreshed.accessToken;
+              qboApiInfo.refreshToken = refreshed.refreshToken;
+              // persist any new refresh token
+              if (refreshed.refreshToken) {
+                try { await storeCachedRefreshToken(refreshed.refreshToken); } catch { /* non-fatal */ }
+              }
+              completed = true;
+              logger.info({ context: 'AuthFunctions.ensureInitialized', message: 'Refreshed access token from cached refresh token' });
+            } catch (err) {
+              // Log and continue; interactive flow may be required later
+              logger.warn({ context: 'AuthFunctions.ensureInitialized', message: 'Failed to refresh token from cached refresh token', error: err });
+            }
+          }
+        } else {
+          // CI environment: populate wellKnownInfo with placeholders
+          cachedRefreshToken = null;
+          wellKnownInfo = {
+            authorization_endpoint: "https://example.com/oauth2",
+            claims_supported: [],
+            id_token_signing_alg_values_supported: [],
+            issuer: "https://example.com/oauth2/issuer",
+            jwks_uri: "https://example.com/oauth2/jwks",
+            response_types_supported: [],
+            revocation_endpoint: "https://example.com/oauth2/revoke",
+            scopes_supported: [],
+            subject_types_supported: [],
+            token_endpoint: "https://example.com/oauth2/tokens",
+            token_endpoint_auth_methods_supported: [],
+            userinfo_endpoint: "https://example.com/oauth2/userinfo",
+          };
+        }
+
+      } catch (e) {
+        logger.error({ context: 'AuthFunctions.ensureInitialized', message: 'Initialization failed', error: e });
+      } finally {
+        // Resolve regardless; callers may choose to proceed or handle missing tokens
+        resolve();
+      }
+    })();
+  });
+
   return readyPromise;
+}
+
+/**
+ * Refresh access token using a refresh token (refresh_token grant)
+ */
+async function refreshAccessTokenUsingRefreshToken(wellKnown: QboWellKnownInfo, refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+  });
+
+  const token = Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, 'utf8').toString('base64');
+  const resp = await fetch(wellKnown.token_endpoint, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${token}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '');
+    throw new Error(`Failed to refresh token: ${resp.status} ${resp.statusText} ${text}`);
+  }
+
+  const data = await resp.json() as { access_token?: string; refresh_token?: string };
+  logger.trace({ context: 'AuthFunctions.refreshAccessTokenUsingRefreshToken', message: 'Refresh response', data });
+  return {
+    accessToken: data.access_token ?? '',
+    refreshToken: data.refresh_token ?? refreshToken,
+  };
 }
 
 // Public Objects ------------------------------------------------------------
 
 // Document environment variables
 logger.trace({
-  context: "AuthActions.environment",
+  context: "AuthFunctions.environment",
   message: "Environment Variables",
   QBO_BASE_URL,
   QBO_CLIENT_ID,
@@ -163,69 +223,61 @@ logger.trace({
  * @throws Error if timeout occurs before authorization is complete
  */
 export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
-  // Ensure runtime initialization has run (loads well-known info / cached token as needed)
-  await ensureInitialized();
+    // Ensure runtime initialization has run (loads well-known info / cached token as needed)
+    await ensureInitialized();
 
-  // At build-time or when no cached token is present, we avoid triggering the
-  // interactive authorization flow automatically. Consumers that require a
-  // valid access token should call a separate flow to authenticate. For the
-  // purpose of enabling static builds, just return the qboApiInfo object
-  // (which will be populated by other runtime flows when available).
-  return qboApiInfo;
+    // If we don't have a completed access token yet and we're not in CI,
+    // attempt an interactive authorization flow so the user can complete OAuth.
+    if (!completed && !isCi) {
+      try {
+        // Start the interactive flow but do not await here; fetchApiInfo will
+        // wait for completion below up to timeoutMs.
+        startInteractiveAuthorization(wellKnownInfo! ).catch((err: unknown) => {
+          logger.warn({ context: 'AuthFunctions.fetchApiInfo', message: 'Interactive authorization failed to start', error: err });
+        });
+      } catch (e) {
+        logger.warn({ context: 'AuthFunctions.fetchApiInfo', message: 'Failed to initiate interactive authorization', error: e });
+      }
+    }
+
+    // If a timeout was provided, wait until `completed` becomes true (i.e. we
+    // have refreshed tokens) or until timeoutMs expires. If timeoutMs is 0,
+    // return immediately (caller may handle interactive auth themselves).
+    if (timeoutMs > 0) {
+      const start = Date.now();
+      const pollInterval = 250;
+      while (!completed && (Date.now() - start) < timeoutMs) {
+        // small sleep
+        await new Promise((r) => setTimeout(r, pollInterval));
+      }
+      if (!completed) {
+        throw new Error('Timeout waiting for authorization to complete');
+      }
+    }
+
+    // If no access token was obtained during initialization/refresh, fail fast
+    // with a descriptive error rather than returning an object with an empty
+    // accessToken (which would lead to confusing 400 responses from the API).
+    // Populate refreshToken from cachedRefreshToken for callers that want it.
+    if (!qboApiInfo.accessToken || qboApiInfo.accessToken.trim() === "") {
+      // expose any cachedRefreshToken for diagnostic purposes
+      if (cachedRefreshToken && !qboApiInfo.refreshToken) {
+        qboApiInfo.refreshToken = cachedRefreshToken;
+      }
+      throw new Error('No access token available. Interactive authorization is required or refresh failed.');
+    }
+
+    return qboApiInfo;
 }
 
 // Express Server for Receiving Redirects ------------------------------------
 
-+// NOTE: The express-based redirect server is intentionally not created at
-+// module import time to avoid side-effects during builds. If runtime code
-+// needs to start an OAuth redirect server, a separate function should be
-+// provided to start it explicitly.
+// NOTE: The express-based redirect server is intentionally not created at
+// module import time to avoid side-effects during builds. If runtime code
+// needs to start an OAuth redirect server, a separate function should be
+// provided to start it explicitly.
 
 // Private Objects -----------------------------------------------------------
-
-/**
- * Exchange an authorization code for an access token and refresh token.
- */
-async function exchangeAuthorizationCodeForTokens(
-  wellKnownInfo: QboWellKnownInfo,
-  authorizationCode: string,
-  redirectUrl: string
-): Promise<{ accessToken: string; refreshToken: string }> {
-
-  const tokenRequest: OAuthTokenRequest = {
-    code: authorizationCode,
-    grant_type: "authorization_code",
-    redirect_uri: redirectUrl,
-  };
-  logger.trace({
-    context: "AuthActions.exchangeAuthorizationCodeForTokens",
-    message: "Exchanging authorization code for tokens",
-    tokenRequest
-  });
-
-  const token =
-    Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, "utf8").toString("base64");
-  const tokenResponse = await fetch(wellKnownInfo.token_endpoint, {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${token}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams(tokenRequest),
-  });
-  const tokenResponseData = await tokenResponse.json();
-  logger.trace({
-    context: "AuthActions.exchangeAuthorizationCodeForTokens",
-    message: "Received access token and refresh token",
-    tokenResponseData,
-  });
-
-  return {
-    accessToken: tokenResponseData.access_token,
-    refreshToken: tokenResponseData.refresh_token,
-  };
-
-}
 
 /**
  * Extract the path from a URL string.
@@ -236,7 +288,7 @@ function extractPathFromUrl(urlString: string): string {
     return url.pathname;
   } catch (error) {
     logger.error({
-      context: "AuthActions.extractPathFromUrl",
+      context: "AuthFunctions.extractPathFromUrl",
       message: "Invalid URL string",
       urlString,
       error,
@@ -254,7 +306,7 @@ function extractPortFromUrl(urlString: string): number {
     return url.port ? parseInt(url.port, 10) : (url.protocol === "https:" ? 443 : 80);
   } catch (error) {
     logger.error({
-      context: "AuthActions.extractPortFromUrl",
+      context: "AuthFunctions.extractPortFromUrl",
       message: "Invalid URL string",
       urlString,
       error,
@@ -271,8 +323,9 @@ async function fetchCachedRefreshToken(): Promise<string | null> {
     const raw = await fs.readFile(REFRESH_TOKEN_PATH, "utf8");
     const token = raw.trim();
     return token.length ? token : null;
-  } catch (err : any) {
-    if (err.code === "ENOENT") return null;
+  } catch (err: unknown) {
+    const e = err as { code?: string } | undefined;
+    if (e && e.code === "ENOENT") return null;
     throw err;
   }
 }
@@ -290,7 +343,7 @@ async function fetchWellKnownInfo(): Promise<QboWellKnownInfo> {
 
   const wellKnownInfo: QboWellKnownInfo = await response.json();
   logger.trace({
-    context: "AuthActions.fetchWellKnownInfo",
+    context: "AuthFunctions.fetchWellKnownInfo",
     message: "Fetched Well Known Info",
     wellKnownInfo,
   });
@@ -312,7 +365,7 @@ async function
     state: oauthState ?? undefined,
   };
   logger.trace({
-    context: "AuthActions.requestAuthorizationCode",
+    context: "AuthFunctions.requestAuthorizationCode",
     message: "Constructing authorization URL",
     authorizationRequest,
   });
@@ -325,7 +378,7 @@ async function
   authorizationUrl.searchParams.set("state", authorizationRequest.state!);
 
   logger.trace({
-    context: "AuthActions.requestAuthorizationCode",
+    context: "AuthFunctions.requestAuthorizationCode",
     message: "Constructed authorization URL",
     authorizationUrl: authorizationUrl.toString(),
   });
@@ -381,7 +434,7 @@ async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
   try {
     // Try direct write with mode (atomic on many filesystems)
     await fs.writeFile(REFRESH_TOKEN_PATH, payload, { encoding: "utf8", mode: 0o600 });
-  } catch (err) {
+  } catch {
     // If direct write fails for any reason, attempt a safe tmp+rename as fallback.
     try {
       const tmpPath = REFRESH_TOKEN_PATH + ".tmp";
@@ -390,7 +443,7 @@ async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
     } catch (err2) {
       // Swallow or rethrow depending on environment: log and rethrow to surface in non-build env
       logger.error({
-        context: "AuthActions.storeCachedRefreshToken",
+        context: "AuthFunctions.storeCachedRefreshToken",
         message: "Failed to persist refresh token",
         error: err2,
         path: REFRESH_TOKEN_PATH,
@@ -400,3 +453,113 @@ async function storeCachedRefreshToken(refreshToken: string): Promise<void> {
     }
   }
 }
+
+/**
+ * Start the interactive authorization flow.
+ */
+ async function startInteractiveAuthorization(wellKnown: QboWellKnownInfo): Promise<void> {
+   return new Promise<void>((resolve, reject) => {
+     if (!wellKnown) return reject(new Error('Well-known info required for interactive auth'));
+     if (!QBO_REDIRECT_URL) return reject(new Error('QBO_REDIRECT_URL is not configured'));
+
+     const redirectPath = extractPathFromUrl(QBO_REDIRECT_URL);
+     const redirectPort = extractPortFromUrl(QBO_REDIRECT_URL);
+
+     const app = express();
+     let server: ReturnType<typeof app.listen> | null = null;
+
+     const cleanup = () => {
+       try { if (server) server.close(); } catch { /* ignore */ }
+     };
+
+     app.get(redirectPath, async (req, res) => {
+       try {
+         const q = req.query as Record<string, string | undefined>;
+         const code = q.code;
+         const state = q.state;
+         const error = q.error;
+         const error_description = q.error_description;
+         if (error) {
+           logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'OAuth returned error', error, error_description });
+           res.status(400).send(`<h1>Authorization failed</h1><p>${String(error)} - ${String(error_description)}</p>`);
+           cleanup();
+           return reject(new Error(`OAuth error: ${error}`));
+         }
+         if (!code) {
+           res.status(400).send('<h1>Missing authorization code</h1>');
+           cleanup();
+           return reject(new Error('Missing authorization code'));
+         }
+         if (!state || state !== oauthState) {
+           res.status(400).send('<h1>Invalid state</h1>');
+           cleanup();
+           return reject(new Error('Invalid OAuth state'));
+         }
+
+         // Exchange the authorization code for tokens (inline to avoid symbol resolution issues)
+         const tokenReq = new URLSearchParams({
+           code: code as string,
+           grant_type: 'authorization_code',
+           redirect_uri: QBO_REDIRECT_URL!,
+         });
+         const basic = Buffer.from(`${QBO_CLIENT_ID}:${QBO_CLIENT_SECRET}`, 'utf8').toString('base64');
+         const tokenResp = await fetch(wellKnown.token_endpoint, {
+           method: 'POST',
+           headers: {
+             'Authorization': `Basic ${basic}`,
+             'Content-Type': 'application/x-www-form-urlencoded',
+           },
+           body: tokenReq.toString(),
+         });
+         if (!tokenResp.ok) {
+           const t = await tokenResp.text().catch(() => '');
+           // Reject the outer promise rather than throwing, so lint won't
+           // complain about throwing an exception that is immediately caught.
+           cleanup();
+           reject(new Error(`Token exchange failed: ${tokenResp.status} ${tokenResp.statusText} ${t}`));
+           return;
+         }
+         const tokenResponseData = await tokenResp.json() as { access_token?: string; refresh_token?: string };
+         qboApiInfo.accessToken = tokenResponseData.access_token ?? '';
+         qboApiInfo.refreshToken = tokenResponseData.refresh_token ?? '';
+         // persist refresh token
+         try { await storeCachedRefreshToken(tokenResponseData.refresh_token ?? ''); } catch { logger.warn({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed to store refresh token' }); }
+
+         completed = true;
+         res.send('<h1>Authorization complete</h1><p>You may close this window.</p>');
+         cleanup();
+         return resolve();
+       } catch (e) {
+         logger.error({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Failed during authorization callback', error: e });
+         try { res.status(500).send('<h1>Authorization error</h1>'); } catch { /* ignore */ }
+         cleanup();
+         return reject(e);
+       }
+     });
+
+     server = app.listen(redirectPort, () => {
+       logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: `Listening for OAuth redirect on port ${redirectPort} path ${redirectPath}` });
+     });
+
+     (async () => {
+       try {
+         const authUrl = await requestAuthorizationUrl(wellKnown);
+         logger.info({ context: 'AuthFunctions.startInteractiveAuthorization', message: 'Opening browser for interactive authorization', authUrl });
+         await openUrl(authUrl);
+       } catch (e) {
+         cleanup();
+         return reject(e);
+       }
+     })();
+   });
+ }
+
+/**
+ * Initialize the auth subsystem (non-blocking). Call at app startup to
+ * trigger fetching well-known info and attempting refresh-token flow.
+ * This helper avoids doing work at module import time yet allows apps to
+ * eagerly initialize auth when running.
+ */
+ export async function initAuth(): Promise<void> {
+   await ensureInitialized();
+ }
