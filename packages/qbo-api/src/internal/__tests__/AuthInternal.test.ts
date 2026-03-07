@@ -132,5 +132,96 @@ describe('AuthInternal', () => {
 
     expect(setTokens).toHaveBeenCalledWith('AT', 'RT');
   });
+
+  it('openUrl - rejects when both xdg-open and gio fail (linux)', async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const childProcess = await import('node:child_process') as any;
+    // both attempts fail
+    (childProcess.exec as any).mockImplementationOnce((cmd: string, _opts: any, cb: any) => cb(new Error('xdg fail')));
+    (childProcess.exec as any).mockImplementationOnce((cmd: string, _opts: any, cb: any) => cb(new Error('gio fail')));
+    const AuthInternal = await import('../AuthInternal');
+    await expect(AuthInternal.openUrl('http://example.com')).rejects.toBeDefined();
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('startInteractiveAuthorization - invalid QBO_REDIRECT_URL rejects', async () => {
+    process.env.QBO_REDIRECT_URL = 'not-a-url';
+    const AuthInternal = await import('../AuthInternal');
+    await expect(
+      AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, 's', async () => {})
+    ).rejects.toThrow();
+  });
+
+  it('startInteractiveAuthorization - opener throws rejects and cleans up', async () => {
+    const port = 55334;
+    process.env.QBO_REDIRECT_URL = `http://127.0.0.1:${port}/cb`;
+    const AuthInternal = await import('../AuthInternal');
+    const opener = async () => { throw new Error('opener boom'); };
+    await expect(
+      AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, 's', async () => {}, opener)
+    ).rejects.toThrow(/opener boom/);
+  });
+
+  it('startInteractiveAuthorization - redirect with oauth error rejects', async () => {
+    const port = 55335;
+    process.env.QBO_REDIRECT_URL = `http://127.0.0.1:${port}/cb`;
+    const oauthState = 's';
+    const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'AT', refresh_token: 'RT' }) }));
+    // @ts-ignore
+    global.fetch = mockFetch;
+    const AuthInternal = await import('../AuthInternal');
+    const opener = async (authUrl: string) => {
+      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
+      redirectUrl.searchParams.set('error', 'access_denied');
+      redirectUrl.searchParams.set('error_description', 'denied');
+      redirectUrl.searchParams.set('state', oauthState);
+      const http = await import('node:http');
+      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+    };
+    await expect(
+      AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
+    ).rejects.toThrow(/OAuth error/);
+  });
+
+  it('startInteractiveAuthorization - missing code in redirect rejects', async () => {
+    const port = 55336;
+    process.env.QBO_REDIRECT_URL = `http://127.0.0.1:${port}/cb`;
+    const oauthState = 's2';
+    const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'AT', refresh_token: 'RT' }) }));
+    // @ts-ignore
+    global.fetch = mockFetch;
+    const AuthInternal = await import('../AuthInternal');
+    const opener = async () => {
+      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
+      // no code param
+      redirectUrl.searchParams.set('state', oauthState);
+      const http = await import('node:http');
+      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+    };
+    await expect(
+      AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
+    ).rejects.toThrow(/Missing authorization code/);
+  });
+
+  it('startInteractiveAuthorization - invalid state rejects', async () => {
+    const port = 55337;
+    process.env.QBO_REDIRECT_URL = `http://127.0.0.1:${port}/cb`;
+    const oauthState = 's3';
+    const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'AT', refresh_token: 'RT' }) }));
+    // @ts-ignore
+    global.fetch = mockFetch;
+    const AuthInternal = await import('../AuthInternal');
+    const opener = async () => {
+      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
+      redirectUrl.searchParams.set('code', 'thecode');
+      redirectUrl.searchParams.set('state', 'different');
+      const http = await import('node:http');
+      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+    };
+    await expect(
+      AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
+    ).rejects.toThrow(/Invalid OAuth state/);
+  });
 });
 

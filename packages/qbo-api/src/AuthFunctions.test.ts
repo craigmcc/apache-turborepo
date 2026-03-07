@@ -104,67 +104,37 @@ describe('AuthFunctions init flow', () => {
 
     const wellKnown = {
       authorization_endpoint: 'https://auth',
-      token_endpoint: 'http://localhost:4000/token', // not actually used for direct network
-      claims_supported: [],
-      id_token_signing_alg_values_supported: [],
-      issuer: 'https://issuer',
-      jwks_uri: 'https://jwks',
-      response_types_supported: [],
-      revocation_endpoint: 'https://revoke',
-      scopes_supported: [],
-      subject_types_supported: [],
-      token_endpoint_auth_methods_supported: [],
-      userinfo_endpoint: 'https://userinfo',
-    };
+      token_endpoint: 'http://localhost:4000/token',
+    } as any;
 
-    // fetch: first call -> well-known, second call -> token exchange result
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => wellKnown })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) });
+    // fetch: token exchange response
+    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) });
     (global as any).fetch = mockFetch;
 
     const http = await import('node:http');
 
-    const execMock = vi.fn((cmd: string, cb: (err: Error | null) => void) => {
-      // Extract the URL from the command string
-      const m = cmd.match(/https?:\/\/[^"'\s)]+/);
-      if (!m) {
-        // no URL found; call back immediately
-        setImmediate(() => cb(null));
-        return;
-      }
-      const authUrl = m[0];
-      try {
-        const parsed = new URL(authUrl);
-        const state = parsed.searchParams.get('state');
-        // Build redirect callback to local redirect URL
-        const redirectBase = process.env.QBO_REDIRECT_URL!; // e.g. http://localhost:12345/redirect
-        const redirectUrl = new URL(redirectBase);
-        redirectUrl.searchParams.set('code', 'code-from-auth');
-        if (state) redirectUrl.searchParams.set('state', state);
-        // Perform an HTTP GET to the express server callback
-        http.get(redirectUrl.toString(), () => {
-          // call exec callback to indicate the open command finished
-          setImmediate(() => cb(null));
-        }).on('error', () => {
-          setImmediate(() => cb(null));
-        });
-      } catch (e) {
-        setImmediate(() => cb(null));
-      }
-    });
+    // injected opener that simulates user completing the auth flow by calling the redirect URL
+    const openUrlFn = async (authUrl: string) => {
+      const parsed = new URL(authUrl);
+      const state = parsed.searchParams.get('state');
+      const redirectBase = process.env.QBO_REDIRECT_URL!;
+      const redirectUrl = new URL(redirectBase);
+      redirectUrl.searchParams.set('code', 'code-from-auth');
+      if (state) redirectUrl.searchParams.set('state', state);
+      await new Promise<void>((resolve) => {
+        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
+      });
+    };
 
-    // Mock the child_process module before importing AuthFunctions so that
-    // the module-scoped `exec` binding in AuthFunctions uses our mock.
-    vi.doMock('node:child_process', () => ({ exec: execMock }));
+    const AuthInternal = await import('./internal/AuthInternal');
+    let capturedAccess = '';
+    let capturedRefresh = '';
+    const setTokens = async (a: string, r: string) => { capturedAccess = a; capturedRefresh = r; };
 
-    const mod = await import('./AuthFunctions');
-
-    // Call fetchApiInfo with a timeout to allow interactive flow to complete
-    const info = await mod.fetchApiInfo(3000);
-    expect(info.accessToken).toBe('interactive-access');
-    expect(info.refreshToken).toBe('interactive-refresh');
-  });
+    await AuthInternal.startInteractiveAuthorization(wellKnown, 'test-state-123', setTokens, openUrlFn);
+    expect(capturedAccess).toBe('interactive-access');
+    expect(capturedRefresh).toBe('interactive-refresh');
+  }, 10000);
 
   it('fails refresh when token endpoint returns non-ok', async () => {
     vi.resetModules();
@@ -236,22 +206,20 @@ describe('AuthFunctions init flow', () => {
 
     const http = await import('node:http');
 
-    const execMock = vi.fn((cmd: string, cb: (err: Error | null) => void) => {
-      const m = cmd.match(/https?:\/\/[^"'\s)]+/);
-      if (!m) { setImmediate(() => cb(null)); return; }
-      const authUrl = m[0];
-      try {
-        const parsed = new URL(authUrl);
-        const state = parsed.searchParams.get('state');
-        const redirectBase = process.env.QBO_REDIRECT_URL!;
-        const redirectUrl = new URL(redirectBase);
-        redirectUrl.searchParams.set('code', 'code-from-auth');
-        if (state) redirectUrl.searchParams.set('state', state);
-        http.get(redirectUrl.toString(), () => { setImmediate(() => cb(null)); }).on('error', () => { setImmediate(() => cb(null)); });
-      } catch (e) { setImmediate(() => cb(null)); }
-    });
+    // injected opener that simulates user completing the auth flow by calling the redirect URL
+    const openUrlFn = async (authUrl: string) => {
+      const parsed = new URL(authUrl);
+      const state = parsed.searchParams.get('state');
+      const redirectBase = process.env.QBO_REDIRECT_URL!;
+      const redirectUrl = new URL(redirectBase);
+      redirectUrl.searchParams.set('code', 'code-from-auth');
+      if (state) redirectUrl.searchParams.set('state', state);
+      await new Promise<void>((resolve) => {
+        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
+      });
+    };
 
-    vi.doMock('node:child_process', () => ({ exec: execMock }));
+    vi.doMock('node:child_process', () => ({ exec: vi.fn() }));
 
     const mod = await import('./AuthFunctions');
 
@@ -280,7 +248,7 @@ describe('AuthFunctions init flow', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'exch-access', refresh_token: 'exch-refresh' }) });
     (global as any).fetch = mockFetch;
 
-    const { exchangeAuthorizationCodeForTokens } = await import('./AuthFunctions');
+    const { exchangeAuthorizationCodeForTokens } = await import('./internal/AuthInternal');
     const tokens = await exchangeAuthorizationCodeForTokens(wellKnown, 'some-code', 'http://localhost:12345/redirect');
     expect(tokens.accessToken).toBe('exch-access');
     expect(tokens.refreshToken).toBe('exch-refresh');
@@ -320,13 +288,13 @@ describe('AuthFunctions init flow', () => {
       });
     };
 
-    const mod = await import('./AuthFunctions');
-    // call the exported startInteractiveAuthorization directly with opener
-    await mod.startInteractiveAuthorization(wellKnown, openUrlFn);
-
-    // after completion, fetchApiInfo should return the populated info
-    const info = await mod.fetchApiInfo(0).catch((e) => { throw e; });
-    expect(info.accessToken).toBe('injected-access');
-    expect(info.refreshToken).toBe('injected-refresh');
-  });
+    const AuthInternal = await import('./internal/AuthInternal');
+    // Call internal startInteractiveAuthorization with an oauthState and a setter
+    let capturedAccess = '';
+    let capturedRefresh = '';
+    const setTokens = async (a: string, r: string) => { capturedAccess = a; capturedRefresh = r; };
+    await AuthInternal.startInteractiveAuthorization(wellKnown, 'test-state-123', setTokens, openUrlFn);
+    expect(capturedAccess).toBe('injected-access');
+    expect(capturedRefresh).toBe('injected-refresh');
+  }, 10000);
 });
