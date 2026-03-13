@@ -34,23 +34,14 @@ The relevant packages (in the `packages` directory) are:
 | typescript-config                         | TypeScript configuration files, which can be used by the applications and packages in this monorepo.                                                                    |
 | vitest-config                             | Vitest configuration files, which can be used by the applications and packages in this monorepo.                                                                        |
 
-[//]: # (The standalone tools &#40;in the *distributors* directory&#41; are:)
+The statement distributor tools are in the *distributors* directory:
 
 | Tool                        | Description                                                                                                                                                                         |
 |-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ramp-statement-distributor  | Python tool to generate and distribute monthly Ramp credit card activity statements to departments via email. See [README](distributors/ramp-statement-distributor/README.md) for details. |
 | bill-statement-distributor  | Python tool to generate and distribute monthly Bill.com accounts payable statements to departments via email. See [README](distributors/bill-statement-distributor/README.md) for details. |
+| ramp-statement-distributor  | Python tool to generate and distribute monthly Ramp credit card activity statements to departments via email. See [README](distributors/ramp-statement-distributor/README.md) for details. |
 
 For an overview of all distributors, shared utilities, and Python version management, see the [Distributors README](distributors/README.md).
-[//]: # ()
-[//]: # (| Tool                       | Description                                                                                                                                                                           |)
-
-[//]: # (|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|)
-
-[//]: # (| bill-statement-distributor | Python tool to generate and distribute monthly bill activity statements to departments via email. See [README]&#40;distributors/ramp-statement-distributor/README.md&#41; for details.        |)
-
-[//]: # (| ramp-statement-distributor | Python tool to generate and distribute monthly credit card activity statements to departments via email. See [README]&#40;distributors/ramp-statement-distributor/README.md&#41; for details. |)
-
 
 ## Topical Documentation
 
