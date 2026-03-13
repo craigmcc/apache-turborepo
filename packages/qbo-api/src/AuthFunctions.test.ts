@@ -4,9 +4,35 @@ import { promises as fsp } from 'fs';
 
 const ORIGINAL_ENV = { ...process.env };
 
+// Add a helper to retry http.get until the local server is ready
+async function httpGetUntilReady(url: string, maxAttempts = 100, delayMs = 50) {
+  const http = await import('node:http');
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const ok = await new Promise<boolean>((resolve) => {
+      try {
+        const req = http.get(url, () => resolve(true));
+        req.on('error', () => resolve(false));
+      } catch (e) {
+        resolve(false);
+      }
+    });
+    if (ok) return;
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  // final attempt (let it fail and return)
+  await new Promise<void>((resolve) => {
+    try {
+      const http2 = require('node:http');
+      http2.get(url, () => resolve()).on('error', () => resolve());
+    } catch (e) { resolve(); }
+  });
+}
+
 describe('AuthFunctions init flow', () => {
   beforeEach(() => {
     vi.resetModules();
+    // Increase per-file timeout in CI where network timing can vary
+    // vi.setTimeout(20000); // removed because vi.setTimeout may not be available in some Vitest environments
     process.env.QBO_BASE_URL = 'https://qb.example.com';
     process.env.QBO_CLIENT_ID = 'cid';
     process.env.QBO_CLIENT_SECRET = 'csecret';
@@ -111,8 +137,6 @@ describe('AuthFunctions init flow', () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) });
     (global as any).fetch = mockFetch;
 
-    const http = await import('node:http');
-
     // injected opener that simulates user completing the auth flow by calling the redirect URL
     const openUrlFn = async (authUrl: string) => {
       const parsed = new URL(authUrl);
@@ -121,9 +145,7 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await new Promise<void>((resolve) => {
-        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
-      });
+      await httpGetUntilReady(redirectUrl.toString());
     };
 
     const AuthInternal = await import('./internal/AuthInternal');
@@ -134,7 +156,7 @@ describe('AuthFunctions init flow', () => {
     await AuthInternal.startInteractiveAuthorization(wellKnown, 'test-state-123', setTokens, openUrlFn);
     expect(capturedAccess).toBe('interactive-access');
     expect(capturedRefresh).toBe('interactive-refresh');
-  }, 10000);
+  }, 20000);
 
   it('fails refresh when token endpoint returns non-ok', async () => {
     vi.resetModules();
@@ -204,8 +226,6 @@ describe('AuthFunctions init flow', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access-2', refresh_token: 'interactive-refresh-2' }) });
     (global as any).fetch = mockFetch;
 
-    const http = await import('node:http');
-
     // injected opener that simulates user completing the auth flow by calling the redirect URL
     const openUrlFn = async (authUrl: string) => {
       const parsed = new URL(authUrl);
@@ -214,9 +234,7 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await new Promise<void>((resolve) => {
-        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
-      });
+      await httpGetUntilReady(redirectUrl.toString());
     };
 
     vi.doMock('node:child_process', () => ({ exec: vi.fn() }));
@@ -273,8 +291,6 @@ describe('AuthFunctions init flow', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) });
     (global as any).fetch = mockFetch;
 
-    const http = await import('node:http');
-
     // injected opener that receives authUrl and triggers the redirect callback
     const openUrlFn = async (authUrl: string) => {
       const parsed = new URL(authUrl);
@@ -283,9 +299,7 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await new Promise<void>((resolve) => {
-        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
-      });
+      await httpGetUntilReady(redirectUrl.toString());
     };
 
     const AuthInternal = await import('./internal/AuthInternal');

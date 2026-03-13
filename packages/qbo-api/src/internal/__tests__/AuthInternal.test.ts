@@ -16,10 +16,36 @@ vi.mock('fs', () => ({
 
 import { promises as fsMock } from 'fs';
 
+// Add helper to retry http.get until server is ready
+async function httpGetUntilReady(url: string, maxAttempts = 100, delayMs = 50) {
+  const http = await import('node:http');
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const ok = await new Promise<boolean>((resolve) => {
+      try {
+        const req = http.get(url, () => resolve(true));
+        req.on('error', () => resolve(false));
+      } catch (e) {
+        resolve(false);
+      }
+    });
+    if (ok) return;
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  // final attempt
+  await new Promise<void>((resolve) => {
+    try {
+      const http2 = require('node:http');
+      http2.get(url, () => resolve()).on('error', () => resolve());
+    } catch (e) { resolve(); }
+  });
+}
+
 describe('AuthInternal', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.resetAllMocks();
+    // increase timeout to reduce CI flakiness
+    // vi.setTimeout(20000); // removed because vi.setTimeout may not be available in some Vitest environments
     process.env.QBO_ENVIRONMENT = 'test';
     process.env.QBO_CLIENT_ID = 'cid';
     process.env.QBO_CLIENT_SECRET = 'csecret';
@@ -120,10 +146,7 @@ describe('AuthInternal', () => {
       const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
       redirectUrl.searchParams.set('code', 'authcode');
       if (state) redirectUrl.searchParams.set('state', state);
-      const http = await import('node:http');
-      await new Promise<void>((resolve) => {
-        http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve());
-      });
+      await httpGetUntilReady(redirectUrl.toString());
     };
 
     await expect(
@@ -176,8 +199,7 @@ describe('AuthInternal', () => {
       redirectUrl.searchParams.set('error', 'access_denied');
       redirectUrl.searchParams.set('error_description', 'denied');
       redirectUrl.searchParams.set('state', oauthState);
-      const http = await import('node:http');
-      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+      await httpGetUntilReady(redirectUrl.toString());
     };
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
@@ -196,8 +218,7 @@ describe('AuthInternal', () => {
       const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
       // no code param
       redirectUrl.searchParams.set('state', oauthState);
-      const http = await import('node:http');
-      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+      await httpGetUntilReady(redirectUrl.toString());
     };
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
@@ -216,8 +237,7 @@ describe('AuthInternal', () => {
       const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
       redirectUrl.searchParams.set('code', 'thecode');
       redirectUrl.searchParams.set('state', 'different');
-      const http = await import('node:http');
-      await new Promise<void>((resolve) => http.get(redirectUrl.toString(), () => resolve()).on('error', () => resolve()));
+      await httpGetUntilReady(redirectUrl.toString());
     };
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
