@@ -36,6 +36,12 @@ The relevant packages (in the `packages` directory) are:
 
 [//]: # (The standalone tools &#40;in the *distributors* directory&#41; are:)
 
+| Tool                        | Description                                                                                                                                                                         |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ramp-statement-distributor  | Python tool to generate and distribute monthly Ramp credit card activity statements to departments via email. See [README](distributors/ramp-statement-distributor/README.md) for details. |
+| bill-statement-distributor  | Python tool to generate and distribute monthly Bill.com accounts payable statements to departments via email. See [README](distributors/bill-statement-distributor/README.md) for details. |
+
+For an overview of all distributors, shared utilities, and Python version management, see the [Distributors README](distributors/README.md).
 [//]: # ()
 [//]: # (| Tool                       | Description                                                                                                                                                                           |)
 
