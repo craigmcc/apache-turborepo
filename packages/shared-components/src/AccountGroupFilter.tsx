@@ -10,7 +10,7 @@ import Form from "react-bootstrap/Form";
 
 // Internal Imports ----------------------------------------------------------
 
-import { ACCOUNT_GROUPS } from "@repo/shared-utils/dist";
+import { ACCOUNT_GROUPS } from "@repo/shared-utils";
 
 // Public Objects ------------------------------------------------------------
 

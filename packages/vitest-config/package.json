@@ -1,0 +1,24 @@
+{
+  "name": "@repo/vitest-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared base Vitest configuration for the monorepo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "./*": "./dist/*.js",
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "catalog:vitest",
+    "vite": "catalog:vite",
+    "typescript": "catalog:typescript5",
+    "@types/node": "catalog:node22"
+  },
+  "type": "module"
+}

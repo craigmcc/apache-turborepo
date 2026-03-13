@@ -61,6 +61,8 @@ model Account {
   journalEntryLines JournalEntryLine[]
   /// Parent account of this Account
   parentAccount     Account?           @relation("ParentChild", fields: [parentId], references: [id])
+  /// Transactions associated with this Account (from TransactionsWithSplits Report)
+  transactions      Transaction[]
 
   @@map("accounts")
 }
@@ -135,4 +137,32 @@ model JournalEntryLine {
 enum PostingType {
   Debit
   Credit
+}
+
+// Transaction Entity (from TransactionsWithSplits Report)
+model Transaction {
+  /// Primary key for this Transaction
+  // NOTE: THIS IS SYNTHETIC! - QBO API does not provide it, so it is not durable!
+  id             BigInt  @id @unique @default(autoincrement())
+  /// Transaction amount (nat_amount)
+  amount         Float?
+  /// Transaction date YYYY-MM-DD (txn_date)
+  date           String?
+  /// Document number (doc_num)
+  documentNumber String?
+  /// Memo or description of this transaction (memo)
+  memo           String?
+  /// Associated name (name)
+  name           String?
+  /// Transaction type (txn_type)
+  type           String?
+
+  /// Relationships ----------------------------------------------------------
+  /// General Ledger Account associated with this transaction
+  // (based on account_name first four characters)
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([date, accountId])
+  @@map("transactions")
 }

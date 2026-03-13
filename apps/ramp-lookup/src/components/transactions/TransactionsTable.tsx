@@ -9,7 +9,7 @@
 import { DataTable } from "@repo/shared-components/DataTable";
 import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
-import { isAccountInGroup } from "@repo/shared-utils/AccountGroups";
+import { isAccountInGroup } from "@repo/shared-utils";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -403,8 +403,8 @@ const accountGroupFilterFn: FilterFn<TransactionPlus> = (row, columnId, value) =
     return true; // If no value is provided, do not filter out any rows
   } else {
     const tliafs = row.original.line_item_accounting_field_selections
-    if (tliafs && (tliafs.length > 0) && (tliafs[0].category_info_type === "GL_ACCOUNT")) {
-      return isAccountInGroup(tliafs[0].external_code?.substring(0, 4), value);
+    if (tliafs?.length && (tliafs[0]?.category_info_type === "GL_ACCOUNT")) {
+      return isAccountInGroup(tliafs[0]?.external_code?.substring(0, 4), value);
     } else {
       return false;
     }
@@ -421,7 +421,7 @@ const dateRangeFilterFn: FilterFn<TransactionPlus> = (row, columnId, value) => {
     return true; // If no value is provided, do not filter out any rows
   } else {
     const cellValue = String(row.getValue(columnId));
-    let [fromDate, toDate] = value.split("|");
+    let [fromDate = '', toDate = ''] = value.split("|");
     if (fromDate.length >= 8) {
       fromDate = fromDate.substring(0, 8) + "-000000"; // Start of the day
       if (cellValue < fromDate) {

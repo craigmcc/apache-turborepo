@@ -6,10 +6,10 @@
 
 // External Imports ----------------------------------------------------------
 
-import { AccountGroupFilter, DataTable } from "@repo/shared-components/DataTable";
+import { DataTable } from "@repo/shared-components/DataTable";
+import { AccountGroupFilter } from "@repo/shared-components/AccountGroupFilter";
 import { TextFieldFilter } from "@repo/shared-components/TextFieldFilter";
-import { isAccountInGroup } from "@repo/shared-utils/AccountGroups";
-import { clientLogger as logger } from "@repo/shared-utils/ClientLogger";
+import { isAccountInGroup, clientLogger as logger } from "@repo/shared-utils";
 import {
   ColumnFiltersState,
   createColumnHelper,
@@ -32,7 +32,7 @@ import Row from "react-bootstrap/Row";
 // Internal Imports ----------------------------------------------------------
 
 import { JournalEntryLinePlus } from "@/types/types";
-//import { JournalLinesCsvExport } from "@/components/journalLines/JournalLinesCsvExport";
+import { JournalLinesCsvExport } from "@/components/journalLines/JournalLinesCsvExport";
 import { JournalLineMoreInfo } from "@/components/journalLines/JournalLineMoreInfo";
 import {
   formatAccountNumberAndName,
@@ -282,13 +282,11 @@ export function JournalLinesTable({ allJournalLines }: JournalLinesTableProps) {
         table={table}
       />
 
-{/*
       <JournalLinesCsvExport
         hide={handleCsvExportClose}
         lines={table.getSortedRowModel().flatRows.map(row => row.original)}
         show={showCsvExport}
       />
-*/}
 
       <JournalLineMoreInfo
         hide={handleMoreInfoClose}
@@ -361,7 +359,7 @@ const dateRangeFilterFn = (row: any, columnId: string, value: string) => {
     initialCellValue.substring(5, 7) + // Month part
     initialCellValue.substring(8, 10); // Day part
 
-  const [fromDate, toDate] = value.split("|");
+  const [fromDate = '', toDate = ''] = value.split("|");
 //  console.log(`initialCellValue: ${initialCellValue}, compareCellValue: ${compareCellValue}, fromDate: ${fromDate}, toDate: ${toDate}`);
   if ((fromDate.length >= 8) && (compareCellValue < fromDate.substring(0, 8))) {
     return false; // Cell value is before the "from" date

@@ -4,15 +4,18 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev:production": "dotenvx run -f .env.production --quiet -- next dev --turbopack --port 3002",
-    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- next dev --turbopack --port 3002",
+    "dev": "dotenvx run -f .env.production --quiet -- next dev --turbopack --port 3003",
+    "dev:sandbox": "dotenvx run -f .env.sandbox --quiet -- next dev --turbopack --port 3003",
     "lint": "eslint .",
-    "start:production": "dotenvx run -f .env.production --quiet -- next start --port 3002",
-    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- next start --port 3002"
+    "start": "dotenvx run -f .env.production --quiet -- next start --port 3003",
+    "start:sandbox": "dotenvx run -f .env.sandbox --quiet -- next start --port 3003",
+    "test": "vitest",
+    "test:ci": "vitest --run --coverage"
   },
   "type": "module",
   "version": "0.1.0",
   "dependencies": {
+    "@e965/xlsx": "catalog:xlsx",
     "@repo/qbo-db": "workspace:*",
     "@repo/shared-components": "workspace:*",
     "@repo/shared-utils": "workspace:*",
@@ -40,6 +43,7 @@
     "@types/react-dom": "catalog:react19",
     "eslint": "catalog:eslint",
     "eslint-config-next": "catalog:eslint",
-    "typescript": "catalog:typescript5"
+    "typescript": "catalog:typescript5",
+    "vitest": "4.0.18"
   }
 }

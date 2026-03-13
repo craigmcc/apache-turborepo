@@ -1,10 +1,12 @@
 {
   "description": "Server-side actions that interact with the Quickbooks Online API directly",
   "exports": {
-    "./*": "./dist/*.js"
-  },
-  "jest": {
-    "preset": "@repo/jest-presets/node"
+    "./AuthFunctions": "./dist/AuthFunctions.js",
+    "./AccountFunctions": "./dist/AccountFunctions.js",
+    "./JournalEntryFunctions": "./dist/JournalEntryFunctions.js",
+    "./TransactionsWithSplitsFunctions": "./dist/TransactionsWithSplitsFunctions.js",
+    "./QboReportParser": "./dist/QboReportParser.js",
+    "./types/*": "./dist/types/*.js"
   },
   "license": "Apache-2.0",
   "name": "@repo/qbo-api",
@@ -13,25 +15,26 @@
     "build": "tsc",
     "check-types": "tsc --noEmit",
     "dev": "tsc --watch",
-    "lintx": "eslint . --max-warnings 0"
+    "lintx": "eslint . --max-warnings 0",
+    "test": "vitest",
+    "test:ci": "vitest --run --coverage"
   },
   "type": "module",
   "version": "0.0.0",
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
     "@repo/shared-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@types/express": "catalog:express",
-    "@types/jest": "catalog:jest29",
     "@types/node": "catalog:node22",
     "eslint": "catalog:eslint",
-    "jest": "catalog:jest29",
-    "ts-jest": "catalog:jest29",
+    "vitest": "catalog:vitest",
     "typescript": "catalog:typescript5"
   },
   "dependencies": {
     "@repo/shared-utils": "workspace:*",
-    "express": "catalog:express"
+    "express": "catalog:express",
+    "zod": "catalog:zod"
   }
 }

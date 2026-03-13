@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Ensure tsconfig exports are available for TypeScript
+        run: node ./scripts/prepare-tsconfig-exports.js
+
       - name: Generate Prisma client and migrate to dummy database for bill-db
         env:
           DATABASE_URL: file:./github_bill.db

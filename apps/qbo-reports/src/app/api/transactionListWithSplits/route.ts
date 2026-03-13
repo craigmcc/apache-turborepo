@@ -7,7 +7,7 @@
 // External Imports ----------------------------------------------------------
 
 import { fetchApiInfo } from "@repo/qbo-api/AuthFunctions";
-import { serverLogger as logger } from "@repo/shared-utils/*";
+import { serverLogger as logger } from "@repo/shared-utils";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Internal Imports ----------------------------------------------------------
@@ -548,4 +548,3 @@ function isValidYMD(dateString: string): boolean {
   }
   return date.toISOString().startsWith(dateString);
 }
-

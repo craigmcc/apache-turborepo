@@ -152,6 +152,7 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
               <h5 className="bg-primary-subtle text-center">Bill Approvers</h5>
               { bill.approvers && bill.approvers.length > 0 ? (
                 <Table size="sm" bordered>
+                  <thead>
                   <tr>
                     <th>ID</th>
                     <th>Active</th>
@@ -159,6 +160,7 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
                     <th>Status</th>
                     <th>User Name</th>
                   </tr>
+                  </thead>
                   <tbody>
                   {bill.approvers!.map(approver => (
                     <tr key={approver.id}>
@@ -184,12 +186,14 @@ export function BillMoreInfo({ bill, hide, show, }: BillMoreInfoProps) {
               <h5 className="bg-primary-subtle text-center">Bill Line Items</h5>
               { bill.lineItems && bill.lineItems.length > 0 ? (
                 <Table size="sm" bordered>
+                  <thead>
                   <tr>
                     <th>ID</th>
                     <th>Description</th>
                     <th>GL Account</th>
                     <th className="text-end">Amount (Local)</th>
                   </tr>
+                  </thead>
                   <tbody>
                   {bill.lineItems!.map(lineItem => (
                     <tr key={lineItem.id}>

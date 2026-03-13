@@ -51,13 +51,14 @@ DATABASE_URL="file:~/sqlite/db-qbo-production.db"
 ## Usage
 
 This package has three scripts that **MUST** be run before the package can be built
-or referenced by applications that need it.
+or referenced by applications that need it.  (Production environment is the default
+but you can specify the sandbox environment if necessary).
 
-| Script Name                 | Description                                                    |
-|-----------------------------|----------------------------------------------------------------|
-| `qbo-db:generate`           | Generates the Prisma client code based on the database schema. |
-| `qbo-db:migrate:sandbox`    | Applies any pending migrations to the sandbox database.        |                
-| `qbo-db:migrate:production` | Applies any pending migrations to the production database.     |
+| Script Name              | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| `qbo-db:generate`        | Generates the Prisma client code based on the database schema. |
+| `qbo-db:migrate`         | Applies any pending migrations to the production database.     |
+| `qbo-db:migrate:sandbox` | Applies any pending migrations to the sandbox database.        |                
 
 (A third version of the migrate script (`qbo-db:migrate:ci`) is also provided to
 provide the GitHub Actions CI environment with a way to migrate the schema to
@@ -68,8 +69,8 @@ For example, you can run the following commands (starting from the monorepo root
 ```bash
 cd packages/qbo-db
 pnpm run qbo-db:generate
+pnpm run qbo-db:migrate
 pnpm run qbo-db:migrate:sandbox
-pnpm run qbo-db:migrate:production
 cd ../..
 ```
 
@@ -126,7 +127,7 @@ commands, depending on which database you want to view:
 
 ```bash
 cd packages/qbo-db
-pnpm run qbo-db:studio:production
+pnpm run qbo-db:studio
 // You will need to Control-C to terminate the viewer when done
 cd ../..
 ```

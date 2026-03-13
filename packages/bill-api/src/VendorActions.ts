@@ -8,7 +8,7 @@
 
 // Internal Modules ----------------------------------------------------------
 
-import { serverLogger as logger } from "@repo/shared-utils/ServerLogger";
+import { serverLogger as logger } from "@repo/shared-utils";
 import type { BillListResponse, BillVendor } from "./Models";
 
 // Private Objects ------------------------------------------------------------
