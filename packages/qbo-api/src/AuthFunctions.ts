@@ -399,16 +399,57 @@ export async function startInteractiveAuthorization(
    await ensureInitialized();
  }
 
-// Test helper: reset internal state so tests can reinitialize module deterministically.
-// This is exported only for tests and should not be used in production code.
-export function __resetForTests(): void {
-  // reset all lazy runtime values so tests can control environment and re-run initialization
-  readyPromise = null;
-  oauthState = null;
-  wellKnownInfo = null;
-  cachedRefreshToken = null;
-  completed = false;
-  qboApiInfo.accessToken = "";
-  qboApiInfo.refreshToken = "";
+ // Test helper: reset internal state so tests can reinitialize module deterministically.
+ /**
+ * __resetForTests()
+ * ------------------
+ * Test-only helper to completely clear the module's runtime state so unit
+ * tests can (re)initialize the auth subsystem in a predictable way.
+ *
+ * Why this exists:
+ * - `AuthFunctions` performs lazy initialization and caches values (a
+ *   `readyPromise`, `wellKnownInfo`, cached refresh token, oauth state,
+ *   and the current access/refresh tokens). When the module is imported in
+ *   multiple tests, the cached state can leak between tests and cause
+ *   nondeterministic behavior or spurious timeouts. Clearing state between
+ *   tests prevents that.
+ *
+ * What it resets:
+ * - `readyPromise` (the deferred initialization promise)
+ * - `oauthState` (the random OAuth state value)
+ * - `wellKnownInfo` (fetched OpenID/Well-Known metadata)
+ * - `cachedRefreshToken` (the persisted refresh token read from disk)
+ * - `completed` (flag indicating tokens were obtained)
+ * - `qboApiInfo.accessToken` and `qboApiInfo.refreshToken`
+ *
+ * Recommended usage:
+ * - Call this immediately after dynamically importing the module inside a
+ *   test, before you call `initAuth()` or `fetchApiInfo()` so that the
+ *   module observes the `process.env` state set up by the test.
+ *   Example:
+ *     const mod = await import('./AuthFunctions');
+ *     mod.__resetForTests?.();
+ *     // now adjust env, mocks, then call mod.initAuth() or mod.fetchApiInfo()
+ *
+ * Important warnings:
+ * - This function is strictly for tests. Do NOT call it in production
+ *   code. It is intentionally exported to make test suites deterministic.
+ * - The reset is shallow and synchronous; it does not undo any external
+ *   side effects (files written, server sockets created, etc.). Tests that
+ *   create external resources should still clean them up explicitly.
+ *
+ * Note: If you need stronger isolation, prefer running tests with module
+ * isolation (e.g., Vitest's `--isolate` options) in addition to this
+ * helper.
+ */
+ export function __resetForTests(): void {
+   // reset all lazy runtime values so tests can control environment and re-run initialization
+   readyPromise = null;
+   oauthState = null;
+   wellKnownInfo = null;
+   cachedRefreshToken = null;
+   completed = false;
+   qboApiInfo.accessToken = "";
+   qboApiInfo.refreshToken = "";
 }
 

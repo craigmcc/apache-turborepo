@@ -4,18 +4,18 @@ import { promises as fsp } from 'fs';
 
 // Mock node:http.get to immediately invoke the response callback (no network timing)
 vi.mock('node:http', () => ({
-  get: (url: string, cb?: (...args: any[]) => void) => {
+  get: (_url: string, cb?: (...args: unknown[]) => void) => {
     if (cb) cb();
-    return { on: (_ev: string, _handler?: any) => ({}) };
+    return { on: () => ({}) };
   }
 }));
 
 // Mock express to capture the registered handler so tests can call it directly
 vi.mock('express', () => {
-  const last: { path?: string; handler?: any } = {};
+  const last: { path?: string; handler?: unknown } = {};
   function createApp() {
     return {
-      get: (p: string, h: any) => { last.path = p; last.handler = h; },
+      get: (p: string, h: unknown) => { last.path = p; last.handler = h; },
       listen: (port: number, cb?: () => void) => { if (cb) setImmediate(cb); return { close: () => {} }; },
     };
   }
@@ -73,20 +73,20 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+    const mockFetch = vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes('well-known') || url.includes('openid-configuration')) {
-        return { ok: true, json: async () => wellKnown };
+        return { ok: true, json: async () => wellKnown } as unknown;
       }
       if (url.includes('token')) {
-        return { ok: true, json: async () => ({ access_token: 'new-access', refresh_token: 'new-refresh' }) };
+        return { ok: true, json: async () => ({ access_token: 'new-access', refresh_token: 'new-refresh' }) } as unknown;
       }
-      return { ok: true, json: async () => ({}) };
+      return { ok: true, json: async () => ({}) } as unknown;
     });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', mockFetch);
 
     const mod = await import('./AuthFunctions');
-    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
+    (mod as unknown as { __resetForTests?: () => void }).__resetForTests?.();
     // Explicitly initialize so refresh runs now (deterministic), then fetch with no timeout
     await mod.initAuth();
     const info = await mod.fetchApiInfo(0);
@@ -117,11 +117,10 @@ describe('AuthFunctions init flow', () => {
       token_endpoint_auth_methods_supported: [],
       userinfo_endpoint: 'https://userinfo',
     };
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => wellKnown });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => wellKnown }));
 
     const mod = await import('./AuthFunctions');
-    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
+    (mod as unknown as { __resetForTests?: () => void }).__resetForTests?.();
 
     // Call fetchApiInfo with small timeout; since no cached token and no interactive completion in CI, should timeout
     await expect(mod.fetchApiInfo(50)).rejects.toThrow(/Timeout waiting for authorization/);
@@ -139,20 +138,30 @@ describe('AuthFunctions init flow', () => {
     const wellKnown = {
       authorization_endpoint: 'https://auth',
       token_endpoint: 'http://localhost:4000/token',
-    } as any;
+      claims_supported: [],
+      id_token_signing_alg_values_supported: [],
+      issuer: 'https://issuer',
+      jwks_uri: 'https://jwks',
+      response_types_supported: [],
+      revocation_endpoint: 'https://revoke',
+      scopes_supported: [],
+      subject_types_supported: [],
+      token_endpoint_auth_methods_supported: [],
+      userinfo_endpoint: 'https://userinfo',
+    };
 
     // fetch: token exchange response
-    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+    const mockFetch = vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes('well-known') || url.includes('openid-configuration')) {
-        return { ok: true, json: async () => wellKnown };
+        return { ok: true, json: async () => wellKnown } as unknown;
       }
       if (url.includes('token')) {
-        return { ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) };
+        return { ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) } as unknown;
       }
-      return { ok: true, json: async () => ({}) };
+      return { ok: true, json: async () => ({}) } as unknown;
     });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', mockFetch);
 
     // injected opener that simulates user completing the auth flow by calling the redirect URL
     const openUrlFn = async (authUrl: string) => {
@@ -162,10 +171,10 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      const expressMock = await import('express') as any;
-      const handler = expressMock.__last.handler;
+      const expressMock = await import('express') as unknown as { __last: { handler?: unknown } };
+      const handler = expressMock.__last.handler as unknown as (req: unknown, res: unknown) => Promise<void> | void;
       const fakeReq = { query: { code: 'code-from-auth', state } };
-      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      const fakeRes = { status: () => ({ send: () => {} }), send: () => {} };
       await handler(fakeReq, fakeRes);
     };
 
@@ -203,20 +212,19 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+    vi.stubGlobal('fetch', vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes('well-known') || url.includes('openid-configuration')) {
-        return { ok: true, json: async () => wellKnown };
+        return { ok: true, json: async () => wellKnown } as unknown;
       }
       if (url.includes('token')) {
-        return { ok: false, status: 400, statusText: 'Bad Request', text: async () => 'invalid_refresh' };
+        return { ok: false, status: 400, statusText: 'Bad Request', text: async () => 'invalid_refresh' } as unknown;
       }
-      return { ok: true, json: async () => ({}) };
-    });
-    (global as any).fetch = mockFetch;
+      return { ok: true, json: async () => ({}) } as unknown;
+    }));
 
     const mod = await import('./AuthFunctions');
-    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
+    (mod as unknown as { __resetForTests?: () => void }).__resetForTests?.();
 
     // initAuth should have attempted refresh and failed; call initAuth explicitly and assert immediate failure when caller does not wait
     await mod.initAuth();
@@ -232,7 +240,7 @@ describe('AuthFunctions init flow', () => {
     // Mock fs to throw on writeFile when persisting refresh token
     vi.doMock('fs', () => ({
       promises: {
-        readFile: async (p: string, enc: string) => { throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }); },
+        readFile: async (_p: string, _enc: string) => { void _p; void _enc; throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }); },
         writeFile: async () => { throw new Error('write-failure'); },
         rename: async () => { /* noop */ },
       }
@@ -253,44 +261,31 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+    const mockFetch = vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes('well-known') || url.includes('openid-configuration')) {
-        return { ok: true, json: async () => wellKnown };
+        return { ok: true, json: async () => wellKnown } as unknown;
       }
       if (url.includes('token')) {
-        return { ok: true, json: async () => ({ access_token: 'interactive-access-2', refresh_token: 'interactive-refresh-2' }) };
+        return { ok: true, json: async () => ({ access_token: 'interactive-access-2', refresh_token: 'interactive-refresh-2' }) } as unknown;
       }
-      return { ok: true, json: async () => ({}) };
+      return { ok: true, json: async () => ({}) } as unknown;
     });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', mockFetch);
 
-    // injected opener that simulates user completing the auth flow by calling the redirect URL
-    const openUrlFn = async (authUrl: string) => {
-      const parsed = new URL(authUrl);
-      const state = parsed.searchParams.get('state');
-      const redirectBase = process.env.QBO_REDIRECT_URL!;
-      const redirectUrl = new URL(redirectBase);
-      redirectUrl.searchParams.set('code', 'code-from-auth');
-      if (state) redirectUrl.searchParams.set('state', state);
-      const expressMock = await import('express') as any;
-      const handler = expressMock.__last.handler;
-      const fakeReq = { query: { code: 'code-from-auth', state } };
-      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
-      await handler(fakeReq, fakeRes);
-    };
+    // Note: no injected opener is declared here because this test drives the flow via the module's fetchApiInfo behavior
 
     vi.doMock('node:child_process', () => ({ exec: vi.fn() }));
 
     const mod = await import('./AuthFunctions');
-    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
+    (mod as unknown as { __resetForTests?: () => void }).__resetForTests?.();
 
     // fetchApiInfo should complete and return tokens despite write failure
     try {
       const info = await mod.fetchApiInfo(3000);
       expect(info.accessToken).toBe('interactive-access-2');
       expect(info.refreshToken).toBe('interactive-refresh-2');
-    } catch (err: any) {
+    } catch (err: unknown) {
       // In some environments the mocked redirect may not reach the server
       // quickly enough; accept a timeout as an allowable outcome for this
       // test to avoid flakiness.
@@ -303,12 +298,22 @@ describe('AuthFunctions init flow', () => {
     process.env.QBO_CLIENT_ID = 'cid';
     process.env.QBO_CLIENT_SECRET = 'csecret';
     const wellKnown = {
+      authorization_endpoint: 'https://auth',
       token_endpoint: 'https://token',
-    } as any;
+      claims_supported: [],
+      id_token_signing_alg_values_supported: [],
+      issuer: 'https://issuer',
+      jwks_uri: 'https://jwks',
+      response_types_supported: [],
+      revocation_endpoint: 'https://revoke',
+      scopes_supported: [],
+      subject_types_supported: [],
+      token_endpoint_auth_methods_supported: [],
+      userinfo_endpoint: 'https://userinfo',
+    };
 
     // Mock fetch to return token response
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'exch-access', refresh_token: 'exch-refresh' }) });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'exch-access', refresh_token: 'exch-refresh' }) }));
 
     const { exchangeAuthorizationCodeForTokens } = await import('./internal/AuthInternal');
     const tokens = await exchangeAuthorizationCodeForTokens(wellKnown, 'some-code', 'http://localhost:12345/redirect');
@@ -329,17 +334,27 @@ describe('AuthFunctions init flow', () => {
     const wellKnown = {
       authorization_endpoint: 'https://auth',
       token_endpoint: 'https://token',
-    } as any;
+      claims_supported: [],
+      id_token_signing_alg_values_supported: [],
+      issuer: 'https://issuer',
+      jwks_uri: 'https://jwks',
+      response_types_supported: [],
+      revocation_endpoint: 'https://revoke',
+      scopes_supported: [],
+      subject_types_supported: [],
+      token_endpoint_auth_methods_supported: [],
+      userinfo_endpoint: 'https://userinfo',
+    };
 
     // fetch: token exchange
-    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+    const mockFetch = vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes('token')) {
-        return { ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) };
+        return { ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) } as unknown;
       }
-      return { ok: true, json: async () => ({}) };
+      return { ok: true, json: async () => ({}) } as unknown;
     });
-    (global as any).fetch = mockFetch;
+    vi.stubGlobal('fetch', mockFetch);
 
     // injected opener that receives authUrl and triggers the redirect callback
     const openUrlFn = async (authUrl: string) => {
@@ -349,10 +364,10 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      const expressMock = await import('express') as any;
-      const handler = expressMock.__last.handler;
+      const expressMock = await import('express') as unknown as { __last: { handler?: unknown } };
+      const handler = expressMock.__last.handler as unknown as (req: unknown, res: unknown) => Promise<void> | void;
       const fakeReq = { query: { code: 'code-from-auth', state } };
-      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      const fakeRes = { status: () => ({ send: () => {} }), send: () => {} };
       await handler(fakeReq, fakeRes);
     };
 
