@@ -16,7 +16,7 @@ vi.mock('express', () => {
   function createApp() {
     return {
       get: (p: string, h: any) => { last.path = p; last.handler = h; },
-      listen: (port: number, cb?: () => void) => { setImmediate(cb); return { close: () => {} }; },
+      listen: (port: number, cb?: () => void) => { if (cb) setImmediate(cb); return { close: () => {} }; },
     };
   }
   return {
