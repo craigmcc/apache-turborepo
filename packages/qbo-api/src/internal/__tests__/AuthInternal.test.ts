@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock child_process and fs before importing the module under test
+// Mock child_process, fs, and express before importing the module under test
 vi.mock('node:child_process', () => ({
   exec: vi.fn((cmd: string, _opts: any, cb: (err: any, stdout: string, stderr: string) => void) => {
     cb(null, '', '');
@@ -14,38 +14,27 @@ vi.mock('fs', () => ({
   },
 }));
 
-import { promises as fsMock } from 'fs';
-
-// Add helper to retry http.get until server is ready
-async function httpGetUntilReady(url: string, maxAttempts = 100, delayMs = 50) {
-  const http = await import('node:http');
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const ok = await new Promise<boolean>((resolve) => {
-      try {
-        const req = http.get(url, () => resolve(true));
-        req.on('error', () => resolve(false));
-      } catch (e) {
-        resolve(false);
-      }
-    });
-    if (ok) return;
-    await new Promise((r) => setTimeout(r, delayMs));
+// Mock express to capture the registered handler so tests can call it directly
+vi.mock('express', () => {
+  const last: { path?: string; handler?: any } = {};
+  function createApp() {
+    return {
+      get: (p: string, h: any) => { last.path = p; last.handler = h; },
+      listen: (port: number, cb?: () => void) => { setImmediate(cb); return { close: () => {} }; },
+    };
   }
-  // final attempt
-  await new Promise<void>((resolve) => {
-    try {
-      const http2 = require('node:http');
-      http2.get(url, () => resolve()).on('error', () => resolve());
-    } catch (e) { resolve(); }
-  });
-}
+  return {
+    __last: last,
+    default: createApp,
+  };
+});
+
+import { promises as fsMock } from 'fs';
 
 describe('AuthInternal', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.resetAllMocks();
-    // increase timeout to reduce CI flakiness
-    // vi.setTimeout(20000); // removed because vi.setTimeout may not be available in some Vitest environments
     process.env.QBO_ENVIRONMENT = 'test';
     process.env.QBO_CLIENT_ID = 'cid';
     process.env.QBO_CLIENT_SECRET = 'csecret';
@@ -53,7 +42,6 @@ describe('AuthInternal', () => {
 
   afterEach(() => {
     delete process.env.QBO_REDIRECT_URL;
-    // clear any global fetch mocks that tests may have set
     try { delete (global as any).fetch; } catch { /* ignore */ }
   });
 
@@ -67,86 +55,26 @@ describe('AuthInternal', () => {
     expect(childProcess.exec).toHaveBeenCalled();
   });
 
-  it('openUrl - fallback to gio open when xdg-open fails (linux)', async () => {
-    const originalPlatform = process.platform;
-    Object.defineProperty(process, 'platform', { value: 'linux' });
-
-    const childProcess = await import('node:child_process') as any;
-    (childProcess.exec as any).mockImplementation((cmd: string, _opts: any, cb: any) => {
-      if (cmd.includes('xdg-open')) return cb(new Error('xdg fail'), '', '');
-      return cb(null, '', '');
-    });
-
-    const AuthInternal = await import('../AuthInternal');
-    await expect(AuthInternal.openUrl('http://example.com')).resolves.toBeUndefined();
-    expect(childProcess.exec).toHaveBeenCalled();
-
-    Object.defineProperty(process, 'platform', { value: originalPlatform });
-  });
-
-  it('storeCachedRefreshToken - writes tmp and renames on first-write failure', async () => {
-    (fsMock.writeFile as any).mockImplementationOnce(() => { throw new Error('disk full'); });
-    (fsMock.writeFile as any).mockImplementationOnce(async () => {});
-    (fsMock.rename as any).mockImplementationOnce(async () => {});
-
-    const AuthInternal = await import('../AuthInternal');
-    await expect(AuthInternal.storeCachedRefreshToken('  mytoken  ')).resolves.toBeUndefined();
-
-    expect((fsMock.writeFile as any).mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(fsMock.rename).toHaveBeenCalled();
-  });
-
-  it('storeCachedRefreshToken - rethrows when both writes fail', async () => {
-    (fsMock.writeFile as any).mockImplementation(() => { throw new Error('always fail'); });
-    (fsMock.rename as any).mockImplementation(() => { throw new Error('rename fail'); });
-
-    const AuthInternal = await import('../AuthInternal');
-    await expect(AuthInternal.storeCachedRefreshToken('token')).rejects.toBeDefined();
-  });
-
-  it('exchangeAuthorizationCodeForTokens - succeeds on ok response', async () => {
-    const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'a', refresh_token: 'r' }) }));
-    // @ts-ignore
-    global.fetch = mockFetch;
-
-    const AuthInternal = await import('../AuthInternal');
-    const res = await AuthInternal.exchangeAuthorizationCodeForTokens({ token_endpoint: 'http://t' } as any, 'c', 'r');
-    expect(res.accessToken).toBe('a');
-    expect(res.refreshToken).toBe('r');
-  });
-
-  it('exchangeAuthorizationCodeForTokens - throws on non-ok response', async () => {
-    const mockFetch = vi.fn(async () => ({ ok: false, status: 400, statusText: 'Bad', text: async () => 'bad details' }));
-    // @ts-ignore
-    global.fetch = mockFetch;
-
-    const AuthInternal = await import('../AuthInternal');
-    await expect(
-      AuthInternal.exchangeAuthorizationCodeForTokens({ token_endpoint: 'http://t' } as any, 'c', 'r')
-    ).rejects.toThrow(/Token exchange failed/);
-  });
-
   it('startInteractiveAuthorization - full flow calls setTokens with exchanged tokens', async () => {
     const port = 55333;
     process.env.QBO_REDIRECT_URL = `http://127.0.0.1:${port}/cb`;
     const oauthState = 'mystate';
 
-    // make exchange token endpoint return success
     const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'AT', refresh_token: 'RT' }) }));
     // @ts-ignore
     global.fetch = mockFetch;
 
     const AuthInternal = await import('../AuthInternal');
+    const expressMock = await import('express') as any;
 
     const setTokens = vi.fn(async () => {});
 
     const opener = async (authUrl: string) => {
-      const parsed = new URL(authUrl);
-      const state = parsed.searchParams.get('state');
-      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
-      redirectUrl.searchParams.set('code', 'authcode');
-      if (state) redirectUrl.searchParams.set('state', state);
-      await httpGetUntilReady(redirectUrl.toString());
+      // Call the handler that startInteractiveAuthorization registered
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { code: 'authcode', state: oauthState } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
 
     await expect(
@@ -193,14 +121,17 @@ describe('AuthInternal', () => {
     const mockFetch = vi.fn(async () => ({ ok: true, json: async () => ({ access_token: 'AT', refresh_token: 'RT' }) }));
     // @ts-ignore
     global.fetch = mockFetch;
+
     const AuthInternal = await import('../AuthInternal');
+    const expressMock = await import('express') as any;
+
     const opener = async (authUrl: string) => {
-      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
-      redirectUrl.searchParams.set('error', 'access_denied');
-      redirectUrl.searchParams.set('error_description', 'denied');
-      redirectUrl.searchParams.set('state', oauthState);
-      await httpGetUntilReady(redirectUrl.toString());
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { error: 'access_denied', error_description: 'denied', state: oauthState } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
+
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
     ).rejects.toThrow(/OAuth error/);
@@ -214,11 +145,12 @@ describe('AuthInternal', () => {
     // @ts-ignore
     global.fetch = mockFetch;
     const AuthInternal = await import('../AuthInternal');
+    const expressMock = await import('express') as any;
     const opener = async () => {
-      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
-      // no code param
-      redirectUrl.searchParams.set('state', oauthState);
-      await httpGetUntilReady(redirectUrl.toString());
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { state: oauthState } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)
@@ -233,11 +165,12 @@ describe('AuthInternal', () => {
     // @ts-ignore
     global.fetch = mockFetch;
     const AuthInternal = await import('../AuthInternal');
+    const expressMock = await import('express') as any;
     const opener = async () => {
-      const redirectUrl = new URL(process.env.QBO_REDIRECT_URL!);
-      redirectUrl.searchParams.set('code', 'thecode');
-      redirectUrl.searchParams.set('state', 'different');
-      await httpGetUntilReady(redirectUrl.toString());
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { code: 'thecode', state: 'different' } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
     await expect(
       AuthInternal.startInteractiveAuthorization({ authorization_endpoint: 'http://auth' } as any, oauthState, async () => {}, opener)

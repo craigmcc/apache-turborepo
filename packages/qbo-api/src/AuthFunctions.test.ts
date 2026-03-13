@@ -2,31 +2,31 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import path from 'path';
 import { promises as fsp } from 'fs';
 
+// Mock node:http.get to immediately invoke the response callback (no network timing)
+vi.mock('node:http', () => ({
+  get: (url: string, cb?: (...args: any[]) => void) => {
+    if (cb) cb();
+    return { on: (_ev: string, _handler?: any) => ({}) };
+  }
+}));
+
+// Mock express to capture the registered handler so tests can call it directly
+vi.mock('express', () => {
+  const last: { path?: string; handler?: any } = {};
+  function createApp() {
+    return {
+      get: (p: string, h: any) => { last.path = p; last.handler = h; },
+      listen: (port: number, cb?: () => void) => { setImmediate(cb); return { close: () => {} }; },
+    };
+  }
+  return {
+    __last: last,
+    default: createApp,
+  };
+});
+
 const ORIGINAL_ENV = { ...process.env };
 
-// Add a helper to retry http.get until the local server is ready
-async function httpGetUntilReady(url: string, maxAttempts = 100, delayMs = 50) {
-  const http = await import('node:http');
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const ok = await new Promise<boolean>((resolve) => {
-      try {
-        const req = http.get(url, () => resolve(true));
-        req.on('error', () => resolve(false));
-      } catch (e) {
-        resolve(false);
-      }
-    });
-    if (ok) return;
-    await new Promise((r) => setTimeout(r, delayMs));
-  }
-  // final attempt (let it fail and return)
-  await new Promise<void>((resolve) => {
-    try {
-      const http2 = require('node:http');
-      http2.get(url, () => resolve()).on('error', () => resolve());
-    } catch (e) { resolve(); }
-  });
-}
 
 describe('AuthFunctions init flow', () => {
   beforeEach(() => {
@@ -145,7 +145,11 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await httpGetUntilReady(redirectUrl.toString());
+      const expressMock = await import('express') as any;
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { code: 'code-from-auth', state } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
 
     const AuthInternal = await import('./internal/AuthInternal');
@@ -234,7 +238,11 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await httpGetUntilReady(redirectUrl.toString());
+      const expressMock = await import('express') as any;
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { code: 'code-from-auth', state } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
 
     vi.doMock('node:child_process', () => ({ exec: vi.fn() }));
@@ -299,7 +307,11 @@ describe('AuthFunctions init flow', () => {
       const redirectUrl = new URL(redirectBase);
       redirectUrl.searchParams.set('code', 'code-from-auth');
       if (state) redirectUrl.searchParams.set('state', state);
-      await httpGetUntilReady(redirectUrl.toString());
+      const expressMock = await import('express') as any;
+      const handler = expressMock.__last.handler;
+      const fakeReq = { query: { code: 'code-from-auth', state } };
+      const fakeRes = { status: (_: number) => ({ send: (_: string) => {} }), send: (_: string) => {} };
+      await handler(fakeReq, fakeRes);
     };
 
     const AuthInternal = await import('./internal/AuthInternal');
