@@ -20,7 +20,8 @@ import {
 
 // Load relevant environment variables
 const CI = process.env.CI;
-const isCi = (process.env.CI !== undefined) || false; // For CI environments
+// const isCi = (process.env.CI !== undefined) || false; // For CI environments
+function isCi() { return process.env.CI !== undefined; }
 const NODE_ENV = process.env.NODE_ENV || "*undefined*";
 const isProduction = NODE_ENV === "production";
 const QBO_BASE_URL = process.env.QBO_BASE_URL;
@@ -37,36 +38,36 @@ logger.info({
   context: "AuthFunctions.initialization",
   CI,
   NODE_ENV,
-  isCi,
+  isCi: isCi(),
   isProduction,
 });
 
 // Validate presence of required environment variables
-if (!isCi && !QBO_BASE_URL) {
+if (!isCi() && !QBO_BASE_URL) {
   throw new Error("QBO_BASE_URL is not set");
 }
-if (!isCi && !QBO_CLIENT_ID) {
+if (!isCi() && !QBO_CLIENT_ID) {
   throw new Error("QBO_CLIENT_ID is not set");
 }
-if (!isCi && !QBO_CLIENT_SECRET) {
+if (!isCi() && !QBO_CLIENT_SECRET) {
   throw new Error("QBO_CLIENT_SECRET is not set");
 }
-if (!isCi && !QBO_ENVIRONMENT) {
+if (!isCi() && !QBO_ENVIRONMENT) {
   throw new Error("QBO_ENVIRONMENT is not set");
 }
-if (!isCi && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
+if (!isCi() && !QBO_LOCAL_REDIRECT_URL && QBO_ENVIRONMENT === "production") {
   throw new Error("QBO_LOCAL_REDIRECT_URL is not set for production environment");
 }
-if (!isCi && !QBO_MINOR_VERSION) {
+if (!isCi() && !QBO_MINOR_VERSION) {
   throw new Error("QBO_MINOR_VERSION is not set");
 }
-if (!isCi && !QBO_REALM_ID) {
+if (!isCi() && !QBO_REALM_ID) {
   throw new Error("QBO_REALM_ID is not set");
 }
-if (!isCi && !QBO_REDIRECT_URL) {
+if (!isCi() && !QBO_REDIRECT_URL) {
   throw new Error("QBO_REDIRECT_URL is not set");
 }
-if (!isCi && !QBO_WELL_KNOWN_URL) {
+if (!isCi() && !QBO_WELL_KNOWN_URL) {
   throw new Error("QBO_WELL_KNOWN_URL is not set");
 }
 
@@ -103,7 +104,7 @@ async function ensureInitialized() {
       try {
         oauthState = crypto.randomBytes(32).toString("hex");
 
-        if (!isCi) {
+        if (!isCi()) {
           cachedRefreshToken = await fetchCachedRefreshToken();
           wellKnownInfo = await fetchWellKnownInfo();
 
@@ -225,7 +226,7 @@ export async function fetchApiInfo(timeoutMs: number = 0): Promise<QboApiInfo> {
 
      // Hold interactive-auth promise if it is started.
      let authPromise: Promise<void> | undefined = undefined;
-     if (!completed && !isCi) {
+     if (!completed && !isCi()) {
        try {
          // In test environments we don't want to open a real browser. Provide
          // an opener that simulates the user completing authorization by
@@ -397,3 +398,17 @@ export async function startInteractiveAuthorization(
  export async function initAuth(): Promise<void> {
    await ensureInitialized();
  }
+
+// Test helper: reset internal state so tests can reinitialize module deterministically.
+// This is exported only for tests and should not be used in production code.
+export function __resetForTests(): void {
+  // reset all lazy runtime values so tests can control environment and re-run initialization
+  readyPromise = null;
+  oauthState = null;
+  wellKnownInfo = null;
+  cachedRefreshToken = null;
+  completed = false;
+  qboApiInfo.accessToken = "";
+  qboApiInfo.refreshToken = "";
+}
+

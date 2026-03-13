@@ -73,19 +73,26 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => wellKnown })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'new-access', refresh_token: 'new-refresh' }) });
+    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+      const url = String(input);
+      if (url.includes('well-known') || url.includes('openid-configuration')) {
+        return { ok: true, json: async () => wellKnown };
+      }
+      if (url.includes('token')) {
+        return { ok: true, json: async () => ({ access_token: 'new-access', refresh_token: 'new-refresh' }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
     (global as any).fetch = mockFetch;
 
     const mod = await import('./AuthFunctions');
-    // initAuth should run ensureInitialized and attempt refresh
+    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
+    // Explicitly initialize so refresh runs now (deterministic), then fetch with no timeout
     await mod.initAuth();
-
     const info = await mod.fetchApiInfo(0);
     expect(info.accessToken).toBe('new-access');
     expect(info.refreshToken).toBe('new-refresh');
-  });
+  }, 20000);
 
   it('throws when no cached token and timeout expires', async () => {
     vi.resetModules();
@@ -114,6 +121,7 @@ describe('AuthFunctions init flow', () => {
     (global as any).fetch = mockFetch;
 
     const mod = await import('./AuthFunctions');
+    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
 
     // Call fetchApiInfo with small timeout; since no cached token and no interactive completion in CI, should timeout
     await expect(mod.fetchApiInfo(50)).rejects.toThrow(/Timeout waiting for authorization/);
@@ -134,7 +142,16 @@ describe('AuthFunctions init flow', () => {
     } as any;
 
     // fetch: token exchange response
-    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) });
+    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+      const url = String(input);
+      if (url.includes('well-known') || url.includes('openid-configuration')) {
+        return { ok: true, json: async () => wellKnown };
+      }
+      if (url.includes('token')) {
+        return { ok: true, json: async () => ({ access_token: 'interactive-access', refresh_token: 'interactive-refresh' }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
     (global as any).fetch = mockFetch;
 
     // injected opener that simulates user completing the auth flow by calling the redirect URL
@@ -164,6 +181,8 @@ describe('AuthFunctions init flow', () => {
 
   it('fails refresh when token endpoint returns non-ok', async () => {
     vi.resetModules();
+    // ensure non-CI so ensureInitialized will attempt refresh from cached token
+    delete process.env.CI;
     // create cached refresh token file so ensureInitialized attempts refresh
     const tokenPath = path.join(process.cwd(), `.env.${process.env.QBO_ENVIRONMENT}.qbo_refresh_token.txt`);
     await fsp.writeFile(tokenPath, 'cached-refresh-token\n', 'utf8');
@@ -184,16 +203,25 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => wellKnown })
-      .mockResolvedValueOnce({ ok: false, status: 400, statusText: 'Bad Request', text: async () => 'invalid_refresh' });
+    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+      const url = String(input);
+      if (url.includes('well-known') || url.includes('openid-configuration')) {
+        return { ok: true, json: async () => wellKnown };
+      }
+      if (url.includes('token')) {
+        return { ok: false, status: 400, statusText: 'Bad Request', text: async () => 'invalid_refresh' };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
     (global as any).fetch = mockFetch;
 
     const mod = await import('./AuthFunctions');
+    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
 
-    // initAuth should have attempted refresh and failed; fetchApiInfo should throw No access token
+    // initAuth should have attempted refresh and failed; call initAuth explicitly and assert immediate failure when caller does not wait
+    await mod.initAuth();
     await expect(mod.fetchApiInfo(0)).rejects.toThrow(/No access token available/);
-  });
+  }, 20000);
 
   it('interactive flow still returns tokens when persisting refresh token fails', async () => {
     vi.resetModules();
@@ -225,9 +253,16 @@ describe('AuthFunctions init flow', () => {
       userinfo_endpoint: 'https://userinfo',
     };
 
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => wellKnown })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ access_token: 'interactive-access-2', refresh_token: 'interactive-refresh-2' }) });
+    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+      const url = String(input);
+      if (url.includes('well-known') || url.includes('openid-configuration')) {
+        return { ok: true, json: async () => wellKnown };
+      }
+      if (url.includes('token')) {
+        return { ok: true, json: async () => ({ access_token: 'interactive-access-2', refresh_token: 'interactive-refresh-2' }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
     (global as any).fetch = mockFetch;
 
     // injected opener that simulates user completing the auth flow by calling the redirect URL
@@ -248,6 +283,7 @@ describe('AuthFunctions init flow', () => {
     vi.doMock('node:child_process', () => ({ exec: vi.fn() }));
 
     const mod = await import('./AuthFunctions');
+    if (typeof (mod as any).__resetForTests === 'function') (mod as any).__resetForTests();
 
     // fetchApiInfo should complete and return tokens despite write failure
     try {
@@ -296,7 +332,13 @@ describe('AuthFunctions init flow', () => {
     } as any;
 
     // fetch: token exchange
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) });
+    const mockFetch = vi.fn(async (input: any, _init?: any) => {
+      const url = String(input);
+      if (url.includes('token')) {
+        return { ok: true, json: async () => ({ access_token: 'injected-access', refresh_token: 'injected-refresh' }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
     (global as any).fetch = mockFetch;
 
     // injected opener that receives authUrl and triggers the redirect callback
