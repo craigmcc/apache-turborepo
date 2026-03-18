@@ -81,8 +81,49 @@ export enum CreditCardTypeEnum {
   Visa = "Visa",
 }
 
-// TODO: Line 1273
+// Line 1273 - Holds credit-card information to request a credit card
+// payment from a merchant account service, but NOT any response or
+// authorization information from the merchant account service provider
+// -- see CreditChargeResponse
 export type CreditChargeInfo = {
+  // The Amount processed using the credit card.
+  Amount?: number;
+  // Credit card holder billing address of record: the street address to which
+  // credit card statements are sent.
+  BillAddrStreet?: string;
+  // Expiration Month on card, expressed as a number: 1 = January,
+  // 2 = February, etc.
+  CCExpiryMonth?: number;
+  // Expiration Year on card, expressed as a 4 digit number 1999, 2003, etc.
+  CCExpiryYear?: number;
+  // Credit card transaction mode used in Credit Card payment transactions.
+  // Valid values: CardNotPresent (default) or CardPresent.
+  CCTxnMode?: CCTxnModeEnum;
+  // Type of credit card transaction. Valid values: Authorization, Capture,
+  // Charge, Refund, VoiceAuthorization.
+  CCTxnType?: CCTxnTypeEnum;
+  // Code associated with commercial cards: purchase, corporate, and business
+  // cards. Lower transaction fee rates apply when these cards are used and
+  // this field is provided.
+  CommercialCardCode?: string;
+  // Internal use only: extension placeholder for CreditCardChargeInfo.
+  CreditCardChargeInfoEx?: IntuitAnyType;
+  // Account holder name, as printed on the card.
+  NameOnAcct?: string;
+  // Credit Card account number, as printed on the card. Must not have
+  // whitespace or formatting characters.
+  Number?: string;
+  // Credit card holder billing postal code. Five digits in the USA.
+  PostalCode?: string;
+  // Unique identifier of the previous payment transaction. It can be used as
+  // an input to the Capture transaction type.
+  PrevCCTransId?: string;
+  // If false or no value, QBO will not process the payment but just store
+  // Credit Card Information. If true, QBO will process the Credit Card
+  // Payment (Not supported currently).
+  ProcessPayment?: boolean;
+  // Type of credit card.
+  Type?: string;
 }
 
 // TODO: Line 1395
@@ -524,8 +565,49 @@ export enum ObjectNameEnumType {
   VendorCredit = "VendorCredit",
 }
 
-// TODO: Line 582
+// TODO: Line 582 - Physical (or postal) address type, this entity is always
+//  manipulated in context of another parent entity like Person, Organization etc.
 export type PhysicalAddress = {
+  // Unique identifier of the Intuit entity for the address, mainly used for
+  // modifying the address.[br /]Note: There is no SyncToken for this entity
+  // because it is always associated with the IntuitEntity type that is the
+  // top level or parent entity.
+  Id?: string;
+  // City name.
+  City?: string;
+  // Country name.
+  Country?: string;
+  // Country code per ISO 3166.
+  CountryCode?: string;
+  // Globalized representation of a region. For example, state name for USA,
+  // province name for Canada.
+  CountrySubDivisionCode?: string;
+  // County name.
+  County?: string;
+  // Latitude coordinate of Geocode (Geospatial Entity Object Code).
+  Lat?: string;
+  // First line of the address.
+  Line1?: string;
+  // Second line of the address.
+  Line2?: string;
+  // Third line of the address.
+  Line3?: string;
+  // Fourth line of the address.
+  Line4?: string;
+  // Fifth line of the address.
+  Line5?: string;
+  // Longitude coordinate of Geocode (Geospatial Entity Object Code).
+  Long?: string;
+  // Note about this address.
+  Note?: string;
+  // Postal code. For example, zip code for the USA and Canada.
+  PostalCode?: string;
+  // Postal Code extension. For example, in the USA this is a 4 digit
+  // extension of the zip code.
+  PostalCodeSuffix?: string;
+  // Descriptive tag (or label) associated with the physical address. Valid
+  // values are Shipping and Billing, as defined in the PhysicalAddressLabelType.
+  Tag?: string;
 }
 
 // Line 1123 - Enumeration of type of addresses that the data sync
@@ -561,9 +643,9 @@ export enum ReportBasisEnum {
 export type StringTypeCustomFieldDefinition = {
 }
 
-// TODO: Line 1084
-export type SyncToken = {
-}
+// Line 1084 - Strongly typed "SyncToken" for the version number of an entity
+// for optimistic locking purposes.
+export type SyncToken = string;
 
 // Line 1153 - Telephone device type enumeration.
 export enum TelephoneDeviceTypeEnum {
@@ -573,8 +655,31 @@ export enum TelephoneDeviceTypeEnum {
   Pager = "Pager",
 }
 
-// TODO: Line 746
+// Line 746 - Telephone number type definition. This entity is always
+// manipulated in the context of another parent entity like Person,
+// Organization etc.
 export type TelephoneNumber = {
+  // Unique identifier for an Intuit entity.
+  Id?: string;
+  // Telephone area code.
+  AreaCode?: string;
+  // Telephone country code.
+  CountryCode?: string;
+  // True if this is the default telephone number.
+  Default?: boolean;
+  // Phone device type.
+  DeviceType?: TelephoneDeviceTypeEnum;
+  // Telephone exchange code.
+  ExchangeCode?: string;
+  // Telephone extension code.
+  Extension?: string;
+  // Specifies the telephone number in free form.  FreeFormNumber takes
+  // precedence over CountryCode, AreaCode, ExchangeCode, and Extension.
+  FreeFormNumber?: string;
+  // Descriptive tag (or label) associated with the telephone number.
+  // Valid values are Business, Fax, Home, Mobile, Pager, Primary,
+  // Secondary, and Other, as defined in the TelephoneNumberLabelType.
+  Tag?: string;
 }
 
 // Line 1135 - Enumeration of type of phones that the data sync
@@ -594,6 +699,25 @@ export enum TelephoneNumberTypeEnum {
 export type TransactionDeliveryInfo = {
 }
 
-// TODO: Line 1015
+// Line 1015 - Website address type. This entity is always manipulated in
+// context of another parent entity like Person, Organization etc.
 export type WebsiteAddress = {
+  // Unique identifier for an Intuit entity.
+  Id?: string;
+  // True if this is the default website.
+  Default?: boolean;
+  // ExternalKey type allows an associated external ID like QuickBooks ID
+  // to be represented in Data Services.
+  ExternalKey?: string;
+  // Allows for strong-typing of Ids and qualifying the domain origin of the
+  // Id.  The valid values for the domain are defined in the idDomainEnum.
+  IdType?: string;
+  // Strongly typed "SyncToken" for the version number of an entity for
+  // optimistic locking purposes.
+  syncToken?: SyncToken;
+  // Descriptive tag associated with the website.
+  Tag?: string;
+  // Uniform Resource Identifier for the website.
+  URI?: string;
 }
+

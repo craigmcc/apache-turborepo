@@ -53,7 +53,7 @@ export type Customer = NameBase & {
   // sub-jobs.
   BalanceWithJobs?: number,
   // Default billing address.
-  BillAddr?: PhysicalAddress, // TODO!
+  BillAddr?: PhysicalAddress,
   // If true, this Customer is billed with its parent. If false, or null the
   // customer is not to be billed with its parent. This property is valid only
   // if this entity is a Job or sub Customer.
@@ -63,7 +63,7 @@ export type Customer = NameBase & {
   BusinessNumber?: string,
   // Credit-card information to request a credit card payment from a merchant
   // account service.
-  CCDetail?: CreditChargeInfo, // TODO!
+  CCDetail?: CreditChargeInfo,
   // Name of the Customer contact.
   ContactName?: string,
   // Specifies the maximum amount of an unpaid customer balance.
@@ -88,8 +88,8 @@ export type Customer = NameBase & {
   Job?: boolean,
   // Information about the job. Relevant only if the Customer represents the
   // actual task or project, not just a person or organization.
-  JobInfo?: JobInfo, // TODO!
-  // Specifies the level of the hirearchy in which the entity is located.
+  JobInfo?: JobInfo,
+  // Specifies the level of the hierarchy in which the entity is located.
   // Zero specifies the top level of the hierarchy; anything above will be
   // level with respect to the parent.
   Level?: number,
@@ -185,7 +185,7 @@ export enum FifoCalculationStatus {
   None = "None",
 }
 
-// TODO Line 1220 - Details for the Job. This is applicable only to
+// Line 1220 - Details for the Job. This is applicable only to
 //  QuickBooks Windows desktop.
 export type JobInfo = {
 }
@@ -279,7 +279,7 @@ export type NameBase = IntuitEntity & {
   // to QBO. (ReadOnly)
   V4IDPseudonym?: string,
   // Website address (URI).
-  WebAddr?: WebsiteAddress, // TODO!
+  WebAddr?: WebsiteAddress,
 }
 
 // TODO Line 1326 - Describes the Other Name (aka Payee). QBD only.
