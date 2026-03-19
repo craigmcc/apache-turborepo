@@ -75,6 +75,32 @@ enum AccountClassification {
   Revenue
 }
 
+// Customer Entity
+model Customer {
+  /// Primary key for this Customer
+  id String @id @unique
+
+  /// IntuitEntity Columns ---------------------------------------------------
+  /// Time this entity was created [Metadata->CreateTime]
+  createTime      DateTime?
+  /// Domain in which this entity belongs
+  domain          String?
+  /// Time this entity was last updated [Metadata->LastUpdatedTime]
+  lastUpdatedTime DateTime?
+
+  /// Customer Columns -------------------------------------------------------
+  /// Currently active?
+  active   Boolean?
+  /// Currency name [CurrencyRef->name]
+  currency String?
+  /// Primary email address [PrimaryEmailAddr->Address]
+  email    String?
+  /// Name [FullyQualifiedName]
+  name     String?
+
+  @@map("customers")
+}
+
 // Journal Entry Entity
 model JournalEntry {
   /// Primary key for this JournalEntry

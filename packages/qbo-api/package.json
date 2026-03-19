@@ -3,6 +3,7 @@
   "exports": {
     "./AuthFunctions": "./dist/AuthFunctions.js",
     "./AccountFunctions": "./dist/AccountFunctions.js",
+    "./CustomerFunctions": "./dist/CustomerFunctions.js",
     "./JournalEntryFunctions": "./dist/JournalEntryFunctions.js",
     "./TransactionsWithSplitsFunctions": "./dist/TransactionsWithSplitsFunctions.js",
     "./QboReportParser": "./dist/QboReportParser.js",

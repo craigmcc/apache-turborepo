@@ -15,6 +15,7 @@ import { serverLogger as logger } from "@repo/shared-utils";
 // Internal Modules -----------------------------------------------------------
 
 import { refreshAccounts } from "./refreshers/AccountsRefresher";
+import { refreshCustomers } from "./refreshers/CustomersRefresher";
 import { refreshJournalEntries } from "./refreshers/JournalEntryRefreshers";
 //import {parseArgs} from "node:util";
 //import {refreshTransactionsWithSplits} from "./refreshers/TransactionsWithSplitsRefresher";
@@ -64,6 +65,7 @@ export async function main() {
     context: "qbo-refresh.started",
   });
   await refreshAccounts(apiInfo);
+  await refreshCustomers(apiInfo);
   await refreshJournalEntries(apiInfo);
 //  await refreshTransactionsWithSplits(apiInfo, "2001-01-01", "2999-12-31");
   logger.info({

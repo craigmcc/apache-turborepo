@@ -35,7 +35,7 @@ export enum CISRateEnum {
 // name must not include a colon (:), (3) The e-mail address of the customer
 // must contain "@" and "." (dot), (4) The customer address field is
 // mandatory.
-export type Customer = NameBase & {
+export type QboCustomer = NameBase & {
   // Name or number of the account associated with this customer.
   // Max. length: 99 characters.
   AcctNum?: string,
