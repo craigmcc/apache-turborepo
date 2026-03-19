@@ -52,7 +52,7 @@ function createCustomer(qboCustomer: QboCustomer): Customer {
     domain: qboCustomer.domain || null,
     lastUpdatedTime: qboCustomer.MetaData?.LastUpdatedTime || null,
     active: qboCustomer.Active || null,
-    currency: qboCustomer.CurrencyRef?.name || null,
+    currency: qboCustomer.CurrencyRef?.value || null,
     email: qboCustomer.PrimaryEmailAddr?.Address || null,
     name: qboCustomer.FullyQualifiedName || null,
   }

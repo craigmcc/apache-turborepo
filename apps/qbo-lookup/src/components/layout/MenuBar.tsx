@@ -39,7 +39,7 @@ export function MenuBar() {
             <Images className="pe-2" size={38}/>
             QBO Lookup
         </Col>
-        <Col className="w-200">
+        <Col md={8}>
           <Tabs
             activeKey={key ? key : undefined}
             fill
@@ -53,6 +53,10 @@ export function MenuBar() {
             <Tab
               eventKey="Accounts"
               title="Accounts"
+            />
+            <Tab
+              eventKey="Customers"
+              title="Customers"
             />
             <Tab
               eventKey="JournalEntries"
@@ -78,6 +82,7 @@ export function MenuBar() {
 const KEY_PAGE_MAPPINGS: Map<string, string> = new Map([
   ["Home", "/"],
   [ "Accounts", "/accounts"],
+  [ "Customers", "/customers"],
   [ "JournalEntries", "/journalEntries" ],
   [ "JournalLines", "/journalLines" ],
   [ "Transactions", "/transactions" ],
