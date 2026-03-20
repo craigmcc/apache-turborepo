@@ -170,6 +170,18 @@ export enum QboEntityTypeEnum {
   Vendor = "Vendor",
 }
 
+// Line 3427 - Enumeration of eTransaction status values.  The statuses
+// (Sent, Viewed, Paid, Delivery Error, Updated, Sent With ICN Error) are
+// used by QBO eInvoicing.
+export enum QboETransactionStatusEnum {
+  "Delivery Error" = "Delivery Error",
+  Paid = "Paid",
+  Sent = "Sent",
+  "Sent With ICN Error" = "Sent With ICN Error",
+  Viewed = "Viewed",
+  Updated = "Updated",
+}
+
 // Line 3465 - Enumeration of global tax model types.
 export enum QboGlobalTaxCalculationEnum {
   "Not Applicable" = "Not Applicable",
@@ -177,8 +189,75 @@ export enum QboGlobalTaxCalculationEnum {
   "Tax Inclusive" = "Tax Inclusive",
 }
 
-// Line 5744 - TODO - Invoice
+// Line 5744 - The Invoice entity represents an invoice to a customer. Invoice
+// could be based on salesterm with invoice and due dates for payment. Invoice
+// supports sales tax, and shipping charges as a special line item. Invoice
+// can be printed and emailed to a customer.  Business Rules: (1) An invoice
+// must have at least one line that describes the item and an amount.
+// (2) An invoice must have a reference to a customer in the header.
 export type QboInvoice = QboSalesTransaction & {
+  // Specifies whether customer is allowed to use IPN to pay the Invoice.
+  AllowIPNPayment?: boolean;
+  // Specifies whether customer is allowed to use eInvoicing(online payment
+  // -bank or ach) to pay the Invoice.
+  AllowOnlineACHPayment?: boolean;
+  // Specifies whether customer is allowed to use eInvoicing(online payment
+  // (credit card) to pay the Invoice.
+  AllowOnlineCreditCardPayment?: boolean;
+  // Specifies whether customer is allowed to use eInvoicing (online payment)
+  // to pay the Invoice.
+  AllowOnlinePayment?: boolean;
+  // Specifies whether customer is allowed to use eInvoicing(online payment
+  // -paypal or venmo) to pay the Invoice.
+  AllowOnlinePayPalPayment?: boolean;
+  // Indicates whether the Recurring Invoice eligible for auto payment.
+  AutoPayEligible?: boolean;
+  // Call to action for this status
+  callToAction?: string;
+  // Description: Use of Invoice of a transaction which is required by
+  // CFDI4.0 in Mexico. Visit http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20_version3-3.htm
+  // and find the catalogues that contain the accepted values of cfdiUse.
+  CfdiUse?: number;
+  // Amount in deposit against the Invoice.
+  Deposit?: number;
+  // Specifies the eInvoice timeStamp(SENT, VIEWED, PAID) for the invoice
+  ECloudStatusTimeStamp?: Date;
+  // Specifies the eInvoice Status(SENT, VIEWED, PAID) for the invoice.
+  EInvoiceStatus?: QboETransactionStatusEnum;
+  // Exportation type of a transaction which is required by CFDI4.0 in Mexico.
+  // Visit http://omawww.sat.gob.mx/tramitesyservicios/Paginas/anexo_20_version3-3.htm
+  // and find the catalogues that contain the accepted values of Exportation.
+  Exportation?: string;
+  // Global invoice data of a transaction which is required by CFDI4.0 in Mexico.
+  // GlobalInfo?: MXGlobalInfo,
+  //  Extension entity for Invoice.
+  InvoiceEx?: IntuitAnyType;
+  // Sharable link of the invoice for external users.
+  InvoiceLink?: string;
+  // Expiry date for Sharable link of the invoice for external users.
+  InvoiceLinkExpiryDate?: Date;
+  // Security code associated with Sharable link of the invoice for
+  // external users.
+  InvoiceLinkSecurityCode?: string;
+  // Provides invoice statuses : MULTIPLE_ERRORS, DEPOSIT_ON_HOLD, DISPUTED,
+  // DEPOSIT_FAILED, PAYMENT_FAILED, OVERDUE_VIEWED, OVERDUE_NOT_SENT,
+  // OVERDUE_SENT, DUE_VIEWED, DUE_NOT_SENT, DUE_SENT, PAID_NOT_DEPOSITED,
+  // PARTIALLY_PAID, DEPOSITED, VOIDED, REVERSED
+  invoiceStatus?: string;
+  // Invoice status log.
+  // invoiceStatusLog?: StatusInfo;
+  // Indicates the less cis amount of the transaction, specific to UK
+  // region companies.
+  LessCIS: number;
+  // Message displayed to customer about payment Instructions. eg: bank
+  // account info.
+  PaymentDetailMessage?: string;
+  // Unique identifier for scheduled payment for invoice. Used to indicate if
+  // invoice has scheduled payment or not.
+  ScheduledPaymentId?: string;
+  // Indicates whether the Non-Recurring Invoice eligible for
+  // scheduled payment.
+  SchedulePayEligible?: boolean;
 }
 
 // Line 3548 - Enumeration of the different types of Journal Codes
