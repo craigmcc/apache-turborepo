@@ -115,6 +115,14 @@
     "groupType": "Departmental"
   },
   {
+    "groupEmail": "jgenender@apache.org",
+    "groupName": "ResponsibleAI",
+    "groupRanges": [
+      { "start": "7600", "end": "7699" }
+    ],
+    "groupType": "Departmental"
+  },
+  {
     "groupEmail": "engelen@apache.org",
     "groupName": "Security",
     "groupRanges": [
