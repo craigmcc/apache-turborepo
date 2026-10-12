@@ -33,12 +33,14 @@ in the `apps/{appname}` directory of the app consuming this package):
 
 Currently, the following scopes must be included:
 * accounting:read
+* bills:read
 * cards:read
 * departments:read
 * limits:read
 * spend_programs:read
 * transactions:read
 * users:read
+* vendors:read
 
 To retrieve the access token, call the function at the beginning of your application code:
 
