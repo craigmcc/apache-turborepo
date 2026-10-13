@@ -40,6 +40,38 @@ export type RampAccountingGLAccountCategoryInfo = {
 }
 
 /**
+ * A Ramp Address object.
+ */
+export type RampAddress = {
+  // Primary address line of the vendor address
+  address_line_1: string;
+  // Secondary address line of the vendor address
+  address_line_2?: string;
+  // City of the vendor address
+  city: string;
+  // Country of the vendor address
+  country: string;
+  // Postal code of the vendor address
+  postal_code: string;
+  // State of the vendor address
+  state?: string;
+}
+
+/**
+ * A Ramp Amount object.
+ */
+export type RampAmount = {
+  // The amount of money represented in the smallest denomination of the currency
+  // (for USD, the amount is expressed in cents)
+  amount: number;
+  // The currency (ISO 4217 format)
+  currency_code: string;
+  // Conversion factor to convert from integer amount to the actual value
+  // (For USD, would be 100 because USD amounts are expressed in cents)
+  minor_unit_conversion_rate?: number;
+}
+
+/**
  * A Ramp Card object.
  */
 export type RampCard = {
@@ -466,17 +498,6 @@ export type RampAccountingGLAccountsResponse = {
 }
 
 /**
- * A compound amount of money in the smallest denomination of the currency.
- * For USD, that is cents.
- */
-export type RampAmount = {
-  // The amount of money, in the smallest denomination of the currency
-  amount: number;
-  // The currency of the money
-  currency_code: string;
-}
-
-/**
  * The Ramp API response for a fetch cards request.
  */
 export type RampCardsResponse = {
@@ -584,3 +605,90 @@ export type RampUsersResponse = {
     next?: string;
   }
 }
+
+/**
+ * A Ramp Payables Vendor object.
+ */
+export type RampVendor = {
+  // The Ramp vendor ID
+  id: string;
+  // The accounting remote ID of the vendor
+  accounting_vendor_remote_id?: string;
+  // The default address of the vendor
+  address?: RampAddress;
+  // The addresses of the vendor
+  addresses: RampAddress[];
+  // Approval status of the vendor
+  approval_status?: RampVendorApprovalStatus;
+  // The billing frequency of this vendor
+  billing_frequency?: RampVendorBillingFrequency;
+  // Unique identifiers of the contacts associated with this vendor
+  contacts: string[];
+  // Two-letter country code of the vendor
+  country: string;
+  // The date and time when this vendor was created
+  created_at?: string;
+  // TODO: custom_form_collection_response?
+  // TODO: custom_record_fields?
+  // Unique ID of the default business entity associated with this vendor
+  default_entity_id?: string;
+  // Default payment method for this vendor, including update source and policy
+  // TODO: default_payment_method?:
+  // Description of the vendor
+  description?: string;
+  // Customer-defined external identifier for this vendor
+  // This is independent of accounting system remote IDs
+  external_vendor_id?: string;
+  // Federal tax classification of the vendor
+  federal_tax_classification?: RampVendorFederalTaxClassification;
+  // Whether the vendor is active
+  is_active?: boolean;
+  // Whether the vendor is deletable
+  is_deletable?: boolean;
+  // TODO: merchant_id?
+  // Name of the vendor
+  name: string;
+  // Legal name of the vendor
+  name_legal?: string;
+  // Number of days after receipt that payment is due (0 means due on receipt)
+  net_payment_terms?: number;
+  // Unique ID of the parent vendor, if this vendor has one
+  parent_vendor_id?: string;
+  // Ramp category code of the vendor
+  sk_category_id?: number;
+  // Ramp category name of the vendor
+  sk_category_name?: string;
+  // State of this vendor
+  state?: string;
+  // TODO: subsidiary?
+  // The tax address of the vendor
+  tax_address?: RampAddress;
+  // Total spend for all time for this vendor
+  total_spend_all_time: RampAmount;
+  // Total spend for the last 30 days for this vendor
+  total_spend_last_30_days: RampAmount;
+  // Total spend for last 365 days for this vendor
+  total_spend_last_365_days: RampAmount;
+  // Total Spend year-to-date for this vendor
+  total_spend_ytd: RampAmount;
+  // The date and time when this vendor was last updated
+  updated_at?: string;
+  // Unique ID of the user which owns this vendor
+  vendor_owner_id?: string;
+}
+
+export type RampVendorApprovalStatus =
+  "APPROVED" | "PENDING" | "REJECTED";
+
+export type RampVendorBillingFrequency =
+  "ANNUAL" | "MONTHLY" | "MULTIPLE" | "NA" | "OTHER" |
+  "QUARTERLY" | "ROLLING" | "TBD" | "TWICE_A_YEAR";
+
+export type RampVendorFederalTaxClassification =
+  "C_CORPORATION" | "INDIVIDUAL_SOLE_PROPRIETOR_SINGLE_MEMBER_LLC" |
+  "INTERNATIONAL" | "LLC_C_CORPORATION" | "LLC_PARTNERSHIP" |
+  "LLC_S_CORPORATION" | "OTHER" | "PARTNERSHIP" | "S_CORPORATION" |
+  "TRUST_ESTATE";
+
+export type RampVendorType =
+  "BUSINESS" | "INDIVIDUAL";
